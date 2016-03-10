@@ -37,12 +37,12 @@ namespace Stormpath.Owin.Middleware.Route
 
         public RegisterRoute(
             AppFunc next,
+            StormpathConfiguration configuration,
             ILogger logger,
             IScopedClientFactory clientFactory,
             IFrameworkUserAgentBuilder userAgentBuilder,
-            StormpathConfiguration configuration,
             string path)
-            : base(next, logger, clientFactory, configuration, userAgentBuilder, path, SupportedMethods, SupportedContentTypes)
+            : base(next, configuration, logger, clientFactory, userAgentBuilder, path, SupportedMethods, SupportedContentTypes)
         {
         }
 

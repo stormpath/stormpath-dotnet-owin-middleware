@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Stormpath.Owin.Middleware
+namespace Stormpath.Owin
 {
     public class InitializationException : Exception
     {

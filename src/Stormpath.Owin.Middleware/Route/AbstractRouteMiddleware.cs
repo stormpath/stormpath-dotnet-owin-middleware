@@ -43,9 +43,9 @@ namespace Stormpath.Owin.Middleware.Route
 
         public AbstractRouteMiddleware(
             AppFunc next,
+            StormpathConfiguration configuration,
             ILogger logger,
             IScopedClientFactory clientFactory,
-            StormpathConfiguration configuration,
             IFrameworkUserAgentBuilder userAgentBuilder,
             string path,
             IEnumerable<string> supportedMethods,
@@ -56,6 +56,11 @@ namespace Stormpath.Owin.Middleware.Route
                 throw new ArgumentNullException(nameof(next));
             }
 
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -64,11 +69,6 @@ namespace Stormpath.Owin.Middleware.Route
             if (clientFactory == null)
             {
                 throw new ArgumentNullException(nameof(clientFactory));
-            }
-
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
             }
 
             if (userAgentBuilder == null)
