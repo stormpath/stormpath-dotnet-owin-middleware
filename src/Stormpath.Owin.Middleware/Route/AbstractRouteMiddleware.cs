@@ -19,12 +19,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Stormpath.AspNetCore.Internal;
 using Stormpath.AspNetCore.Model.Error;
 using Stormpath.AspNetCore.Owin;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Logging;
 using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 namespace Stormpath.AspNetCore.Route
@@ -43,7 +43,7 @@ namespace Stormpath.AspNetCore.Route
 
         public AbstractRouteMiddleware(
             AppFunc next,
-            ILoggerFactory loggerFactory,
+            ILogger logger,
             IScopedClientFactory clientFactory,
             StormpathConfiguration configuration,
             IFrameworkUserAgentBuilder userAgentBuilder,
@@ -56,9 +56,9 @@ namespace Stormpath.AspNetCore.Route
                 throw new ArgumentNullException(nameof(next));
             }
 
-            if (loggerFactory == null)
+            if (logger == null)
             {
-                throw new ArgumentNullException(nameof(next));
+                throw new ArgumentNullException(nameof(logger));
             }
 
             if (clientFactory == null)
@@ -77,7 +77,7 @@ namespace Stormpath.AspNetCore.Route
             }
 
             _next = next;
-            _logger = loggerFactory.CreateLogger<AbstractRouteMiddleware>();
+            _logger = logger;
             _configuration = configuration;
             _userAgentBuilder = userAgentBuilder;
             _clientFactory = clientFactory;
@@ -110,7 +110,7 @@ namespace Stormpath.AspNetCore.Route
                 return Error.Create<NotAcceptable>(owinContext);
             }
 
-            _logger.LogInformation($"Stormpath middleware handling request {owinContext.Request.Path}");
+            _logger.Info($"Stormpath middleware handling request {owinContext.Request.Path}");
 
             using (var scopedClient = CreateScopedClient(owinContext))
             {

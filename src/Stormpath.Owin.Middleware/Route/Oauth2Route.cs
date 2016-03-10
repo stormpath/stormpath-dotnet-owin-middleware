@@ -20,12 +20,12 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Stormpath.AspNetCore.Internal;
 using Stormpath.AspNetCore.Model.Error;
 using Stormpath.AspNetCore.Owin;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
@@ -38,12 +38,12 @@ namespace Stormpath.AspNetCore.Route
 
         public Oauth2Route(
             AppFunc next,
-            ILoggerFactory loggerFactory,
+            ILogger logger,
             IScopedClientFactory clientFactory,
             IFrameworkUserAgentBuilder userAgentBuilder, 
             StormpathConfiguration configuration,
             string path)
-            : base(next, loggerFactory, clientFactory, configuration, userAgentBuilder, path, SupportedMethods, SupportedContentTypes)
+            : base(next, logger, clientFactory, configuration, userAgentBuilder, path, SupportedMethods, SupportedContentTypes)
         {
         }
 

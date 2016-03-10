@@ -1,4 +1,4 @@
-// <copyright file="HelloWorldController.cs" company="Stormpath, Inc.">
+﻿// <copyright file="Constants.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,18 +14,10 @@
 // limitations under the License.
 // </copyright>
 
-using Microsoft.AspNet.Mvc;
-
-namespace Stormpath.AspNetCore.TestHarness.Controllers
+namespace Stormpath.AspNetCore
 {
-    [Route("api/[controller]")]
-    public class HelloWorldController : Controller
+    public static class Constants
     {
-        // GET: api/helloWorld
-        [HttpGet]
-        public string Get()
-        {
-            return "Hello World!";
-        }
+        public static readonly string JsonContentType = "application/json;charset=UTF-8";
     }
 }
