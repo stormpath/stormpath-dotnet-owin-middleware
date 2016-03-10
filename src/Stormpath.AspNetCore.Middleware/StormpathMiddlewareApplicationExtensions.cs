@@ -15,10 +15,16 @@
 // </copyright>
 
 using System;
+using System.Collections;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Stormpath.AspNetCore.Internal;
 using Stormpath.AspNetCore.Route;
 using Stormpath.Configuration.Abstractions;
+using Stormpath.SDK.Client;
+using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 namespace Stormpath.AspNetCore
 {
@@ -38,24 +44,30 @@ namespace Stormpath.AspNetCore
                 throw new ArgumentNullException(nameof(app));
             }
 
+            var loggerFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            var clientFactory = app.ApplicationServices.GetRequiredService<IScopedClientFactory>();
+            var userAgentBuilder = app.ApplicationServices.GetRequiredService<IFrameworkUserAgentBuilder>();
             var config = app.ApplicationServices.GetRequiredService<StormpathConfiguration>();
 
-            AddRoutes(app, config);
+            app.UseOwin(BuildRoutePipeline(loggerFactory, clientFactory, userAgentBuilder, config));
 
             return app;
         }
 
-        private static void AddRoutes(IApplicationBuilder app, StormpathConfiguration config)
+        private static Action<Action<Func<AppFunc, AppFunc>>> BuildRoutePipeline(ILoggerFactory loggerFactory, IScopedClientFactory clientFactory, IFrameworkUserAgentBuilder userAgentBuilder, StormpathConfiguration config)
         {
-            if (config.Web.Oauth2.Enabled == true)
+            return new Action<Action<Func<AppFunc, AppFunc>>>(pipeline =>
             {
-                app.UseMiddleware<Oauth2Route>(config.Web.Oauth2.Uri);
-            }
+                if (config.Web.Oauth2.Enabled == true)
+                {
+                    pipeline(next => new Oauth2Route(next, loggerFactory, clientFactory, userAgentBuilder, config, config.Web.Oauth2.Uri).Invoke);
+                }
 
-            if (config.Web.Register.Enabled == true)
-            {
-                app.UseMiddleware<RegisterRoute>(config.Web.Register.Uri);
-            }
+                if (config.Web.Register.Enabled == true)
+                {
+                    pipeline(next => new RegisterRoute(next, loggerFactory, clientFactory, userAgentBuilder, config, config.Web.Register.Uri).Invoke);
+                }
+            });
         }
     }
 }

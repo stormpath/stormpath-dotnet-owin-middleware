@@ -1,4 +1,4 @@
-﻿// <copyright file="Response.cs" company="Stormpath, Inc.">
+﻿// <copyright file="IOwinResponse.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,21 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.AspNetCore.Internal;
-using Stormpath.AspNetCore.Owin;
 
-namespace Stormpath.AspNetCore
+namespace Stormpath.AspNetCore.Owin
 {
-    public static class Response
+    public interface IOwinResponse
     {
-        public static Task Ok(object model, IOwinEnvironment context, CancellationToken cancellationToken)
-        {
-            context.Response.Headers.SetString("Content-Type", "application/json;charset=UTF-8");
+        Stream Body { get; set; }
+        IDictionary<string, string[]> Headers { get; }
+        string ReasonPhrase { set; }
+        int StatusCode { set; }
 
-            return context.Response.WriteAsync(Serializer.Serialize(model), Encoding.UTF8, cancellationToken);
-        }
+        Task WriteAsync(string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
