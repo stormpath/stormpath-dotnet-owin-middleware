@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Stormpath.AspNetCore.Internal
+namespace Stormpath.Owin.Middleware.Internal
 {
     public static class FormContentParser
     {

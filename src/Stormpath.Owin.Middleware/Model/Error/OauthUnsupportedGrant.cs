@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.AspNetCore.Model.Error
+namespace Stormpath.Owin.Middleware.Model.Error
 {
     public class OauthUnsupportedGrant : AbstractError
     {

@@ -17,7 +17,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Stormpath.AspNetCore
+namespace Stormpath.Owin.Middleware.Internal
 {
     internal static class Serializer
     {

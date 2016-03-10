@@ -17,10 +17,10 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.AspNetCore.Internal;
-using Stormpath.AspNetCore.Owin;
+using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Owin;
 
-namespace Stormpath.AspNetCore
+namespace Stormpath.Owin.Middleware.Internal
 {
     public static class Response
     {

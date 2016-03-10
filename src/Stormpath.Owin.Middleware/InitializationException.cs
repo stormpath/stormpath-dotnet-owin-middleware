@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Stormpath.AspNetCore
+namespace Stormpath.Owin.Middleware
 {
     public class InitializationException : Exception
     {

@@ -20,15 +20,15 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Stormpath.AspNetCore.Internal;
-using Stormpath.AspNetCore.Owin;
+using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
 using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
-namespace Stormpath.AspNetCore.Route
+namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class RegisterRoute : AbstractRouteMiddleware
     {

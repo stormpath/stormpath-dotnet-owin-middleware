@@ -20,16 +20,16 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.AspNetCore.Internal;
-using Stormpath.AspNetCore.Model.Error;
-using Stormpath.AspNetCore.Owin;
+using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model.Error;
+using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
-namespace Stormpath.AspNetCore.Route
+namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class Oauth2Route : AbstractRouteMiddleware
     {

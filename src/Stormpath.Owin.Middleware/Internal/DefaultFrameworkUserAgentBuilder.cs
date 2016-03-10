@@ -17,7 +17,7 @@
 using System;
 using System.Reflection;
 
-namespace Stormpath.AspNetCore.Internal
+namespace Stormpath.Owin.Middleware.Internal
 {
     internal sealed class DefaultFrameworkUserAgentBuilder : IFrameworkUserAgentBuilder
     {
@@ -37,7 +37,7 @@ namespace Stormpath.AspNetCore.Internal
                 .GetName()
                 .Version;
 
-            var frameworkToken = $"stormpath-aspnetcore/{frameworkVersion.Major}.{frameworkVersion.Minor}.{frameworkVersion.Build}";
+            var frameworkToken = $"stormpath-owin/{frameworkVersion.Major}.{frameworkVersion.Minor}.{frameworkVersion.Build}";
 
             // Todo get ASP.NET/MVC library version
 

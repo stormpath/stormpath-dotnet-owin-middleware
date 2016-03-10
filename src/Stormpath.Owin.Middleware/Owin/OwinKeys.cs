@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.AspNetCore.Owin
+namespace Stormpath.Owin.Middleware.Owin
 {
     /// <summary>
     /// OWIN keys, as defined in <see href="http://owin.org/html/spec/owin-1.0.html"/>.

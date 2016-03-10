@@ -16,7 +16,7 @@
 
 using System.Collections.Generic;
 
-namespace Stormpath.AspNetCore.Internal
+namespace Stormpath.Owin.Middleware.Internal
 {
     public static class DictionaryExtensions
     {

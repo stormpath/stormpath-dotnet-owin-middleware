@@ -18,7 +18,7 @@ using System;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Oauth;
 
-namespace Stormpath.AspNetCore.Internal
+namespace Stormpath.Owin.Middleware.Internal
 {
     internal sealed class ResponseSanitizer<T>
     {

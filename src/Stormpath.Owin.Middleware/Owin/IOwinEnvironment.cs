@@ -16,7 +16,7 @@
 
 using System.Threading;
 
-namespace Stormpath.AspNetCore.Owin
+namespace Stormpath.Owin.Middleware.Owin
 {
     public interface IOwinEnvironment
     {

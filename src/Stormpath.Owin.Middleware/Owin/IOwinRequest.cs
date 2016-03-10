@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Stormpath.AspNetCore.Owin
+namespace Stormpath.Owin.Middleware.Owin
 {
     public interface IOwinRequest
     {

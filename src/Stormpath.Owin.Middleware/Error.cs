@@ -16,11 +16,11 @@
 
 using System.Text;
 using System.Threading.Tasks;
-using Stormpath.AspNetCore.Internal;
-using Stormpath.AspNetCore.Model.Error;
-using Stormpath.AspNetCore.Owin;
+using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model.Error;
+using Stormpath.Owin.Middleware.Owin;
 
-namespace Stormpath.AspNetCore
+namespace Stormpath.Owin.Middleware
 {
     public static class Error
     {

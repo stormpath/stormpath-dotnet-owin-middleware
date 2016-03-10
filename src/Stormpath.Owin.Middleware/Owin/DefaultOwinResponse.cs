@@ -23,9 +23,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.AspNetCore.Internal;
+using Stormpath.Owin.Middleware.Internal;
 
-namespace Stormpath.AspNetCore.Owin
+namespace Stormpath.Owin.Middleware.Owin
 {
     public class DefaultOwinResponse : IOwinResponse
     {

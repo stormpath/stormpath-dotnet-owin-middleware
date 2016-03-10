@@ -6,7 +6,7 @@
     "Stormpath.Configuration.Abstractions": "2.0.0",
     "Stormpath.SDK": "0.7.1-beta3"
   },
-  "description": "Stormpath middleware for ASP.NET Core.",
+  "description": "Stormpath OWIN middleware for .NET.",
   "frameworks": {
     "dnx451": { },
     "dotnet5.4": {
@@ -22,15 +22,15 @@
   },
   "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
   "language": "en-US",
-  "licenseUrl": "https://github.com/stormpath/stormpath-aspnet/blob/master/LICENSE",
+  "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
   "owners": [ "Stormpath, Inc." ],
-  "projectUrl": "https://github.com/stormpath/stormpath-aspnet",
+  "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
   "repository": {
-    "url": "https://github.com/stormpath/stormpath-aspnet"
+    "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
   },
-  "tags": [ "Stormpath API Authentication Authorization" ],
+  "tags": [ "Stormpath API Authentication Authorization Middleware OWIN" ],
   "tooling": {
-    "defaultNamespace": "Stormpath.AspNetCore"
+    "defaultNamespace": "Stormpath.Owin.Middleware"
   },
   "version": "0.1.0",
   "xmlDoc": true

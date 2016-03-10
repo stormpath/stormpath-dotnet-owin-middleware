@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.AspNetCore
+namespace Stormpath.Owin.Middleware
 {
     public static class Constants
     {

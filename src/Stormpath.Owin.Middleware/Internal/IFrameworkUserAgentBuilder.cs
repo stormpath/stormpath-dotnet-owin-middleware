@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.AspNetCore.Internal
+namespace Stormpath.Owin.Middleware.Internal
 {
     public interface IFrameworkUserAgentBuilder
     {

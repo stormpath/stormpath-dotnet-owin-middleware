@@ -20,7 +20,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stormpath.AspNetCore.Owin
+namespace Stormpath.Owin.Middleware.Owin
 {
     public interface IOwinResponse
     {
