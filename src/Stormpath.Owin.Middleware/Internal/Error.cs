@@ -16,11 +16,10 @@
 
 using System.Text;
 using System.Threading.Tasks;
-using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
 
-namespace Stormpath.Owin.Middleware
+namespace Stormpath.Owin.Middleware.Internal
 {
     public static class Error
     {

@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Middleware
+namespace Stormpath.Owin.Middleware.Internal
 {
     public static class Constants
     {

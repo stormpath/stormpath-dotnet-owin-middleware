@@ -17,7 +17,6 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
 
 namespace Stormpath.Owin.Middleware.Internal
@@ -26,7 +25,7 @@ namespace Stormpath.Owin.Middleware.Internal
     {
         public static Task Ok(object model, IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            context.Response.Headers.SetString("Content-Type", "application/json;charset=UTF-8");
+            context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
 
             return context.Response.WriteAsync(Serializer.Serialize(model), Encoding.UTF8, cancellationToken);
         }
