@@ -66,7 +66,11 @@ namespace Stormpath.Owin
         {
             // Construct base client
             var baseClient = Clients.Builder()
+#if NET451
+                .SetHttpClient(HttpClients.Create().RestSharpClient())
+#else
                 .SetHttpClient(HttpClients.Create().SystemNetHttpClient())
+#endif
                 .SetSerializer(Serializers.Create().JsonNetSerializer())
                 .SetConfiguration(initialConfiguration)
                 .Build();
