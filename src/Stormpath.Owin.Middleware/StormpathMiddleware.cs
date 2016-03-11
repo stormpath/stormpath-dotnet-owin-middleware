@@ -33,6 +33,7 @@ using Stormpath.SDK.Sync;
 namespace Stormpath.Owin
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using RouteHandler = Func<IClient, Func<IOwinEnvironment, Task>>;
 
     public sealed partial class StormpathMiddleware
     {
@@ -40,6 +41,7 @@ namespace Stormpath.Owin
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
         private readonly IScopedClientFactory clientFactory;
         private readonly StormpathConfiguration configuration;
+        private readonly IReadOnlyDictionary<string, RouteHandler> routingTable;
         private AppFunc next;
 
         private StormpathMiddleware(
@@ -52,6 +54,8 @@ namespace Stormpath.Owin
             this.userAgentBuilder = userAgentBuilder;
             this.clientFactory = clientFactory;
             this.configuration = configuration;
+
+            this.routingTable = this.BuildRoutingTable();
         }
 
         public void Initialize(AppFunc next)
@@ -66,6 +70,24 @@ namespace Stormpath.Owin
                 throw new ArgumentNullException(nameof(next));
             }
 
+            var requestPath = GetRequestPathOrThrow(environment);
+            var routeHandler = GetRouteHandler(requestPath);
+
+            if (routeHandler == null)
+            {
+                return this.next.Invoke(environment);
+            }
+
+            IOwinEnvironment owinContext = new DefaultOwinEnvironment(environment);
+
+            using (var scopedClient = CreateScopedClient(owinContext))
+            {
+                return routeHandler(scopedClient)(owinContext);
+            }
+        }
+
+        private static string GetRequestPathOrThrow(IDictionary<string, object> environment)
+        {
             object requestPathRaw;
 
             if (!environment.TryGetValue(OwinKeys.RequestPath, out requestPathRaw))
@@ -73,17 +95,58 @@ namespace Stormpath.Owin
                 throw new Exception($"Invalid OWIN request. Expected {OwinKeys.RequestPath}, but it was not found.");
             }
 
-            var requestPath = requestPathRaw.ToString();
-            var routeHandler = GetRouteHandler(requestPath);
-
-            return routeHandler == null
-                ? this.next.Invoke(environment)
-                : routeHandler(environment);
+            return requestPathRaw.ToString();
         }
 
-        private Func<IDictionary<string, object>, Task> GetRouteHandler(string requestPath)
+        private RouteHandler GetRouteHandler(string requestPath)
         {
-            return null;
+            RouteHandler handler = null;
+            routingTable.TryGetValue(requestPath, out handler);
+            return handler;
+        }
+
+        private IClient CreateScopedClient(IOwinEnvironment context)
+        {
+            var fullUserAgent = CreateFullUserAgent(context);
+
+            var scopedClientOptions = new ScopedClientOptions()
+            {
+                UserAgent = fullUserAgent
+            };
+
+            return clientFactory.Create(scopedClientOptions);
+        }
+
+        private string CreateFullUserAgent(IOwinEnvironment context)
+        {
+            var callingAgent = string
+                .Join(" ", context.Request.Headers.Get("X-Stormpath-Agent") ?? new string[0])
+                .Trim();
+
+            return string
+                .Join(" ", callingAgent, userAgentBuilder.GetUserAgent())
+                .Trim();
+        }
+
+        private IReadOnlyDictionary<string, RouteHandler> BuildRoutingTable()
+        {
+            var routingTable = new Dictionary<string, RouteHandler>();
+
+            if (this.configuration.Web.Oauth2.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Oauth2.Uri,
+                    client => new Oauth2Route(this.configuration, this.logger, client).Invoke);
+            }
+
+            if (this.configuration.Web.Register.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Register.Uri,
+                    client => new RegisterRoute(this.configuration, this.logger, client).Invoke);
+            }
+
+            return routingTable;
         }
     }
 }

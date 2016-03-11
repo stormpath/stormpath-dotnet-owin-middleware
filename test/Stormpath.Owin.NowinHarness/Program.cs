@@ -56,20 +56,24 @@ namespace Stormpath.Owin.NowinHarness
             });
             app.Use(stormpath);
 
-            var middleware = new Func<AppFunc, AppFunc>(MyMiddleWare);
-            app.Use(middleware);
+            var testMiddleware = new Func<AppFunc, AppFunc>(TestMiddleware);
+            app.Use(testMiddleware);
         }
 
-        public AppFunc MyMiddleWare(AppFunc next)
+        public AppFunc TestMiddleware(AppFunc next)
         {
             return async (IDictionary<string, object> environment) =>
             {
-                // Do something with the incoming request:
-                var response = environment["owin.ResponseBody"] as Stream;
-                using (var writer = new StreamWriter(response))
+                if (environment["owin.RequestPath"] as string == "/foo")
                 {
-                    await writer.WriteAsync("<h1>Hello from My First Middleware</h1>");
+                    // Do something with the incoming request:
+                    var response = environment["owin.ResponseBody"] as Stream;
+                    using (var writer = new StreamWriter(response))
+                    {
+                        await writer.WriteAsync("<h1>Hello from My First Middleware</h1>");
+                    }
                 }
+
                 // Call the next Middleware in the chain:
                 await next.Invoke(environment);
             };

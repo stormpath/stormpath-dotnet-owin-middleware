@@ -35,13 +35,10 @@ namespace Stormpath.Owin.Middleware.Route
         private readonly static string[] SupportedContentTypes = { "application/json" }; // todo
 
         public RegisterRoute(
-            Func<IDictionary<string, object>, Task> next,
             StormpathConfiguration configuration,
             ILogger logger,
-            IScopedClientFactory clientFactory,
-            IFrameworkUserAgentBuilder userAgentBuilder,
-            string path)
-            : base(next, configuration, logger, clientFactory, userAgentBuilder, path, SupportedMethods, SupportedContentTypes)
+            IClient client)
+            : base(configuration, logger, client, SupportedMethods, SupportedContentTypes)
         {
         }
 

@@ -32,67 +32,39 @@ namespace Stormpath.Owin.Middleware.Route
 
     public abstract class AbstractRouteMiddleware
     {
-        private readonly IScopedClientFactory _clientFactory;
-        private readonly string _path;
+        private readonly IClient _client;
         private readonly string[] _supportedMethods;
         private readonly string[] _supportedContentTypes;
 
-        protected readonly AppFunc _next;
         protected readonly ILogger _logger;
         protected readonly StormpathConfiguration _configuration;
-        private readonly IFrameworkUserAgentBuilder _userAgentBuilder;
 
         public AbstractRouteMiddleware(
-            AppFunc next,
             StormpathConfiguration configuration,
             ILogger logger,
-            IScopedClientFactory clientFactory,
-            IFrameworkUserAgentBuilder userAgentBuilder,
-            string path,
+            IClient client,
             IEnumerable<string> supportedMethods,
             IEnumerable<string> supportedContentTypes)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
             if (configuration == null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            if (clientFactory == null)
+            if (client == null)
             {
-                throw new ArgumentNullException(nameof(clientFactory));
+                throw new ArgumentNullException(nameof(client));
             }
 
-            if (userAgentBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(userAgentBuilder));
-            }
-
-            _next = next;
             _logger = logger;
             _configuration = configuration;
-            _userAgentBuilder = userAgentBuilder;
-            _clientFactory = clientFactory;
-            _path = path;
+            _client = client;
             _supportedMethods = supportedMethods.ToArray();
             _supportedContentTypes = supportedContentTypes.ToArray();
         }
 
-        public Task Invoke(IDictionary<string, object> environment)
+        public Task Invoke(IOwinEnvironment owinContext)
         {
-
-
-            IOwinEnvironment owinContext = new DefaultOwinEnvironment(environment);
-
-            if (!IsSupportedPath(owinContext))
-            {
-                return _next.Invoke(environment);
-            }
-
             if (!IsSupportedVerb(owinContext))
             {
                 return Error.Create<MethodNotAllowed>(owinContext);
@@ -105,10 +77,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             _logger.Info($"Stormpath middleware handling request {owinContext.Request.Path}");
 
-            using (var scopedClient = CreateScopedClient(owinContext))
-            {
-                return Dispatch(owinContext, scopedClient, owinContext.CancellationToken);
-            }
+            return Dispatch(owinContext, _client, owinContext.CancellationToken);
         }
 
         private bool IsSupportedVerb(IOwinEnvironment context)
@@ -116,32 +85,6 @@ namespace Stormpath.Owin.Middleware.Route
 
         private bool HasSupportedAccept(IOwinEnvironment context)
             => true; //todo
-
-        private bool IsSupportedPath(IOwinEnvironment context)
-            => context.Request.Path.StartsWith(_path, StringComparison.OrdinalIgnoreCase);
-
-        private IClient CreateScopedClient(IOwinEnvironment context)
-        {
-            var fullUserAgent = CreateFullUserAgent(context);
-
-            var scopedClientOptions = new ScopedClientOptions()
-            {
-                UserAgent = fullUserAgent
-            };
-
-            return _clientFactory.Create(scopedClientOptions);
-        }
-
-        private string CreateFullUserAgent(IOwinEnvironment context)
-        {
-            var callingAgent = string
-                .Join(" ", context.Request.Headers.Get("X-Stormpath-Agent") ?? new string[0])
-                .Trim();
-
-            return string
-                .Join(" ", callingAgent, _userAgentBuilder.GetUserAgent())
-                .Trim();
-        }
 
         private string SelectBestContentType(IEnumerable<string> acceptedContentTypes)
         {

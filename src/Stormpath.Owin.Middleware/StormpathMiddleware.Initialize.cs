@@ -30,6 +30,8 @@ using Stormpath.SDK.Sync;
 
 namespace Stormpath.Owin
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public sealed partial class StormpathMiddleware
     {
         public static StormpathMiddleware Create(object configuration = null, ILogger logger = null)
