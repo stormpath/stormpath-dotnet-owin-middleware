@@ -1,0 +1,30 @@
+{
+  "authors": [ "Nate Barbettini" ],
+  "commands": {
+    "Stormpath.Owin.NowinHarness": "Stormpath.Owin.NowinHarness"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "copyright": "(c) 2016 Stormpath, Inc.",
+  "dependencies": {
+    "Microsoft.Owin.Hosting": "3.0.1",
+    "Nowin": "0.22.2",
+    "Stormpath.Owin.Middleware": "0.1.0"
+  },
+  "description": "Nowin test harness for Stormpath.Owin.Middleware",
+  "frameworks": {
+    "dnx451": { }
+  },
+  "language": "en-US",
+  "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
+  "owners": [ "Stormpath, Inc." ],
+  "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
+  "repository": {
+    "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
+  },
+  "tooling": {
+    "defaultNamespace": "Stormpath.Owin.NowinHarness"
+  },
+  "version": "0.1.0"
+}

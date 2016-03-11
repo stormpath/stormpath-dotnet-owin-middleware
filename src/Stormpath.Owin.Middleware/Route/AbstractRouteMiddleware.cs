@@ -25,10 +25,11 @@ using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
-using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 namespace Stormpath.Owin.Middleware.Route
 {
+    using AppFunc = Func<IDictionary<string, object>, Task>;
+
     public abstract class AbstractRouteMiddleware
     {
         private readonly IScopedClientFactory _clientFactory;
@@ -61,11 +62,6 @@ namespace Stormpath.Owin.Middleware.Route
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             if (clientFactory == null)
             {
                 throw new ArgumentNullException(nameof(clientFactory));
@@ -88,10 +84,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         public Task Invoke(IDictionary<string, object> environment)
         {
-            if (!environment.ContainsKey(OwinKeys.RequestPath))
-            {
-                throw new Exception($"Invalid OWIN request. Expected {OwinKeys.RequestPath}, but it was not found.");
-            }
+
 
             IOwinEnvironment owinContext = new DefaultOwinEnvironment(environment);
 

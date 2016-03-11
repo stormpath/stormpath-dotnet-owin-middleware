@@ -26,7 +26,6 @@ using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
-using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -36,7 +35,7 @@ namespace Stormpath.Owin.Middleware.Route
         private readonly static string[] SupportedContentTypes = { "application/json" }; // todo
 
         public RegisterRoute(
-            AppFunc next,
+            Func<IDictionary<string, object>, Task> next,
             StormpathConfiguration configuration,
             ILogger logger,
             IScopedClientFactory clientFactory,
