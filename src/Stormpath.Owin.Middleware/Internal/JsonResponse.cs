@@ -21,7 +21,7 @@ using Stormpath.Owin.Middleware.Owin;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
-    public static class Response
+    public static class JsonResponse
     {
         public static Task Ok(object model, IOwinEnvironment context, CancellationToken cancellationToken)
         {

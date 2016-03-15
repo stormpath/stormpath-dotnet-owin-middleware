@@ -19,5 +19,7 @@ namespace Stormpath.Owin.Middleware.Internal
     public static class Constants
     {
         public static readonly string JsonContentType = "application/json;charset=UTF-8";
+
+        public static readonly string HtmlContentType = "text/html;charset=UTF-8";
     }
 }
