@@ -146,6 +146,13 @@ namespace Stormpath.Owin
                     client => new RegisterRoute(this.configuration, this.logger, client).Invoke);
             }
 
+            if (this.configuration.Web.Login.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Login.Uri,
+                    client => new LoginRoute(this.configuration, this.logger, client).Invoke);
+            }
+
             return routingTable;
         }
     }
