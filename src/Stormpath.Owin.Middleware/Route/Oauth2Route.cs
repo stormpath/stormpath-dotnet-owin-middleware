@@ -48,7 +48,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             if (!context.Request.Headers.GetString("Content-Type").StartsWith("application/x-www-form-urlencoded"))
             {
-                await Error.Create<OauthInvalidRequest>(context);
+                await Error.Create<OauthInvalidRequest>(context, cancellationToken);
                 return;
             }
 
@@ -60,7 +60,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (string.IsNullOrEmpty(requestBody))
             {
-                await Error.Create<OauthInvalidRequest>(context);
+                await Error.Create<OauthInvalidRequest>(context, cancellationToken);
                 return;
             }
 
@@ -72,7 +72,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (string.IsNullOrEmpty(grantType))
             {
-                await Error.Create<OauthInvalidRequest>(context);
+                await Error.Create<OauthInvalidRequest>(context, cancellationToken);
                 return;
             }
 
@@ -88,7 +88,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             else
             {
-                await Error.Create<OauthUnsupportedGrant>(context);
+                await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);
                 return;
             }
         }

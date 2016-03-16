@@ -61,9 +61,13 @@ namespace Stormpath.Owin.Middleware.Internal
 
             foreach (var contentType in acceptedContentTypes)
             {
-                if (supportedContentTypes.Contains(contentType.Trim()))
+                var supportedContentType = supportedContentTypes
+                    .Where(s => s.Contains(contentType.Trim()))
+                    .FirstOrDefault();
+
+                if (!string.IsNullOrEmpty(supportedContentType))
                 {
-                    return contentType;
+                    return supportedContentType;
                 }
             }
 

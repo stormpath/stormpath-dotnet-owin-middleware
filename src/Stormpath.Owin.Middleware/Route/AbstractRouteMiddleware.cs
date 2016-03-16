@@ -28,6 +28,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
+    using SDK.Error;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public abstract class AbstractRouteMiddleware
@@ -63,21 +64,49 @@ namespace Stormpath.Owin.Middleware.Route
             _supportedContentTypes = supportedContentTypes.ToArray();
         }
 
-        public Task Invoke(IOwinEnvironment owinContext)
+        public async Task Invoke(IOwinEnvironment owinContext)
         {
             if (!IsSupportedVerb(owinContext))
             {
-                return Error.Create<MethodNotAllowed>(owinContext);
+                await Error.Create<MethodNotAllowed>(owinContext, owinContext.CancellationToken);
+                return;
             }
 
             if (!HasSupportedAccept(owinContext))
             {
-                return Error.Create<NotAcceptable>(owinContext);
+                await Error.Create<NotAcceptable>(owinContext, owinContext.CancellationToken);
+                return;
             }
 
             _logger.Info($"Stormpath middleware handling request {owinContext.Request.Path}");
 
-            return Dispatch(owinContext, _client, owinContext.CancellationToken);
+            var targetContentType = ContentNegotiation.SelectBestContentType(owinContext, _supportedContentTypes);
+
+            try
+            {
+                await Dispatch(owinContext, _client, targetContentType, owinContext.CancellationToken);
+                return;
+            }
+            catch (ResourceException rex)
+            {
+                if (targetContentType == "application/json")
+                {
+                    // Sanitize Stormpath API errors
+                    await Error.CreateFromApiError(owinContext, rex, owinContext.CancellationToken);
+                    return;
+                }
+                else
+                {
+                    // todo
+                    throw;
+                }
+            }
+            catch(Exception ex)
+            {
+                // Sanitize framework-level errors
+                // todo
+                throw;
+            }
         }
 
         private bool IsSupportedVerb(IOwinEnvironment context)
@@ -86,10 +115,9 @@ namespace Stormpath.Owin.Middleware.Route
         private bool HasSupportedAccept(IOwinEnvironment context)
             => true; //todo
 
-        private Task Dispatch(IOwinEnvironment context, IClient scopedClient, CancellationToken cancellationToken)
+        private Task Dispatch(IOwinEnvironment context, IClient scopedClient, string targetContentType, CancellationToken cancellationToken)
         {
             var method = context.Request.Method;
-            var targetContentType = ContentNegotiation.SelectBestContentType(context, _supportedContentTypes);
 
             if (targetContentType == "application/json")
             {

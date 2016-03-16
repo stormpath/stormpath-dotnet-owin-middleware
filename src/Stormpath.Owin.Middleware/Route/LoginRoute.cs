@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
+using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Owin.Middleware.ViewModel;
 using Stormpath.SDK;
@@ -64,9 +65,10 @@ namespace Stormpath.Owin.Middleware.Route
             var usernameOrEmail = body?.Login;
             var password = body?.Password;
 
-            if (string.IsNullOrEmpty(usernameOrEmail))
+            if (string.IsNullOrEmpty(usernameOrEmail) || string.IsNullOrEmpty(password))
             {
-                usernameOrEmail = "UNKONWN"; // a bad workaround until the SDK can accept a null value
+                await Error.Create(context, new BadRequest("Missing login or password."), cancellationToken);
+                return;
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);

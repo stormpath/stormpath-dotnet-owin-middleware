@@ -15,29 +15,31 @@
 // </copyright>
 
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
+using Stormpath.SDK.Error;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     public static class Error
     {
-        public static Task Create<T>(IOwinEnvironment context)
+        public static Task Create<T>(IOwinEnvironment context, CancellationToken cancellationToken)
             where T : AbstractError, new()
         {
             var instance = new T();
 
-            return Create(context, instance);
+            return Create(context, instance, cancellationToken);
         }
 
-        public static Task Create(IOwinEnvironment context, AbstractError error)
+        public static Task Create(IOwinEnvironment context, AbstractError error, CancellationToken cancellationToken)
         {
             context.Response.StatusCode = error.StatusCode;
 
             if (error.Body != null)
             {
-                context.Response.Headers.SetString("Content-Type", "application/json;charset=UTF-8");
+                context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
                 context.Response.Headers.SetString("Cache-Control", "no-store");
                 context.Response.Headers.SetString("Pragma", "no-cache");
 
@@ -47,6 +49,22 @@ namespace Stormpath.Owin.Middleware.Internal
             {
                 return Task.FromResult(0);
             }
+        }
+
+        public static Task CreateFromApiError(IOwinEnvironment context, ResourceException rex, CancellationToken cancellationToken)
+        {
+            context.Response.StatusCode = rex.HttpStatus;
+            context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
+            context.Response.Headers.SetString("Cache-Control", "no-store");
+            context.Response.Headers.SetString("Pragma", "no-cache");
+
+            var errorModel = new
+            {
+                status = rex.HttpStatus,
+                message = rex.Message
+            };
+
+            return context.Response.WriteAsync(Serializer.Serialize(errorModel), Encoding.UTF8, cancellationToken);
         }
     }
 }
