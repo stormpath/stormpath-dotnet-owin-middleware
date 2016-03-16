@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
+using Stormpath.Owin.Middleware.ViewModel;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
 
@@ -48,7 +50,34 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            return JsonResponse.Ok(new { hello = "world" }, context, cancellationToken);
+            var loginViewModel = BuildViewModel();
+
+            return JsonResponse.Ok(loginViewModel, context, cancellationToken);
+        }
+
+        private LoginViewModel BuildViewModel()
+        {
+            var result = new LoginViewModel();
+
+            foreach (var fieldName in _configuration.Web.Login.Form.FieldOrder)
+            {
+                Configuration.Abstractions.Model.WebFieldConfiguration field = null;
+                if (!_configuration.Web.Login.Form.Fields.TryGetValue(fieldName, out field))
+                {
+                    throw new Exception($"Invalid field '{fieldName}' in fieldOrder list.");
+                }
+
+                result.Form.Fields.Add(new LoginFormFieldViewModel()
+                {
+                    Label = field.Label,
+                    Name = fieldName,
+                    Placeholder = field.Placeholder,
+                    Required = field.Required,
+                    Type = field.Type
+                });
+            }
+
+            return result;
         }
     }
 }
