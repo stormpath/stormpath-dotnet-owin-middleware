@@ -14,8 +14,11 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
 
 namespace Stormpath.Owin.Middleware.Owin
@@ -46,5 +49,19 @@ namespace Stormpath.Owin.Middleware.Owin
         
         public string QueryString
             => environment.Get<string>(OwinKeys.RequestQueryString);
+
+        public async Task<T> GetBodyAsAsync<T>(CancellationToken cancellationToken)
+            where T : new()
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var bodyAsString = string.Empty;
+            using (var reader = new StreamReader(this.Body))
+            {
+                bodyAsString = await reader.ReadToEndAsync();
+            }
+
+            return Serializer.Deserialize<T>(bodyAsString);
+        }
     }
 }

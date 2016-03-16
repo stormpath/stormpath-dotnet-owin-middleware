@@ -63,6 +63,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var givenName = postData.GetOrNull("givenName")?.ToString() ?? "UNKNOWN";
+            var middleName = postData.GetOrNull("middleName")?.ToString();
             var surname = postData.GetOrNull("surname")?.ToString() ?? "UNKNOWN";
             var username = postData.GetOrNull("username")?.ToString();
 
@@ -77,6 +78,11 @@ namespace Stormpath.Owin.Middleware.Route
             if (!string.IsNullOrEmpty(username))
             {
                 newAccount.SetUsername(username);
+            }
+
+            if (!string.IsNullOrEmpty(middleName))
+            {
+                newAccount.SetMiddleName(middleName);
             }
 
             await application.CreateAccountAsync(newAccount, cancellationToken);

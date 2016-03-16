@@ -1,4 +1,4 @@
-﻿// <copyright file="IOwinRequest.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LoginSuccessfulViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +14,10 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Stormpath.Owin.Middleware.Owin
+namespace Stormpath.Owin.Middleware.ViewModel
 {
-    public interface IOwinRequest
+    public class LoginSuccessfulViewModel
     {
-        Stream Body { get; }
-        string Method { get; }
-        string Path { get; }
-        string PathBase { get; }
-        string QueryString { get; }
-        IDictionary<string, string[]> Headers { get; }
-
-        Task<T> GetBodyAsAsync<T>(CancellationToken cancellationToken) where T : new();
+        public AccountViewModel Account { get; set; } 
     }
 }

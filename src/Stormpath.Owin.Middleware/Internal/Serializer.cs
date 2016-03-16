@@ -31,5 +31,10 @@ namespace Stormpath.Owin.Middleware.Internal
             var serialized = JsonConvert.SerializeObject(@obj, Formatting.Indented, settings);
             return serialized; // todo one line
         }
+
+        public static T Deserialize<T>(string json)
+        {
+            return JsonConvert.DeserializeObject<T>(json);
+        }
     }
 }
