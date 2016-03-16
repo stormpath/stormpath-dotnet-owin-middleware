@@ -80,7 +80,13 @@ namespace Stormpath.Owin
 
             IOwinEnvironment owinContext = new DefaultOwinEnvironment(environment);
 
-            using (var scopedClient = CreateScopedClient(owinContext))
+            if (!ContentNegotiation.IsSupportedByConfiguration(owinContext, this.configuration))
+            {
+                owinContext.Response.StatusCode = 406;
+                return Task.FromResult(0);
+            }
+
+            using (var scopedClient = this.CreateScopedClient(owinContext))
             {
                 return routeHandler(scopedClient)(owinContext);
             }

@@ -86,24 +86,10 @@ namespace Stormpath.Owin.Middleware.Route
         private bool HasSupportedAccept(IOwinEnvironment context)
             => true; //todo
 
-        private string SelectBestContentType(IEnumerable<string> acceptedContentTypes)
-        {
-            // todo - spec-compliant content-type negotiation
-            foreach (var contentType in acceptedContentTypes)
-            {
-                if (_supportedContentTypes.Contains(contentType))
-                {
-                    return contentType;
-                }
-            }
-
-            return _supportedContentTypes.First();
-        }
-
         private Task Dispatch(IOwinEnvironment context, IClient scopedClient, CancellationToken cancellationToken)
         {
             var method = context.Request.Method;
-            var targetContentType = SelectBestContentType(context.Request.Headers.Get("Accept"));
+            var targetContentType = ContentNegotiation.SelectBestContentType(context, _supportedContentTypes);
 
             if (targetContentType == "application/json")
             {
