@@ -1,0 +1,10 @@
+﻿@model Stormpath.Owin.Common.ViewModel.LoginViewModel
+
+@functions {
+    /*ignore*/private Stormpath.Owin.Common.ViewModel.LoginViewModel Model { get; }
+}
+
+@foreach (var field in Model.Form.Fields)
+{
+    <p>@field.Name</p>
+}

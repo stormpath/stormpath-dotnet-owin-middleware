@@ -23,7 +23,7 @@ using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
-using Stormpath.Owin.Middleware.ViewModel;
+using Stormpath.Owin.Common.ViewModel;
 using Stormpath.SDK;
 using Stormpath.SDK.Auth;
 using Stormpath.SDK.Client;
@@ -49,7 +49,10 @@ namespace Stormpath.Owin.Middleware.Route
             // todo
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
-            return context.Response.WriteAsync("Hello world", Encoding.UTF8, cancellationToken);
+            var loginViewModel = BuildViewModel();
+
+            var loginView = new Common.View.Login();
+            return loginView.ExecuteAsync(loginViewModel, context.Response.Body);
         }
 
         protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)

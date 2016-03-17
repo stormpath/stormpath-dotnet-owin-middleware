@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginSuccessfulViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LoginViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +14,14 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Middleware.ViewModel
+using System.Collections.Generic;
+
+namespace Stormpath.Owin.Common.ViewModel
 {
-    public class LoginSuccessfulViewModel
+    public class LoginViewModel
     {
-        public AccountViewModel Account { get; set; } 
+        public LoginFormViewModel Form { get; set; } = new LoginFormViewModel();
+
+        public List<LoginAccountStoreViewModel> AccountStores { get; set; } = new List<LoginAccountStoreViewModel>();
     }
 }

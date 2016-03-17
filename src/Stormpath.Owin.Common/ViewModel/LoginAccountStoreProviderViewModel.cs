@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginFormViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LoginAccountStoreProviderViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +14,16 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-
-namespace Stormpath.Owin.Middleware.ViewModel
+namespace Stormpath.Owin.Common.ViewModel
 {
-    public class LoginFormViewModel
+    public class LoginAccountStoreProviderViewModel
     {
-        public List<LoginFormFieldViewModel> Fields { get; set; } = new List<LoginFormFieldViewModel>();
+        public string Href { get; set; }
+
+        public string ProviderId { get; set; }
+
+        public string ClientId { get; set; }
+
+        public string Scope { get; set; }
     }
 }

@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Middleware.ViewModel
+namespace Stormpath.Owin.Common.ViewModel
 {
     public class LoginFormFieldViewModel
     {
