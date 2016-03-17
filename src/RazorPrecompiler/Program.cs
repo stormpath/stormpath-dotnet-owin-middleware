@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 
@@ -18,7 +19,7 @@ namespace PageGenerator
         {
             if (args.Length != NumArgs)
             {
-                throw new ArgumentException(string.Format("Requires {0} argument (Namespace, Default Base Class, Views Directory), {1} given", NumArgs, args.Length));
+                throw new ArgumentException(string.Format("Requires {0} argument (Namespace, Base Class, Views Directory), {1} given", NumArgs, args.Length));
             }
             var @namespace = args[0];
             var defaultBaseClass = args[1];
@@ -63,7 +64,7 @@ namespace PageGenerator
             var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName);
             var codeLang = new CSharpRazorCodeLanguage();
             var host = new RazorEngineHost(codeLang);
-            host.DefaultBaseClass = defaultBaseClass;
+            
             host.GeneratedClassContext = new GeneratedClassContext(
                 executeMethodName: GeneratedClassContext.DefaultExecuteMethodName,
                 writeMethodName: GeneratedClassContext.DefaultWriteMethodName,
@@ -75,18 +76,73 @@ namespace PageGenerator
                 generatedTagHelperContext: new GeneratedTagHelperContext());
             var engine = new RazorTemplateEngine(host);
 
+            var source = File.ReadAllText(cshtmlFilePath);
+
+            var modelType = GetModelType(source);
+            if (!string.IsNullOrEmpty(modelType))
+            {
+                host.DefaultBaseClass = $"{defaultBaseClass}<{modelType}>"; // BaseClass<T>
+            }
+            else
+            {
+                host.DefaultBaseClass = defaultBaseClass;
+            }
+
+            source = RemoveAnnotations(source);
+
             using (var fileStream = File.OpenText(cshtmlFilePath))
             {
                 var code = engine.GenerateCode(
-                    input: fileStream,
+                    input: new StringReader(source),
                     className: fileNameNoExtension,
-                    rootNamespace: Path.GetFileName(rootNamespace),
+                    rootNamespace: rootNamespace,
                     sourceFileName: fileName);
 
-                var source = code.GeneratedCode;
-                source = InlineIncludedFiles(basePath, source);
-                File.WriteAllText(Path.Combine(basePath, string.Format("{0}.cs", fileNameNoExtension)), source);
+                var output = code.GeneratedCode;
+                output = InlineIncludedFiles(basePath, output);
+                File.WriteAllText(Path.Combine(basePath, string.Format("{0}.cs", fileNameNoExtension)), output);
             }
+        }
+
+        private static string GetModelType(string source)
+        {
+            var firstLine = source.Substring(0, source.IndexOf(Environment.NewLine));
+
+            if (!firstLine.StartsWith("@model ", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            var modelType = firstLine.Substring(7);
+            return modelType;
+        }
+
+        private static string RemoveAnnotations(string source)
+        {
+            var removeLinesStartingWith = new string[]
+            {
+                "/*ignore*/",
+                "@model"
+            };
+
+            var removeBlocks = new string[]
+            {
+                $"@functions {{{Environment.NewLine}}}"
+            };
+
+            var builder = new StringBuilder();
+
+            var removedAnnotatedLines = source
+                .Split(new string[] { Environment.NewLine }, StringSplitOptions.None)
+                .Where(line => removeLinesStartingWith.All(s => !line.Trim().StartsWith(s)))
+                .Aggregate(builder, (b, s) => b.AppendLine(s))
+                .ToString();
+
+            var removedBlocks = removeBlocks
+                .Aggregate(removedAnnotatedLines, (working, @this) => working.Replace(@this, string.Empty))
+                .Trim();
+
+            return removedBlocks;
         }
 
         private static string InlineIncludedFiles(string basePath, string source)

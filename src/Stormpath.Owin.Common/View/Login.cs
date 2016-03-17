@@ -2,12 +2,8 @@ namespace Stormpath.Owin.Common.View
 {
     using System.Threading.Tasks;
 
-    public class Login : StormpathBaseView<ViewModel.LoginViewModel>
+    public class Login : StormpathBaseView<Stormpath.Owin.Common.ViewModel.LoginViewModel>
     {
-#line 1 "Login.cshtml"
-
-#line default
-#line hidden
         #line hidden
         public Login()
         {
@@ -16,8 +12,7 @@ namespace Stormpath.Owin.Common.View
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            WriteLiteral("\r\n");
-#line 5 "Login.cshtml"
+#line 1 "Login.cshtml"
  foreach (var field in Model.Form.Fields)
 {
 
@@ -25,13 +20,13 @@ namespace Stormpath.Owin.Common.View
 #line hidden
 
             WriteLiteral("    <p>");
-#line 7 "Login.cshtml"
+#line 3 "Login.cshtml"
   Write(field.Name);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n");
-#line 8 "Login.cshtml"
+#line 4 "Login.cshtml"
 }
 
 #line default
