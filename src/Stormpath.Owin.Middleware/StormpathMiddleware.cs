@@ -182,6 +182,16 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
+            if (this.configuration.Web.Me.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Me.Uri,
+                    new RouteHandler(
+                        authenticationRequired: true,
+                        handler: client => new MeRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
             return routingTable;
         }
     }
