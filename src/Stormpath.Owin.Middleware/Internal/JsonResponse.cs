@@ -15,7 +15,6 @@
 // </copyright>
 
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Owin;
 
@@ -23,11 +22,24 @@ namespace Stormpath.Owin.Middleware.Internal
 {
     public static class JsonResponse
     {
-        public static Task Ok(object model, IOwinEnvironment context, CancellationToken cancellationToken)
+        public static Task Ok(IOwinEnvironment context, object model)
         {
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
 
-            return context.Response.WriteAsync(Serializer.Serialize(model), Encoding.UTF8, cancellationToken);
+            return context.Response.WriteAsync(Serializer.Serialize(model), Encoding.UTF8, context.CancellationToken);
+        }
+
+        public static Task Unauthorized(IOwinEnvironment context, object model = null)
+        {
+            context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
+            context.Response.StatusCode = 401;
+
+            if (model != null)
+            {
+                return context.Response.WriteAsync(Serializer.Serialize(model), Encoding.UTF8, context.CancellationToken);
+            }
+
+            return Task.FromResult(0);
         }
     }
 }

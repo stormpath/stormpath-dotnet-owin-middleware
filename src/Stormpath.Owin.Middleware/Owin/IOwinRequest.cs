@@ -23,12 +23,15 @@ namespace Stormpath.Owin.Middleware.Owin
 {
     public interface IOwinRequest
     {
+        string Scheme { get; }
         Stream Body { get; }
         string Method { get; }
         string Path { get; }
         string PathBase { get; }
         string QueryString { get; }
+        string OriginalUri { get; }
         IDictionary<string, string[]> Headers { get; }
+        object this[string key] { get; set; }
 
         Task<T> GetBodyAsAsync<T>(CancellationToken cancellationToken) where T : new();
     }

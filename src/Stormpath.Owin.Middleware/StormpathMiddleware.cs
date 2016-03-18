@@ -63,45 +63,51 @@ namespace Stormpath.Owin
             this.next = next;
         }
 
-        public Task Invoke(IDictionary<string, object> environment)
+        public async Task Invoke(IDictionary<string, object> environment)
         {
             if (this.next == null)
             {
                 throw new ArgumentNullException(nameof(next));
             }
 
-            var requestPath = GetRequestPathOrThrow(environment);
-            var routeHandler = GetRouteHandler(requestPath);
+            AddStormpathVariablesToEnvironment(environment);
 
-            if (routeHandler == null)
+            IOwinEnvironment context = new DefaultOwinEnvironment(environment);
+
+            using (var scopedClient = this.CreateScopedClient(context))
             {
-                return this.next.Invoke(environment);
-            }
+                await GetUserAsync(context, scopedClient);
 
-            IOwinEnvironment owinContext = new DefaultOwinEnvironment(environment);
+                var requestPath = GetRequestPathOrThrow(context);
+                var routeHandler = GetRouteHandler(requestPath);
 
-            if (!ContentNegotiation.IsSupportedByConfiguration(owinContext, this.configuration))
-            {
-                owinContext.Response.StatusCode = 406;
-                return Task.FromResult(0);
-            }
+                if (routeHandler == null)
+                {
+                    await this.next.Invoke(environment);
+                    return;
+                }
 
-            using (var scopedClient = this.CreateScopedClient(owinContext))
-            {
-                return routeHandler(scopedClient)(owinContext);
+                if (!ContentNegotiation.IsSupportedByConfiguration(context, this.configuration))
+                {
+                    context.Response.StatusCode = 406;
+                    return;
+                }
+
+                await routeHandler(scopedClient)(context);
+                return;
             }
         }
 
-        private static string GetRequestPathOrThrow(IDictionary<string, object> environment)
+        private static string GetRequestPathOrThrow(IOwinEnvironment context)
         {
-            object requestPathRaw;
+            var requestPath = context.Request.Path;
 
-            if (!environment.TryGetValue(OwinKeys.RequestPath, out requestPathRaw))
+            if (string.IsNullOrEmpty(requestPath))
             {
                 throw new Exception($"Invalid OWIN request. Expected {OwinKeys.RequestPath}, but it was not found.");
             }
 
-            return requestPathRaw.ToString();
+            return requestPath;
         }
 
         private RouteHandler GetRouteHandler(string requestPath)
@@ -109,6 +115,11 @@ namespace Stormpath.Owin
             RouteHandler handler = null;
             routingTable.TryGetValue(requestPath, out handler);
             return handler;
+        }
+
+        private void AddStormpathVariablesToEnvironment(IDictionary<string, object> environment)
+        {
+            environment[OwinKeys.StormpathLoginUri] = this.configuration.Web.Login.Uri;
         }
 
         private IClient CreateScopedClient(IOwinEnvironment context)

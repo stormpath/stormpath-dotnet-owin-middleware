@@ -113,7 +113,7 @@ namespace Stormpath.Owin.Middleware.Route
             var sanitizer = new ResponseSanitizer<IOauthGrantAuthenticationResult>();
             var responseModel = sanitizer.Sanitize(tokenResult);
 
-            await JsonResponse.Ok(responseModel, context, cancellationToken);
+            await JsonResponse.Ok(context, responseModel);
         }
     }
 }

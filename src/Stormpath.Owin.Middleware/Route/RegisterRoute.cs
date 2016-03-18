@@ -93,7 +93,7 @@ namespace Stormpath.Owin.Middleware.Route
                 account = sanitizer.Sanitize(newAccount)
             };
 
-            await JsonResponse.Ok(responseModel, context, cancellationToken);
+            await JsonResponse.Ok(context, responseModel);
         }
     }
 }

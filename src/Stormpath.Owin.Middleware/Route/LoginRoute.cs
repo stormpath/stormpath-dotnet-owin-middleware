@@ -59,7 +59,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var loginViewModel = BuildViewModel();
 
-            return JsonResponse.Ok(loginViewModel, context, cancellationToken);
+            return JsonResponse.Ok(context, loginViewModel);
         }
 
         protected override async Task PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -105,7 +105,7 @@ namespace Stormpath.Owin.Middleware.Route
                 }
             };
 
-            await JsonResponse.Ok(viewModel, context, cancellationToken);
+            await JsonResponse.Ok(context, viewModel);
             return;
         }
 

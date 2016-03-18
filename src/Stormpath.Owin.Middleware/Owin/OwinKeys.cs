@@ -39,7 +39,7 @@ namespace Stormpath.Owin.Middleware.Owin
 
         public static readonly string RequestUser = "owin.RequestUser";
 
-        public static readonly string RequestUserOld = "server.User";
+        public static readonly string RequestUserLegacy = "server.User";
 
         public static readonly string ResponseBody = "owin.ResponseBody";
 
@@ -52,5 +52,9 @@ namespace Stormpath.Owin.Middleware.Owin
         public static readonly string ResponseProtocol = "owin.ResponseProtocol";
 
         public static readonly string CallCancelled = "owin.CallCancelled";
+
+        public static readonly string StormpathUser = "Stormpath.User";
+
+        public static readonly string StormpathLoginUri = "Stormpath.LoginUri";
     }
 }

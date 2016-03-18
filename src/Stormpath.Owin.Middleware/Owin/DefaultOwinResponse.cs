@@ -58,6 +58,12 @@ namespace Stormpath.Owin.Middleware.Owin
             set { environment.SetOrRemove(OwinKeys.ResponseReasonPhrase, value); }
         }
 
+        public object this[string key]
+        {
+            get { return environment.Get(key); }
+            set { environment[key] = value; }
+        }
+
         public Task WriteAsync(string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (text == null)

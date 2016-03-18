@@ -76,6 +76,22 @@ namespace Stormpath.Owin.Middleware.Internal
             return collection;
         }
 
+        public static IDictionary<string, string[]> AddString(this IDictionary<string, string[]> collection, string name, string value)
+        {
+            var newContents = new List<string>();
+
+            string[] existing;
+            if (collection.TryGetValue(name, out existing))
+            {
+                newContents.AddRange(existing);
+            }
+
+            newContents.Add(value);
+
+            collection[name] = newContents.ToArray();
+            return collection;
+        }
+
         public static void SetOrRemove<T>(this IDictionary<string, object> environment, string key, T value)
         {
             if (Equals(value, default(T)))

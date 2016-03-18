@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -31,6 +30,9 @@ namespace Stormpath.Owin.Middleware.Owin
         {
             this.environment = owinEnvironment;
         }
+
+        public string Scheme
+            => environment.Get<string>(OwinKeys.RequestScheme);
 
         public Stream Body
             => environment.Get<Stream>(OwinKeys.RequestBody);
@@ -49,6 +51,29 @@ namespace Stormpath.Owin.Middleware.Owin
         
         public string QueryString
             => environment.Get<string>(OwinKeys.RequestQueryString);
+
+        /// <summary>
+        /// Reconstructs the original request URI, minus the scheme and host.
+        /// </summary>
+        public string OriginalUri
+        {
+            get
+            {
+                var uri = $"{PathBase}{Path}";
+                if (!string.IsNullOrEmpty(QueryString))
+                {
+                    uri += "?" + QueryString;
+                }
+
+                return uri;
+            }
+        }
+
+        public object this[string key]
+        {
+            get { return environment.Get(key); }
+            set { environment[key] = value; }
+        }
 
         public async Task<T> GetBodyAsAsync<T>(CancellationToken cancellationToken)
             where T : new()

@@ -47,9 +47,20 @@ namespace Stormpath.Owin.Middleware.Internal
 
         public static string SelectBestContentType(IOwinEnvironment context, IEnumerable<string> supportedContentTypes)
         {
-            // TODO might need to be smarter about parsing the acceptedContentTypes
-
             var acceptHeader = context.Request.Headers.GetString("Accept");
+            return SelectBestContentType(acceptHeader, supportedContentTypes);
+        }
+
+        public static string SelectBestContentType(IDictionary<string, object> environment, IEnumerable<string> supportedContentTypes)
+        {
+            var headerCollection = environment[OwinKeys.RequestHeaders] as IDictionary<string, string[]>;
+            var acceptHeader = headerCollection.GetString("Accept");
+            return SelectBestContentType(acceptHeader, supportedContentTypes);
+        }
+
+        public static string SelectBestContentType(string acceptHeader, IEnumerable<string> supportedContentTypes)
+        {
+            // TODO might need to be smarter about parsing the acceptedContentTypes
 
             bool acceptAny = string.IsNullOrEmpty(acceptHeader) || acceptHeader.Equals("*/*");
             if (acceptAny)

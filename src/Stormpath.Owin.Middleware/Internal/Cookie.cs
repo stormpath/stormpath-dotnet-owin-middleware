@@ -1,4 +1,4 @@
-﻿// <copyright file="IOwinResponse.cs" company="Stormpath, Inc.">
+﻿// <copyright file="Cookie.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,22 +14,16 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System;
+using System.Globalization;
 
-namespace Stormpath.Owin.Middleware.Owin
+namespace Stormpath.Owin.Middleware.Internal
 {
-    public interface IOwinResponse
+    public static class Cookie
     {
-        Stream Body { get; set; }
-        IDictionary<string, string[]> Headers { get; }
-        string ReasonPhrase { set; }
-        int StatusCode { set; }
-        object this[string key] { get; set; }
+        public static string DateFormat = "ddd, dd-MMM-yyyy HH:mm:ss"; // + GMT
 
-        Task WriteAsync(string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken));
+        public static string FormatDate(DateTimeOffset dateTimeOffset)
+            => $"{dateTimeOffset.UtcDateTime.ToString(DateFormat, CultureInfo.InvariantCulture)} GMT";
     }
 }
