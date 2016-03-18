@@ -49,7 +49,7 @@ namespace Stormpath.Owin.Middleware.Route
             // todo
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
-            var loginViewModel = BuildViewModel();
+            var loginViewModel = BuildExtendedViewModel();
 
             var loginView = new Common.View.Login();
             return loginView.ExecuteAsync(loginViewModel, context.Response.Body);
@@ -130,6 +130,22 @@ namespace Stormpath.Owin.Middleware.Route
                     Type = field.Type
                 });
             }
+
+            return result;
+        }
+
+        private LoginViewModelExtended BuildExtendedViewModel()
+        {
+            var result = new LoginViewModelExtended(BuildViewModel());
+
+            result.DisplayUsernameOrEmail = _configuration.Web.Register.Form.Fields.Get("username")?.Enabled ?? false;
+            result.ForgotPasswordEnabled = _configuration.Web.ForgotPassword.Enabled ?? false; // TODO handle null values here
+            result.ForgotPasswordUri = _configuration.Web.ForgotPassword.Uri;
+            //result.FormData - set to previous result
+            result.RegistrationEnabled = _configuration.Web.Register.Enabled ?? false;
+            //result.Status - set to querystring param
+            result.VerifyEmailEnabled = _configuration.Web.VerifyEmail.Enabled ?? false; // TODO handle null values here
+            result.VerifyEmailUri = _configuration.Web.VerifyEmail.Uri;
 
             return result;
         }

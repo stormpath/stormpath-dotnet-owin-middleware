@@ -35,6 +35,14 @@ namespace Stormpath.Owin.Middleware.Internal
                 : default(TValue);
         }
 
+        public static TValue Get<TValue>(this IReadOnlyDictionary<string, TValue> source, string key)
+        {
+            TValue value;
+            return source.TryGetValue(key, out value)
+                ? value
+                : default(TValue);
+        }
+
         public static T Get<T>(this IDictionary<string, object> source, string key)
         {
             object value;

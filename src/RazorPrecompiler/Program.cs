@@ -88,7 +88,7 @@ namespace PageGenerator
                 host.DefaultBaseClass = defaultBaseClass;
             }
 
-            source = RemoveAnnotations(source);
+            source = RemoveAnnotations(source, rootNamespace);
 
             using (var fileStream = File.OpenText(cshtmlFilePath))
             {
@@ -117,12 +117,13 @@ namespace PageGenerator
             return modelType;
         }
 
-        private static string RemoveAnnotations(string source)
+        private static string RemoveAnnotations(string source, string rootNamespace)
         {
             var removeLinesStartingWith = new string[]
             {
                 "/*ignore*/",
-                "@model"
+                "@model",
+                $"@using {rootNamespace}"
             };
 
             var removeBlocks = new string[]
