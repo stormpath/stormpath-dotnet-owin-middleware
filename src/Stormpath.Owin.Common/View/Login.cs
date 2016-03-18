@@ -8,7 +8,7 @@ using System
     ;
     using System.Threading.Tasks;
 
-    public class Login : StormpathBaseView<Stormpath.Owin.Common.ViewModel.LoginViewModelExtended>
+    public class Login : BaseView<Stormpath.Owin.Common.ViewModel.LoginViewModelExtended>
     {
         #line hidden
         public Login()
@@ -18,10 +18,7 @@ using System
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            WriteLiteral(@"
-
-
-<!DOCTYPE html>
+            WriteLiteral(@"<!DOCTYPE html>
 <!--[if lt IE 7]>      <html class=""no-js lt-ie9 lt-ie8 lt-ie7""> <![endif]-->
 <!--[if IE 7]>         <html class=""no-js lt-ie9 lt-ie8""> <![endif]-->
 <!--[if IE 8]>         <html class=""no-js lt-ie9""> <![endif]-->
@@ -59,9 +56,9 @@ p,
 a,
 label {
   font-family: ""Open Sans"";
-  font-size: 14");
-            WriteLiteral(@"px;
-  font-weight: 400;
+  font-size: 14px;
+ ");
+            WriteLiteral(@" font-weight: 400;
   color: #484848;
 }
 
@@ -100,8 +97,8 @@ p {
   background: -webkit-linear-gradient(#43cd1a 50%, #2ec700 50%);
   background: linear-gradient(#43cd1a 50%, #2ec700 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a);
-  -ms-filter: ""progid:DXImag");
-            WriteLiteral(@"eTransform.Microsoft.gradient (GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a)"";
+  -ms-filter: ""progid:DXImageTrans");
+            WriteLiteral(@"form.Microsoft.gradient (GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a)"";
 }
 
 .btn-social {
@@ -130,8 +127,8 @@ p {
   background: -webkit-linear-gradient(#4773de 50%, #3767db 50%);
   background: linear-gradient(#4773de 50%, #3767db 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3767db, endColorstr=#4773de);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (G");
-            WriteLiteral(@"radientType=0, startColorstr=#3767db, endColorstr=#4773de)"";
+  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (Gradien");
+            WriteLiteral(@"tType=0, startColorstr=#3767db, endColorstr=#4773de)"";
 }
 
 .btn-google {
@@ -153,8 +150,8 @@ p {
 .btn-linkedin {
   background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);
   background: linear-gradient(#007cbc 50%, #0077B5 50%);
-  filter: pr");
-            WriteLiteral(@"ogid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);
+  filter: progid:D");
+            WriteLiteral(@"XImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);
   -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)"";
 }
 
@@ -171,8 +168,8 @@ p {
   background: -webkit-linear-gradient(#848282 50%, #7B7979 50%);
   background: linear-gradient(#848282 50%, #7B7979 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#848282, endColorstr=#7B7979);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#848282, endColorstr=#7B");
-            WriteLiteral(@"7979)"";
+  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#848282, endColorstr=#7B7979)""");
+            WriteLiteral(@";
 }
 
 .btn-github:hover,
@@ -223,8 +220,8 @@ p {
   font-size: 21px;
 }
 
-.v");
-            WriteLiteral(@"iew input[type=""text""],
+.view in");
+            WriteLiteral(@"put[type=""text""],
 .view input[type=""password""],
 .view input[type=""email""],
 .view input[type=""color""],
@@ -275,8 +272,8 @@ p {
   font-weight: 600;
 }
 
-.sp-form .has-error input[type=""");
-            WriteLiteral(@"text""],
+.sp-form .has-error input[type=""text""]");
+            WriteLiteral(@",
 .sp-form .has-error input[type=""password""] {
   border-color: #ec3e3e;
 }
@@ -339,8 +336,9 @@ p {
 
 .login-view .email-password-area label {
   height: 14px;
-  line-height: ");
-            WriteLiteral(@"14px;
+  line-height: 14px;
+");
+            WriteLiteral(@"
 }
 
 .login-view .email-password-area input[type='checkbox'] {
@@ -365,9 +363,9 @@ p {
 }
 
 .login-view .email-password-area input[type='checkbox']:checked + label:after {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJ");
-            WriteLiteral(@"kZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowRTVBQUVGMzJEODBFMjExODQ2N0NBMjk4MjdCNDBCNyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0RTY4NUM4NURGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0RTY4NUM4NERGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQxNDQ4M0NEM0JERkUyMTE4MEYwQjNBRjIwMUNENzQxIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkZDMEMxNjY2OUVCMUUyMTFBRjVDQkQ0QjE5MTNERDU2Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+3YY4qgAAALlJREFUeNpi/P//PwMlgImBQjDwBrCgCwQHB+NUfObMGT9mZuboe/fuheM0ABu4fv060/fv32cBNTNycHBE4nUBNs0/f/7cAWSeMzQ0rCA5DICaNwKj+qGRkVEFUYF47ty5GWfPns2EsjsYGRlFgM5OJzoQ//37t5eLi2sRMMD");
-            WriteLiteral(@"ec3Jypn79+lVXX1//H9HRaGJisvr379/nuLm5lwKdP9vMzOwZyekAaEA3EF8G4hZCYcQ4mhcYAAIMAJGST/dDIpNQAAAAAElFTkSuQmCC);
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1ze");
+            WriteLiteral(@"W50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowRTVBQUVGMzJEODBFMjExODQ2N0NBMjk4MjdCNDBCNyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0RTY4NUM4NURGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0RTY4NUM4NERGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQxNDQ4M0NEM0JERkUyMTE4MEYwQjNBRjIwMUNENzQxIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkZDMEMxNjY2OUVCMUUyMTFBRjVDQkQ0QjE5MTNERDU2Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+3YY4qgAAALlJREFUeNpi/P//PwMlgImBQjDwBrCgCwQHB+NUfObMGT9mZuboe/fuheM0ABu4fv060/fv32cBNTNycHBE4nUBNs0/f/7cAWSeMzQ0rCA5DICaNwKj+qGRkVEFUYF47ty5GWfPns2EsjsYGRlFgM5OJzoQ//37t5eLi2sRMMDec3Jyp");
+            WriteLiteral(@"n79+lVXX1//H9HRaGJisvr379/nuLm5lwKdP9vMzOwZyekAaEA3EF8G4hZCYcQ4mhcYAAIMAJGST/dDIpNQAAAAAElFTkSuQmCC);
   background-position: -1px -1px;
 }
 
@@ -408,8 +406,8 @@ p {
 
 .login-view .social-area {
   border-top-right-radius: 3px;
-  border-bo");
-            WriteLiteral(@"ttom-right-radius: 3px;
+  border-bottom-r");
+            WriteLiteral(@"ight-radius: 3px;
   padding: 0 20px;
   position: relative;
   padding-bottom: 20px;
@@ -446,26 +444,26 @@ p {
         <div class=""va-wrapper"">
             <div class=""view login-view container"">
 ");
-#line 418 "Login.cshtml"
+#line 415 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 418 "Login.cshtml"
+#line 415 "Login.cshtml"
                  if (!string.IsNullOrEmpty(Model.Status)) {
 
 #line default
 #line hidden
 
             WriteLiteral("                    <div class=\"box row\">\r\n                        <div class=\"email-password-area col-xs-12 large col-sm-12\">\r\n                            <div class=\"header\">\r\n");
-#line 422 "Login.cshtml"
+#line 419 "Login.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 422 "Login.cshtml"
+#line 419 "Login.cshtml"
                                  if (Model.Status.Equals("unverified", StringComparison.OrdinalIgnoreCase))
                                 {
 
@@ -480,27 +478,27 @@ p {
                                     <p>Didn't get the email? <a href=""/verify"">Click Here</a>.</p>
                                     <br>
 ");
-#line 431 "Login.cshtml"
+#line 428 "Login.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </div>\r\n                        </div>\r\n                    </div>\r\n");
-#line 435 "Login.cshtml"
+#line 432 "Login.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                <br>\r\n                <div class=\"box row\">\r\n                    <div class=\"email-password-area col-xs-12 large col-sm-12\"> \r\n");
-#line 439 "Login.cshtml"
+#line 436 "Login.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 439 "Login.cshtml"
+#line 436 "Login.cshtml"
                          if (Model.RegistrationEnabled)
                         {
 
@@ -508,7 +506,7 @@ p {
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Log In or <a href=\"/register\">Create Account</a></span>\r\n                            </div>\r\n");
-#line 444 "Login.cshtml"
+#line 441 "Login.cshtml"
                         }
                         else
                         {
@@ -517,20 +515,20 @@ p {
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Log In</span>\r\n                            </div>\r\n");
-#line 450 "Login.cshtml"
+#line 447 "Login.cshtml"
                         }
 
 #line default
 #line hidden
 
             WriteLiteral("                        \r\n                        <form method=\"post\" role=\"form\" action=\"/login\" class=\"login-form form-horizontal\">\r\n                            <div class=\"form-group group-email\">\r\n");
-#line 455 "Login.cshtml"
+#line 452 "Login.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 455 "Login.cshtml"
+#line 452 "Login.cshtml"
                                  if (Model.DisplayUsernameOrEmail)
                                 {
 
@@ -538,13 +536,13 @@ p {
 #line hidden
 
             WriteLiteral("                                    <label class=\"col-sm-4\">Username or Email</label> ");
-#line 457 "Login.cshtml"
+#line 454 "Login.cshtml"
                                                                                       
 
 #line default
 #line hidden
 
-#line 457 "Login.cshtml"
+#line 454 "Login.cshtml"
                                                                                                                                                
                                 }
                                 else
@@ -554,13 +552,13 @@ p {
 #line hidden
 
             WriteLiteral("                                    <label class=\"col-sm-4\">Email</label> ");
-#line 461 "Login.cshtml"
+#line 458 "Login.cshtml"
                                                                           
 
 #line default
 #line hidden
 
-#line 461 "Login.cshtml"
+#line 458 "Login.cshtml"
                                                                                                                                    
                                 }
 
@@ -568,28 +566,20 @@ p {
 #line hidden
 
             WriteLiteral("\r\n                                <div class=\"col-sm-8\"> \r\n                                    <input autofocus=\"true\"");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 15011, "\"", 15079, 7);
-#line 465 "Login.cshtml"
-WriteAttributeValue("", 15025, Model.RegistrationEnabled, 15025, 26, false);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 15005, "\"", 15079, 1);
+#line 462 "Login.cshtml"
+WriteAttributeValue("", 15019, Model.RegistrationEnabled ? "Email or Username" : "Email", 15019, 60, false);
 
 #line default
 #line hidden
-            WriteAttributeValue(" ", 15051, "?", 15052, 2, true);
-            WriteAttributeValue(" ", 15053, "Email", 15054, 6, true);
-            WriteAttributeValue(" ", 15059, "or", 15060, 3, true);
-            WriteAttributeValue(" ", 15062, "Username", 15063, 9, true);
-            WriteAttributeValue(" ", 15071, ":", 15072, 2, true);
-            WriteAttributeValue(" ", 15073, "Email", 15074, 6, true);
             EndWriteAttribute();
             WriteLiteral(" required name=\"login\" type=\"text\"");
-            BeginWriteAttribute("value", " value=\"", 15114, "\"", 15172, 3);
-#line 465 "Login.cshtml"
-WriteAttributeValue("", 15122, Model.FormData.GetOrNull("login"), 15122, 34, false);
+            BeginWriteAttribute("value", " value=\"", 15114, "\"", 15174, 1);
+#line 462 "Login.cshtml"
+WriteAttributeValue("", 15122, Model.FormData.GetOrNull("login") ?? string.Empty, 15122, 52, false);
 
 #line default
 #line hidden
-            WriteAttributeValue(" ", 15156, "??", 15157, 3, true);
-            WriteAttributeValue(" ", 15159, "string.Empty", 15160, 13, true);
             EndWriteAttribute();
             WriteLiteral(@" class=""form-control"">
                                 </div>
@@ -607,13 +597,13 @@ WriteAttributeValue("", 15122, Model.FormData.GetOrNull("login"), 15122, 34, fal
                     </div>
                 </div>
 ");
-#line 481 "Login.cshtml"
+#line 478 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 481 "Login.cshtml"
+#line 478 "Login.cshtml"
                  if (Model.VerifyEmailEnabled)
                 {
 
@@ -621,28 +611,28 @@ WriteAttributeValue("", 15122, Model.FormData.GetOrNull("login"), 15122, 34, fal
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 16222, "\"", 16250, 1);
-#line 483 "Login.cshtml"
-WriteAttributeValue("", 16229, Model.VerifyEmailUri, 16229, 21, false);
+            BeginWriteAttribute("href", " href=\"", 16224, "\"", 16252, 1);
+#line 480 "Login.cshtml"
+WriteAttributeValue("", 16231, Model.VerifyEmailUri, 16231, 21, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Forgot Password?</a>\r\n");
-#line 484 "Login.cshtml"
+#line 481 "Login.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 486 "Login.cshtml"
+#line 483 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 486 "Login.cshtml"
+#line 483 "Login.cshtml"
                  if (Model.ForgotPasswordEnabled)
                 {
 
@@ -650,15 +640,15 @@ WriteAttributeValue("", 16229, Model.VerifyEmailUri, 16229, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 16422, "\"", 16453, 1);
-#line 488 "Login.cshtml"
-WriteAttributeValue("", 16429, Model.ForgotPasswordUri, 16429, 24, false);
+            BeginWriteAttribute("href", " href=\"", 16424, "\"", 16455, 1);
+#line 485 "Login.cshtml"
+WriteAttributeValue("", 16431, Model.ForgotPasswordUri, 16431, 24, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Forgot Password?</a>\r\n");
-#line 489 "Login.cshtml"
+#line 486 "Login.cshtml"
                 }
 
 #line default

@@ -52,7 +52,7 @@ namespace Stormpath.Owin.Middleware.Route
             var loginViewModel = BuildExtendedViewModel();
 
             var loginView = new Common.View.Login();
-            return loginView.ExecuteAsync(loginViewModel, context.Response.Body);
+            return HttpResponse.Ok(loginView, loginViewModel, context);
         }
 
         protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)

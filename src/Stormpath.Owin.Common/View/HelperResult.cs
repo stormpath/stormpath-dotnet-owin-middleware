@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Common.View
 {
@@ -14,21 +15,21 @@ namespace Stormpath.Owin.Common.View
         /// <summary>
         /// Creates a new instance of <see cref="HelperResult"/>.
         /// </summary>
-        /// <param name="action">The delegate to invoke when <see cref="WriteTo(TextWriter)"/> is called.</param>
-        public HelperResult(Action<TextWriter> action)
+        /// <param name="func">The delegate to invoke when <see cref="WriteTo(TextWriter)"/> is called.</param>
+        public HelperResult(Func<TextWriter, Task> func)
         {
-            WriteAction = action;
+            WriteFunc = func;
         }
 
-        public Action<TextWriter> WriteAction { get; }
+        public Func<TextWriter, Task> WriteFunc { get; }
 
         /// <summary>
         /// Method invoked to produce content from the <see cref="HelperResult"/>.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        public void WriteTo(TextWriter writer)
+        public Task WriteTo(TextWriter writer)
         {
-            WriteAction(writer);
+            return WriteFunc(writer);
         }
     }
 }

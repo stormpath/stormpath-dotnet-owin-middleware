@@ -32,7 +32,7 @@ namespace Stormpath.Owin.NowinHarness
             var options = new StartOptions
             {
                 ServerFactory = "Nowin",
-                Port = 8080
+                Port = 8080,
             };
 
             using (WebApp.Start<Startup>(options))

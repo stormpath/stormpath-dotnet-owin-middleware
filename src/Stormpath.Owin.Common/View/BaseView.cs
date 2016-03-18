@@ -15,7 +15,7 @@ namespace Stormpath.Owin.Common.View
     /// <summary>
     /// Infrastructure
     /// </summary>
-    public abstract class StormpathBaseView<T>
+    public abstract class BaseView<T>
     {
         protected T Model { get; private set; }
 

@@ -72,8 +72,8 @@ namespace PageGenerator
                 writeToMethodName: "WriteTo",
                 writeLiteralToMethodName: "WriteLiteralTo",
                 templateTypeName: "HelperResult",
-                defineSectionMethodName: "DefineSection",
                 generatedTagHelperContext: new GeneratedTagHelperContext());
+
             var engine = new RazorTemplateEngine(host);
 
             var source = File.ReadAllText(cshtmlFilePath);
@@ -89,6 +89,7 @@ namespace PageGenerator
             }
 
             source = RemoveAnnotations(source, rootNamespace);
+            source = RemoveExtraWhitespace(source);
 
             using (var fileStream = File.OpenText(cshtmlFilePath))
             {
@@ -140,10 +141,18 @@ namespace PageGenerator
                 .ToString();
 
             var removedBlocks = removeBlocks
-                .Aggregate(removedAnnotatedLines, (working, @this) => working.Replace(@this, string.Empty))
-                .Trim();
+                .Aggregate(removedAnnotatedLines, (working, @this) => working.Replace(@this, string.Empty));
 
             return removedBlocks;
+        }
+
+        private static string RemoveExtraWhitespace(string source)
+        {
+            // If there's a @using statement near the top, it tends to collect extraneous newlines
+            var openingBlock = source.Substring(0, source.IndexOf('<'));
+            source = source.Replace(openingBlock, openingBlock.Trim() + Environment.NewLine);
+
+            return source.Trim();
         }
 
         private static string InlineIncludedFiles(string basePath, string source)

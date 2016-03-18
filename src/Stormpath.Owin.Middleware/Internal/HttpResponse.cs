@@ -1,4 +1,4 @@
-﻿// <copyright file="JsonResponse.cs" company="Stormpath, Inc.">
+﻿// <copyright file="HttpResponse.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +14,26 @@
 // limitations under the License.
 // </copyright>
 
-using System.Text;
-using System.Threading;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using Stormpath.Owin.Common.View;
 using Stormpath.Owin.Middleware.Owin;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
-    public static class JsonResponse
+    public static class HttpResponse
     {
-        public static Task Ok(object model, IOwinEnvironment context, CancellationToken cancellationToken)
+        public static async Task Ok<T>(BaseView<T> view, T viewModel, IOwinEnvironment context)
         {
-            context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
+            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
-            return context.Response.WriteAsync(Serializer.Serialize(model), Encoding.UTF8, cancellationToken);
+            var buffer = new MemoryStream();
+            await view.ExecuteAsync(viewModel, context.Response.Body);
+
+            //return view.ExecuteAsync(viewModel, context.Response.Body);
         }
     }
 }
