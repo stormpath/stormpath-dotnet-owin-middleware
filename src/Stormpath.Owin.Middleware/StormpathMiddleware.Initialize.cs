@@ -28,7 +28,7 @@ using Stormpath.SDK.Logging;
 using Stormpath.SDK.Serialization;
 using Stormpath.SDK.Sync;
 
-namespace Stormpath.Owin
+namespace Stormpath.Owin.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
 

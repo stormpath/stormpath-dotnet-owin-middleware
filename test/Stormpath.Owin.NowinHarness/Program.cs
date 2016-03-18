@@ -23,6 +23,7 @@ using Owin;
 
 namespace Stormpath.Owin.NowinHarness
 {
+    using Middleware;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     static class Program

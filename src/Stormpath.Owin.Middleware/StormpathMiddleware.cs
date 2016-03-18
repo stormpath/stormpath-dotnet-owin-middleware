@@ -16,24 +16,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
-using Stormpath.Configuration.Abstractions.Model;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Route;
 using Stormpath.Owin.Middleware.Owin;
-using Stormpath.SDK;
+using Stormpath.Owin.Middleware.Route;
 using Stormpath.SDK.Client;
-using Stormpath.SDK.Http;
 using Stormpath.SDK.Logging;
-using Stormpath.SDK.Serialization;
-using Stormpath.SDK.Sync;
 
-namespace Stormpath.Owin
+namespace Stormpath.Owin.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using RouteHandler = Func<IClient, Func<IOwinEnvironment, Task>>;
 
     public sealed partial class StormpathMiddleware
     {
@@ -93,7 +86,17 @@ namespace Stormpath.Owin
                     return;
                 }
 
-                await routeHandler(scopedClient)(context);
+                if (routeHandler.AuthenticationRequired)
+                {
+                    var filter = new AuthenticationRequiredFilter(this.logger);
+                    var isAuthenticated = await filter.Invoke(environment);
+                    if (!isAuthenticated)
+                    {
+                        return;
+                    }
+                }
+
+                await routeHandler.Handler(scopedClient)(context);
                 return;
             }
         }
@@ -153,21 +156,30 @@ namespace Stormpath.Owin
             {
                 routingTable.Add(
                     this.configuration.Web.Oauth2.Uri,
-                    client => new Oauth2Route(this.configuration, this.logger, client).Invoke);
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new Oauth2Route(this.configuration, this.logger, client).Invoke)
+                    );
             }
 
             if (this.configuration.Web.Register.Enabled == true)
             {
                 routingTable.Add(
                     this.configuration.Web.Register.Uri,
-                    client => new RegisterRoute(this.configuration, this.logger, client).Invoke);
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new RegisterRoute(this.configuration, this.logger, client).Invoke)
+                    );
             }
 
             if (this.configuration.Web.Login.Enabled == true)
             {
                 routingTable.Add(
                     this.configuration.Web.Login.Uri,
-                    client => new LoginRoute(this.configuration, this.logger, client).Invoke);
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new LoginRoute(this.configuration, this.logger, client).Invoke)
+                    );
             }
 
             return routingTable;

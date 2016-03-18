@@ -29,7 +29,7 @@ using Stormpath.SDK.Error;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 
-namespace Stormpath.Owin
+namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
