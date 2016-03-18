@@ -22,6 +22,9 @@
   "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
   "owners": [ "Stormpath, Inc." ],
   "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
+  "publishExclude": [
+    "View/*.cshtml"
+  ],
   "repository": {
     "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
   },
