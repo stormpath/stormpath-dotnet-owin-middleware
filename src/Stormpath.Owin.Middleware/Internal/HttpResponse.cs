@@ -14,10 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Stormpath.Owin.Common.View;
 using Stormpath.Owin.Middleware.Owin;
@@ -26,14 +22,11 @@ namespace Stormpath.Owin.Middleware.Internal
 {
     public static class HttpResponse
     {
-        public static async Task Ok<T>(BaseView<T> view, T viewModel, IOwinEnvironment context)
+        public static Task Ok<T>(BaseView<T> view, T viewModel, IOwinEnvironment context)
         {
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
-            var buffer = new MemoryStream();
-            await view.ExecuteAsync(viewModel, context.Response.Body);
-
-            //return view.ExecuteAsync(viewModel, context.Response.Body);
+            return view.ExecuteAsync(viewModel, context.Response.Body);
         }
     }
 }
