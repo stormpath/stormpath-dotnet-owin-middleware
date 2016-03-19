@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
@@ -43,9 +42,8 @@ namespace Stormpath.Owin.Middleware
         {
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
             var stormpathUser = environment.Get<IAccount>(OwinKeys.StormpathUser);
-            var claimsUser = environment.Get<ClaimsPrincipal>(OwinKeys.RequestUser);
 
-            if (stormpathUser != null && claimsUser != null)
+            if (stormpathUser != null)
             {
                 return true; // Authentication check succeeded
             }
