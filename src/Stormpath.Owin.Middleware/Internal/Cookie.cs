@@ -16,14 +16,65 @@
 
 using System;
 using System.Globalization;
+using Stormpath.Configuration.Abstractions;
+using Stormpath.Configuration.Abstractions.Model;
+using Stormpath.Owin.Middleware.Owin;
+using Stormpath.SDK.Client;
+using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
-    public static class Cookie
+    public static class Cookies
     {
         public static string DateFormat = "ddd, dd-MMM-yyyy HH:mm:ss"; // + GMT
 
         public static string FormatDate(DateTimeOffset dateTimeOffset)
             => $"{dateTimeOffset.UtcDateTime.ToString(DateFormat, CultureInfo.InvariantCulture)} GMT";
+
+        public static void AddToResponse(IOwinEnvironment context, IClient client, IOauthGrantAuthenticationResult grantResult, StormpathConfiguration configuration)
+        {
+            bool isSecureRequest = context.Request.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
+
+            if (!string.IsNullOrEmpty(grantResult.AccessTokenString))
+            {
+                SetTokenCookie(context, grantResult.AccessTokenString, client, configuration.Web.AccessTokenCookie, isSecureRequest);
+            }
+
+            if (!string.IsNullOrEmpty(grantResult.RefreshTokenString))
+            {
+                SetTokenCookie(context, grantResult.RefreshTokenString, client, configuration.Web.RefreshTokenCookie, isSecureRequest);
+            }
+        }
+
+        private static void SetTokenCookie(IOwinEnvironment context, string token, IClient client, WebCookieConfiguration cookieConfig, bool isSecureRequest)
+        {
+            var keyValuePair = $"{Uri.EscapeDataString(cookieConfig.Name)}={Uri.EscapeDataString(token)}";
+            var domain = $"domain={cookieConfig.Domain}";
+
+            var pathToken = string.IsNullOrEmpty(cookieConfig.Path)
+                ? "/"
+                : cookieConfig.Path;
+            var path = $"path={(pathToken)}";
+
+            var expirationDate = client.NewJwtParser().Parse(token).Body.Expiration;
+            var expires = expirationDate != null
+                ? $"expires={FormatDate(expirationDate.Value)}"
+                : null;
+
+            var httpOnly = cookieConfig.HttpOnly ?? false
+                ? "HttpOnly"
+                : null;
+
+            var includeSecureToken = cookieConfig.Secure == null
+                ? isSecureRequest
+                : cookieConfig.Secure.Value;
+            var secure = includeSecureToken
+                ? "secure"
+                : null;
+
+            var setCookieValue = string.Join("; ", new string[] { keyValuePair, domain, path, expires, httpOnly, secure });
+
+            context.Response.Headers.AddString("Set-Cookie", setCookieValue);
+        }
     }
 }

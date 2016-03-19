@@ -15,19 +15,20 @@
 // </copyright>
 
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
+using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
-using Stormpath.Owin.Common.ViewModel;
 using Stormpath.SDK;
+using Stormpath.SDK.Account;
 using Stormpath.SDK.Auth;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
+using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -76,36 +77,29 @@ namespace Stormpath.Owin.Middleware.Route
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
-            var loginRequest = new UsernamePasswordRequestBuilder()
-                .SetUsernameOrEmail(usernameOrEmail)
+            var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
+                .SetLogin(usernameOrEmail)
                 .SetPassword(password)
                 .Build();
 
-            var result = await application.AuthenticateAccountAsync(
-                loginRequest,
-                opt => opt.Expand(res => res.GetAccount()),
-                cancellationToken);
+            var passwordGrantAuthenticator = application.NewPasswordGrantAuthenticator();
 
-            var account = await result.GetAccountAsync(cancellationToken);
+            var grantResult = await passwordGrantAuthenticator
+                .AuthenticateAsync(passwordGrantRequest, cancellationToken);
+            // Errors will be caught up in AbstractRouteMiddleware
 
-            var viewModel = new LoginSuccessfulViewModel()
+            Cookies.AddToResponse(context, client, grantResult, _configuration);
+
+            var token = await grantResult.GetAccessTokenAsync(cancellationToken);
+            var account = await token.GetAccountAsync(cancellationToken);
+
+            var sanitizer = new ResponseSanitizer<IAccount>();
+            var responseModel = new
             {
-                Account = new AccountViewModel()
-                {
-                    CreatedAt = account.CreatedAt,
-                    Email = account.Email,
-                    FullName = account.FullName,
-                    GivenName = account.GivenName,
-                    Href = account.Href,
-                    MiddleName = account.MiddleName,
-                    ModifiedAt = account.ModifiedAt,
-                    Status = account.Status,
-                    Surname = account.Surname,
-                    Username = account.Username
-                }
+                account = sanitizer.Sanitize(account)
             };
 
-            await JsonResponse.Ok(context, viewModel);
+            await JsonResponse.Ok(context, responseModel);
             return;
         }
 
