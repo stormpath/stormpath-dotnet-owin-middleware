@@ -1,6 +1,6 @@
 ﻿@model Stormpath.Owin.Common.ViewModel.LoginViewModelExtended
 @using System
-@using Stormpath.Owin.Common.View
+@using System.Linq
 
 @functions {
     /*ignore*/private Stormpath.Owin.Common.ViewModel.LoginViewModelExtended Model { get; }
@@ -452,7 +452,15 @@ p {
                                 <span>Log In</span>
                             </div>
                         }
-                        @* Error display here *@
+                        @if (Model.FormErrors.Any())
+                        {
+                            <div class="alert alert-danger bad-login">
+                                @foreach (var error in Model.FormErrors)
+                                {
+                                    <p>@error</p>
+                                }
+                            </div>
+                        }
                         <form method="post" role="form" action="/login" class="login-form form-horizontal">
                             @* <input name="_csrf" type="hidden"> *@
                             <div class="form-group group-email">

@@ -46,5 +46,7 @@ namespace Stormpath.Owin.Common.ViewModel
         public bool DisplayUsernameOrEmail { get; set; }
 
         public IDictionary<string, string> FormData { get; set; } = new Dictionary<string, string>();
+
+        public IList<string> FormErrors { get; set; } = new List<string>();
     }
 }

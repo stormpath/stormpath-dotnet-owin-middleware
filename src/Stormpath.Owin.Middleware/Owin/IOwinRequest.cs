@@ -33,6 +33,6 @@ namespace Stormpath.Owin.Middleware.Owin
         IDictionary<string, string[]> Headers { get; }
         object this[string key] { get; set; }
 
-        Task<T> GetBodyAsAsync<T>(CancellationToken cancellationToken) where T : new();
+        Task<string> GetBodyAsStringAsync(CancellationToken cancellationToken);
     }
 }

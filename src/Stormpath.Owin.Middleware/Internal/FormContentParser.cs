@@ -16,6 +16,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -33,8 +34,8 @@ namespace Stormpath.Owin.Middleware.Internal
                 }
 
                 var tokens = item.Split('=');
-                var key = tokens[0];
-                var value = tokens[1];
+                var key = WebUtility.UrlDecode(tokens[0]);
+                var value = WebUtility.UrlDecode(tokens[1]);
 
                 if (!temporaryDictionary.ContainsKey(key))
                 {

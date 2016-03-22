@@ -52,18 +52,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return;
             }
 
-            var requestBody = string.Empty;
-            using (var reader = new StreamReader(context.Request.Body, Encoding.UTF8))
-            {
-                requestBody = await reader.ReadToEndAsync();
-            }
-
-            if (string.IsNullOrEmpty(requestBody))
-            {
-                await Error.Create<OauthInvalidRequest>(context, cancellationToken);
-                return;
-            }
-
+            var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var formData = FormContentParser.Parse(requestBody);
 
             var grantType = formData.GetString("grant_type");

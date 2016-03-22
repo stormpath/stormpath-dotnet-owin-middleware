@@ -75,8 +75,7 @@ namespace Stormpath.Owin.Middleware.Owin
             set { environment[key] = value; }
         }
 
-        public async Task<T> GetBodyAsAsync<T>(CancellationToken cancellationToken)
-            where T : new()
+        public async Task<string> GetBodyAsStringAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -86,7 +85,7 @@ namespace Stormpath.Owin.Middleware.Owin
                 bodyAsString = await reader.ReadToEndAsync();
             }
 
-            return Serializer.Deserialize<T>(bodyAsString);
+            return bodyAsString;
         }
     }
 }

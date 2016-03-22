@@ -23,10 +23,9 @@ using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
-using Stormpath.SDK;
 using Stormpath.SDK.Account;
-using Stormpath.SDK.Auth;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Error;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 
@@ -47,13 +46,65 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override Task GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            // todo
-            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
-
             var loginViewModel = BuildExtendedViewModel();
 
+            return RenderForm(context, loginViewModel, cancellationToken);
+        }
+
+        private Task RenderForm(IOwinEnvironment context, LoginViewModelExtended viewModel, CancellationToken cancellationToken)
+        {
+            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
+
             var loginView = new Common.View.Login();
-            return HttpResponse.Ok(loginView, loginViewModel, context);
+            return HttpResponse.Ok(loginView, viewModel, context);
+        }
+
+        protected override async Task PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        {
+            var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var formData = FormContentParser.Parse(requestBody);
+
+            var login = formData.GetString("login");
+            var password = formData.GetString("password");
+
+            bool missingLoginOrPassword = string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password);
+            if (missingLoginOrPassword)
+            {
+                var loginViewModel = BuildExtendedViewModel();
+                loginViewModel.FormErrors.Add("The login and password fields are required.");
+                await RenderForm(context, loginViewModel, cancellationToken);
+                return;
+            }
+
+            try
+            {
+                var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+
+                var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
+                    .SetLogin(login)
+                    .SetPassword(password)
+                    .Build();
+
+                var passwordGrantAuthenticator = application.NewPasswordGrantAuthenticator();
+
+                var grantResult = await passwordGrantAuthenticator
+                    .AuthenticateAsync(passwordGrantRequest, cancellationToken);
+
+                Cookies.AddToResponse(context, client, grantResult, _configuration);
+            }
+            catch (ResourceException rex)
+            {
+                var loginViewModel = BuildExtendedViewModel();
+                loginViewModel.FormErrors.Add(rex.Message);
+                await RenderForm(context, loginViewModel, cancellationToken);
+                return;
+            }
+
+            var nextUri = _configuration.Web.Login.NextUri;
+            // todo: check ?next= parameter
+
+            await HttpResponse.Redirect(context, nextUri);
+            return;
         }
 
         protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -65,11 +116,13 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var body = await context.Request.GetBodyAsAsync<LoginPostModel>(cancellationToken);
-            var usernameOrEmail = body?.Login;
+            var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var body = Serializer.Deserialize<LoginPostModel>(bodyString);
+            var login = body?.Login;
             var password = body?.Password;
 
-            if (string.IsNullOrEmpty(usernameOrEmail) || string.IsNullOrEmpty(password))
+            bool missingLoginOrPassword = string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password);
+            if (missingLoginOrPassword)
             {
                 await Error.Create(context, new BadRequest("Missing login or password."), cancellationToken);
                 return;
@@ -78,7 +131,7 @@ namespace Stormpath.Owin.Middleware.Route
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
-                .SetLogin(usernameOrEmail)
+                .SetLogin(login)
                 .SetPassword(password)
                 .Build();
 
@@ -135,9 +188,7 @@ namespace Stormpath.Owin.Middleware.Route
             result.DisplayUsernameOrEmail = _configuration.Web.Register.Form.Fields.Get("username")?.Enabled ?? false;
             result.ForgotPasswordEnabled = _configuration.Web.ForgotPassword.Enabled ?? false; // TODO handle null values here
             result.ForgotPasswordUri = _configuration.Web.ForgotPassword.Uri;
-            //result.FormData - set to previous result
             result.RegistrationEnabled = _configuration.Web.Register.Enabled ?? false;
-            //result.Status - set to querystring param
             result.VerifyEmailEnabled = _configuration.Web.VerifyEmail.Enabled ?? false; // TODO handle null values here
             result.VerifyEmailUri = _configuration.Web.VerifyEmail.Uri;
 

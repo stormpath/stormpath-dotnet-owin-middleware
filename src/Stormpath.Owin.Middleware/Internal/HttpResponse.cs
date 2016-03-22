@@ -24,9 +24,18 @@ namespace Stormpath.Owin.Middleware.Internal
     {
         public static Task Ok<T>(BaseView<T> view, T viewModel, IOwinEnvironment context)
         {
+            context.Response.StatusCode = 200;
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
             return view.ExecuteAsync(viewModel, context.Response.Body);
+        }
+
+        public static Task Redirect(IOwinEnvironment context, string uri)
+        {
+            context.Response.StatusCode = 302;
+            context.Response.Headers.SetString("Location", uri);
+
+            return Task.FromResult(false);
         }
     }
 }
