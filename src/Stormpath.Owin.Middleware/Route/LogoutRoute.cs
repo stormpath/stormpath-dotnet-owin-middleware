@@ -76,18 +76,23 @@ namespace Stormpath.Owin.Middleware.Route
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
 
+            var deleteAccessTokenTask = Task.FromResult(false);
+            var deleteRefreshTokenTask = Task.FromResult(false);
+
             string jti = string.Empty;
             if (IsValidJwt(accessToken, client, out jti))
             {
                 var accessTokenResource = await client.GetAccessTokenAsync($"/accessTokens/{jti}", cancellationToken);
-                await accessTokenResource.DeleteAsync();
+                deleteAccessTokenTask = accessTokenResource.DeleteAsync(cancellationToken);
             }
 
             if (IsValidJwt(refreshToken, client, out jti))
             {
                 var refreshTokenResource = await client.GetRefreshTokenAsync($"/refreshTokens/{jti}", cancellationToken);
-                await refreshTokenResource.DeleteAsync();
+                deleteRefreshTokenTask = refreshTokenResource.DeleteAsync(cancellationToken);
             }
+
+            await Task.WhenAll(deleteAccessTokenTask, deleteRefreshTokenTask);
         }
 
         private bool IsValidJwt(string jwt, IClient client, out string jti)
