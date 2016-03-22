@@ -123,8 +123,7 @@ namespace PageGenerator
             var removeLinesStartingWith = new string[]
             {
                 "/*ignore*/",
-                "@model",
-                $"@using {rootNamespace}"
+                "@model"
             };
 
             var removeBlocks = new string[]
