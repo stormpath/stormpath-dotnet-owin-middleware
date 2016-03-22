@@ -33,7 +33,7 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
-        public async Task GetUserAsync(IOwinEnvironment context, IClient client)
+        private async Task GetUserAsync(IOwinEnvironment context, IClient client)
         {
             // TODO API authentication
 
@@ -68,7 +68,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             // Failed on both counts. Delete access and refresh token cookies in response
-            DeleteTokenCookies(context);
+            Cookies.DeleteTokenCookies(context, this.configuration.Web);
         }
 
         private async Task<bool> AttemptValidationAsync(IOwinEnvironment context, IClient client, string accessTokenJwt)
@@ -180,32 +180,10 @@ namespace Stormpath.Owin.Middleware
             claims.Add(new Claim(ClaimTypes.NameIdentifier, account.Username));
             var identity = new ClaimsIdentity(claims, "Token");
             var principal = new ClaimsPrincipal(identity);
-            context.Request[OwinKeys.RequestUser] = principal;
+            //context.Request[OwinKeys.RequestUser] = principal; TODO kestrel
             context.Request[OwinKeys.RequestUserLegacy] = principal;
 
             // TODO deal with groups/scopes
-        }
-
-        private void DeleteTokenCookies(IOwinEnvironment context)
-        {
-            var deleteAccessToken = string.Concat(
-                this.configuration.Web.AccessTokenCookie.Name,
-                "=",
-                "; path=",
-                string.IsNullOrEmpty(this.configuration.Web.AccessTokenCookie.Path) ? "/" : this.configuration.Web.AccessTokenCookie.Path,
-                "; expires=",
-                Cookies.FormatDate(new DateTimeOffset(1970, 01, 01, 00, 00, 00, TimeSpan.Zero)));
-
-            var deleteRefreshToken = string.Concat(
-                this.configuration.Web.RefreshTokenCookie.Name,
-                "=",
-                "; path=",
-                string.IsNullOrEmpty(this.configuration.Web.RefreshTokenCookie.Path) ? "/" : this.configuration.Web.RefreshTokenCookie.Path,
-                "; expires=",
-                Cookies.FormatDate(new DateTimeOffset(1970, 01, 01, 00, 00, 00, TimeSpan.Zero)));
-
-            context.Response.Headers.AddString("Set-Cookie", deleteAccessToken);
-            context.Response.Headers.AddString("Set-Cookie", deleteRefreshToken);
         }
     }
 }

@@ -122,7 +122,7 @@ namespace Stormpath.Owin.Middleware
 
         private void AddStormpathVariablesToEnvironment(IDictionary<string, object> environment)
         {
-            environment[OwinKeys.StormpathLoginUri] = this.configuration.Web.Login.Uri;
+            environment[OwinKeys.StormpathConfiguration] = this.configuration;
         }
 
         private IClient CreateScopedClient(IOwinEnvironment context)
@@ -189,6 +189,16 @@ namespace Stormpath.Owin.Middleware
                     new RouteHandler(
                         authenticationRequired: true,
                         handler: client => new MeRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            if (this.configuration.Web.Logout.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Logout.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new LogoutRoute(this.configuration, this.logger, client).Invoke)
                     );
             }
 

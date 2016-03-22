@@ -55,6 +55,6 @@ namespace Stormpath.Owin.Middleware.Owin
 
         public static readonly string StormpathUser = "Stormpath.User";
 
-        public static readonly string StormpathLoginUri = "Stormpath.LoginUri";
+        public static readonly string StormpathConfiguration = "Stormpath.Configuration";
     }
 }

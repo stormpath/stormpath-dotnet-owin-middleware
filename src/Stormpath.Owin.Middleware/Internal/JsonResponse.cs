@@ -22,18 +22,24 @@ namespace Stormpath.Owin.Middleware.Internal
 {
     public static class JsonResponse
     {
-        public static Task Ok(IOwinEnvironment context, object model)
+        public static Task Ok(IOwinEnvironment context, object model = null)
         {
+            context.Response.StatusCode = 200;
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
 
-            return context.Response.WriteAsync(Serializer.Serialize(model), Encoding.UTF8, context.CancellationToken);
+            return RespondWithOptionalBody(context, model);
         }
 
         public static Task Unauthorized(IOwinEnvironment context, object model = null)
         {
-            context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
             context.Response.StatusCode = 401;
+            context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
 
+            return RespondWithOptionalBody(context, model);
+        }
+
+        private static Task RespondWithOptionalBody(IOwinEnvironment context, object model = null)
+        {
             if (model != null)
             {
                 return context.Response.WriteAsync(Serializer.Serialize(model), Encoding.UTF8, context.CancellationToken);

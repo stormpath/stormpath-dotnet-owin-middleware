@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
@@ -49,14 +50,17 @@ namespace Stormpath.Owin.Middleware
             }
 
             logger.Info("User attempted to access a protected endpoint with invalid credentials.");
-            // Delete cookies
+
+            var configuration = environment.Get<StormpathConfiguration>(OwinKeys.StormpathConfiguration);
+
+            Cookies.DeleteTokenCookies(context, configuration.Web);
 
             if (ContentNegotiation.SelectBestContentType(environment, new string[] { "text/html", "application/json" }).Equals("text/html"))
             {
                 context.Response.StatusCode = 302;
 
                 var originalUri = context.Request.OriginalUri;
-                var loginUri = $"{environment.Get<string>(OwinKeys.StormpathLoginUri)}?next={Uri.EscapeUriString(originalUri)}";
+                var loginUri = $"{configuration.Web.Login.Uri}?next={Uri.EscapeUriString(originalUri)}";
                 context.Response.Headers.SetString("Location", loginUri);
 
                 return false; // Authentication check failed

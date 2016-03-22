@@ -76,5 +76,27 @@ namespace Stormpath.Owin.Middleware.Internal
 
             context.Response.Headers.AddString("Set-Cookie", setCookieValue);
         }
+
+        public static void DeleteTokenCookies(IOwinEnvironment context, WebConfiguration webConfiguration)
+        {
+            var deleteAccessToken = string.Concat(
+                webConfiguration.AccessTokenCookie.Name,
+                "=",
+                "; path=",
+                string.IsNullOrEmpty(webConfiguration.AccessTokenCookie.Path) ? "/" : webConfiguration.AccessTokenCookie.Path,
+                "; expires=",
+                FormatDate(new DateTimeOffset(1970, 01, 01, 00, 00, 00, TimeSpan.Zero)));
+
+            var deleteRefreshToken = string.Concat(
+                webConfiguration.RefreshTokenCookie.Name,
+                "=",
+                "; path=",
+                string.IsNullOrEmpty(webConfiguration.RefreshTokenCookie.Path) ? "/" : webConfiguration.RefreshTokenCookie.Path,
+                "; expires=",
+                FormatDate(new DateTimeOffset(1970, 01, 01, 00, 00, 00, TimeSpan.Zero)));
+
+            context.Response.Headers.AddString("Set-Cookie", deleteAccessToken);
+            context.Response.Headers.AddString("Set-Cookie", deleteRefreshToken);
+        }
     }
 }

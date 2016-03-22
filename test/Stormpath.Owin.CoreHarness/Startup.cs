@@ -66,7 +66,7 @@ namespace Stormpath.Owin.CoreHarness
                 });
             });
 
-            app.UseMvc();
+            app.UseStaticFiles();
         }
 
         // Entry point for the application.
