@@ -96,7 +96,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, formData);
                 var loginViewModel = viewModelBuilder.Build();
-                loginViewModel.FormErrors.Add("The login and password fields are required.");
+                loginViewModel.Errors.Add("The login and password fields are required.");
 
                 await RenderForm(context, loginViewModel, cancellationToken);
                 return;
@@ -112,7 +112,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, formData);
                 var loginViewModel = viewModelBuilder.Build();
-                loginViewModel.FormErrors.Add(rex.Message);
+                loginViewModel.Errors.Add(rex.Message);
 
                 await RenderForm(context, loginViewModel, cancellationToken);
                 return;

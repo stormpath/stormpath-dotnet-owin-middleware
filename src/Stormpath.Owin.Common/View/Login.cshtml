@@ -481,10 +481,10 @@ p {
                                 <span>Log In</span>
                             </div>
                         }
-                        @if (Model.FormErrors.Any())
+                        @if (Model.Errors.Any())
                         {
                             <div class="alert alert-danger bad-login">
-                                @foreach (var error in Model.FormErrors)
+                                @foreach (var error in Model.Errors)
                                 {
                                     <p>@error</p>
                                 }

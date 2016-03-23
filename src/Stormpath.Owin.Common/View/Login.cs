@@ -607,7 +607,7 @@ WriteAttributeValue("", 15504, Model.RegisterUri, 15504, 18, false);
 
             WriteLiteral("                        ");
 #line 477 "Login.cshtml"
-                         if (Model.FormErrors.Any())
+                         if (Model.Errors.Any())
                         {
 
 #line default
@@ -621,7 +621,7 @@ WriteAttributeValue("", 15504, Model.RegisterUri, 15504, 18, false);
 #line hidden
 
 #line 480 "Login.cshtml"
-                                 foreach (var error in Model.FormErrors)
+                                 foreach (var error in Model.Errors)
                                 {
 
 #line default

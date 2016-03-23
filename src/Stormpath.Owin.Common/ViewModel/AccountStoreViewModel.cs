@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginAccountStoreProviderViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LoginAccountStoreViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,14 +16,12 @@
 
 namespace Stormpath.Owin.Common.ViewModel
 {
-    public class LoginAccountStoreProviderViewModel
+    public class AccountStoreViewModel
     {
         public string Href { get; set; }
 
-        public string ProviderId { get; set; }
+        public string Name { get; set; }
 
-        public string ClientId { get; set; }
-
-        public string Scope { get; set; }
+        public AccountStoreProviderViewModel Provider { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="ExtendedRegisterViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,41 +18,20 @@ using System.Collections.Generic;
 
 namespace Stormpath.Owin.Common.ViewModel
 {
-    public class ExtendedLoginViewModel : LoginViewModel
+    public class ExtendedRegisterViewModel : RegisterViewModel
     {
-        public static readonly string[] AcceptableStatuses = new string[]
-        {
-            "unverified",
-            "verified",
-            "created",
-            "forgot",
-            "reset"
-        };
-
-        public ExtendedLoginViewModel()
+        public ExtendedRegisterViewModel()
         {
         }
 
-        public ExtendedLoginViewModel(LoginViewModel existing)
+        public ExtendedRegisterViewModel(RegisterViewModel existing)
         {
             // Copy and extend
             this.Form = existing.Form;
             this.AccountStores = existing.AccountStores;
         }
 
-        public string Status { get; set; }
-
-        public bool RegistrationEnabled { get; set; }
-
-        public string RegisterUri { get; set; }
-
-        public bool VerifyEmailEnabled { get; set; }
-
-        public string VerifyEmailUri { get; set; }
-
-        public bool ForgotPasswordEnabled { get; set; }
-
-        public string ForgotPasswordUri { get; set; }
+        public string LoginUri { get; set; }
 
         public IDictionary<string, string> FormData { get; set; } = new Dictionary<string, string>();
 

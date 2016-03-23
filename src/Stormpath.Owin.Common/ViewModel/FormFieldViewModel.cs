@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Common.ViewModel
 {
-    public class LoginFormFieldViewModel
+    public class FormFieldViewModel
     {
         public string Label { get; set; }
 
