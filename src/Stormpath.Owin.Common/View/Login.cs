@@ -342,8 +342,7 @@ p {
 
 .login-view .email-password-area label {
   height: 14px;
-  line-height: 14px;
-");
+  line-height: 14px;");
             WriteLiteral(@"
 }
 
@@ -504,7 +503,7 @@ WriteAttributeValue("", 13085, Model.VerifyEmailUri, 13085, 21, false);
 #line default
 #line hidden
 
-            WriteLiteral("                                    <span>Your Account Has Been Verified</span>\r\n                                    <p>\r\n                                        You may now login.\r\n                                    </p>\r\n");
+            WriteLiteral("                                    <span>Your Account Has Been Verified.</span>\r\n                                    <p>\r\n                                        You may now login.\r\n                                    </p>\r\n");
 #line 436 "Login.cshtml"
                                 }
 
@@ -519,7 +518,7 @@ WriteAttributeValue("", 13085, Model.VerifyEmailUri, 13085, 21, false);
 #line default
 #line hidden
 
-            WriteLiteral("                                    <span>Your Account Has Been Created</span>\r\n                                    <p>\r\n                                        You may now login.\r\n                                    </p>\r\n");
+            WriteLiteral("                                    <span>Your Account Has Been Created.</span>\r\n                                    <p>\r\n                                        You may now login.\r\n                                    </p>\r\n");
 #line 443 "Login.cshtml"
                                 }
 
@@ -534,7 +533,7 @@ WriteAttributeValue("", 13085, Model.VerifyEmailUri, 13085, 21, false);
 #line default
 #line hidden
 
-            WriteLiteral("                                    <span>Password Reset Successfully</span>\r\n                                    <p>\r\n                                        You can now login with your new password.\r\n                                    </p>\r\n");
+            WriteLiteral("                                    <span>Password Reset Successfully.</span>\r\n                                    <p>\r\n                                        You can now login with your new password.\r\n                                    </p>\r\n");
 #line 450 "Login.cshtml"
                                 }
 
@@ -549,7 +548,7 @@ WriteAttributeValue("", 13085, Model.VerifyEmailUri, 13085, 21, false);
 #line default
 #line hidden
 
-            WriteLiteral(@"                                    <span>Password Reset Requested</span>
+            WriteLiteral(@"                                    <span>Password Reset Requested.</span>
                                     <p>
                                         If an account exists for the email provided, you will receive an email shortly.
                                     </p>
@@ -582,9 +581,9 @@ WriteAttributeValue("", 13085, Model.VerifyEmailUri, 13085, 21, false);
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Log In or <a");
-            BeginWriteAttribute("href", " href=\"", 15386, "\"", 15411, 1);
+            BeginWriteAttribute("href", " href=\"", 15390, "\"", 15415, 1);
 #line 468 "Login.cshtml"
-WriteAttributeValue("", 15393, Model.RegisterUri, 15393, 18, false);
+WriteAttributeValue("", 15397, Model.RegisterUri, 15397, 18, false);
 
 #line default
 #line hidden
@@ -692,17 +691,17 @@ WriteAttributeValue("", 15393, Model.RegisterUri, 15393, 18, false);
 #line hidden
 
             WriteLiteral("\r\n                                <div class=\"col-sm-8\"> \r\n                                    <input autofocus=\"true\"");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 17081, "\"", 17158, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 17085, "\"", 17162, 1);
 #line 499 "Login.cshtml"
-WriteAttributeValue("", 17095, Model.DisplayUsernameOrEmail ? "Email or Username" : "Email", 17095, 63, false);
+WriteAttributeValue("", 17099, Model.DisplayUsernameOrEmail ? "Email or Username" : "Email", 17099, 63, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" required name=\"login\" type=\"text\"");
-            BeginWriteAttribute("value", " value=\"", 17193, "\"", 17253, 1);
+            BeginWriteAttribute("value", " value=\"", 17197, "\"", 17257, 1);
 #line 499 "Login.cshtml"
-WriteAttributeValue("", 17201, Model.FormData.GetOrNull("login") ?? string.Empty, 17201, 52, false);
+WriteAttributeValue("", 17205, Model.FormData.GetOrNull("login") ?? string.Empty, 17205, 52, false);
 
 #line default
 #line hidden
@@ -737,9 +736,9 @@ WriteAttributeValue("", 17201, Model.FormData.GetOrNull("login") ?? string.Empty
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18303, "\"", 18331, 1);
+            BeginWriteAttribute("href", " href=\"", 18307, "\"", 18335, 1);
 #line 517 "Login.cshtml"
-WriteAttributeValue("", 18310, Model.VerifyEmailUri, 18310, 21, false);
+WriteAttributeValue("", 18314, Model.VerifyEmailUri, 18314, 21, false);
 
 #line default
 #line hidden
@@ -766,9 +765,9 @@ WriteAttributeValue("", 18310, Model.VerifyEmailUri, 18310, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18503, "\"", 18534, 1);
+            BeginWriteAttribute("href", " href=\"", 18507, "\"", 18538, 1);
 #line 522 "Login.cshtml"
-WriteAttributeValue("", 18510, Model.ForgotPasswordUri, 18510, 24, false);
+WriteAttributeValue("", 18514, Model.ForgotPasswordUri, 18514, 24, false);
 
 #line default
 #line hidden
