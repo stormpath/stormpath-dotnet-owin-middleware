@@ -120,7 +120,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var nextUri = _configuration.Web.Login.NextUri;
 
-            var nextUriFromQueryString = queryString["next"]?.FirstOrDefault();
+            var nextUriFromQueryString = queryString.GetString("next");
             if (!string.IsNullOrEmpty(nextUriFromQueryString))
             {
                 nextUri = nextUriFromQueryString;
