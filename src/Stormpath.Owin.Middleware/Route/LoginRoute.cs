@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
@@ -109,7 +110,12 @@ namespace Stormpath.Owin.Middleware.Route
 
             var nextUri = _configuration.Web.Login.NextUri;
 
-            // todo: check ?next= parameter
+            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var nextUriFromQueryString = queryString["next"]?.FirstOrDefault();
+            if (!string.IsNullOrEmpty(nextUriFromQueryString))
+            {
+                nextUri = nextUriFromQueryString;
+            }
 
             await HttpResponse.Redirect(context, nextUri);
             return;
