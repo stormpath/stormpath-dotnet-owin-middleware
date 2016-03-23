@@ -29,7 +29,6 @@ using Stormpath.SDK.Logging;
 namespace Stormpath.Owin.Middleware.Route
 {
     using SDK.Error;
-    using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public abstract class AbstractRouteMiddleware
     {

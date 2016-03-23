@@ -15,7 +15,6 @@
 // limitations under the License.
 // </copyright>
 
-using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;

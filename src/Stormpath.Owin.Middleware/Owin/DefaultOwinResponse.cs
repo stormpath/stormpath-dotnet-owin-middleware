@@ -23,7 +23,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Common;
 
 namespace Stormpath.Owin.Middleware.Owin
 {

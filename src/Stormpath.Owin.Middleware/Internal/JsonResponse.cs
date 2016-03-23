@@ -16,6 +16,7 @@
 
 using System.Text;
 using System.Threading.Tasks;
+using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware.Owin;
 
 namespace Stormpath.Owin.Middleware.Internal

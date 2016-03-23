@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Common;
 
 namespace Stormpath.Owin.Middleware.Owin
 {

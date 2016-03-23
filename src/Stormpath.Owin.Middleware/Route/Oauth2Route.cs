@@ -15,9 +15,7 @@
 // </copyright>
 
 using System;
-using System.IO;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
@@ -27,7 +25,7 @@ using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
-using System.Collections.Generic;
+using Stormpath.Owin.Common;
 
 namespace Stormpath.Owin.Middleware.Route
 {

@@ -17,6 +17,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Error;

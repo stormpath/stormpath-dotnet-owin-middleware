@@ -15,6 +15,7 @@
 // </copyright>
 
 using System.Threading.Tasks;
+using Stormpath.Owin.Common;
 using Stormpath.Owin.Common.View;
 using Stormpath.Owin.Middleware.Owin;
 
