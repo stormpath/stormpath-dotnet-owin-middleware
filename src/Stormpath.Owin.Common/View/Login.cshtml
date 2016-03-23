@@ -431,7 +431,7 @@ p {
                                         Before you can log into your account, you need to activate your
                                         account by clicking the link we sent to your inbox.
                                     </p>
-                                    <p>Didn't get the email? <a href="/verify">Click Here</a>.</p>
+                                    <p>Didn't get the email? <a href="@Model.VerifyEmailUri">Click Here</a>.</p>
                                     <br>
                                 }
                                 @if (Model.Status.Equals("verified", StringComparison.OrdinalIgnoreCase))
@@ -472,7 +472,7 @@ p {
                         @if (Model.RegistrationEnabled)
                         {
                             <div class="header">
-                                <span>Log In or <a href="/register">Create Account</a></span>
+                                <span>Log In or <a href="@Model.RegisterUri">Create Account</a></span>
                             </div>
                         }
                         else

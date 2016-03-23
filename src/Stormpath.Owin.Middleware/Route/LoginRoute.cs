@@ -193,6 +193,7 @@ namespace Stormpath.Owin.Middleware.Route
             result.ForgotPasswordEnabled = _configuration.Web.ForgotPassword.Enabled ?? false; // TODO handle null values here
             result.ForgotPasswordUri = _configuration.Web.ForgotPassword.Uri;
             result.RegistrationEnabled = _configuration.Web.Register.Enabled ?? false;
+            result.RegisterUri = _configuration.Web.Register.Uri;
             result.VerifyEmailEnabled = _configuration.Web.VerifyEmail.Enabled ?? false; // TODO handle null values here
             result.VerifyEmailUri = _configuration.Web.VerifyEmail.Uri;
 

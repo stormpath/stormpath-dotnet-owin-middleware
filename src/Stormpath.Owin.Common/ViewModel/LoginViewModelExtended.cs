@@ -35,6 +35,8 @@ namespace Stormpath.Owin.Common.ViewModel
 
         public bool RegistrationEnabled { get; set; }
 
+        public string RegisterUri { get; set; }
+
         public bool VerifyEmailEnabled { get; set; }
 
         public string VerifyEmailUri { get; set; }
