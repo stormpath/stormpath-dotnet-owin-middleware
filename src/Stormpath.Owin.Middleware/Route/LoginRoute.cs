@@ -59,6 +59,23 @@ namespace Stormpath.Owin.Middleware.Route
             return HttpResponse.Ok(loginView, viewModel, context);
         }
 
+        private async Task<IOauthGrantAuthenticationResult> HandleLogin(IClient client, string login, string password, CancellationToken cancellationToken)
+        {
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+
+            var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
+                .SetLogin(login)
+                .SetPassword(password)
+                .Build();
+
+            var passwordGrantAuthenticator = application.NewPasswordGrantAuthenticator();
+
+            var grantResult = await passwordGrantAuthenticator
+                .AuthenticateAsync(passwordGrantRequest, cancellationToken);
+
+            return grantResult;
+        }
+
         protected override async Task PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
@@ -78,17 +95,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
-                var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
-                    .SetLogin(login)
-                    .SetPassword(password)
-                    .Build();
-
-                var passwordGrantAuthenticator = application.NewPasswordGrantAuthenticator();
-
-                var grantResult = await passwordGrantAuthenticator
-                    .AuthenticateAsync(passwordGrantRequest, cancellationToken);
+                var grantResult = await HandleLogin(client, login, password, cancellationToken);
 
                 Cookies.AddToResponse(context, client, grantResult, _configuration);
             }
@@ -101,6 +108,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var nextUri = _configuration.Web.Login.NextUri;
+
             // todo: check ?next= parameter
 
             await HttpResponse.Redirect(context, nextUri);
@@ -128,17 +136,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return;
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
-            var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
-                .SetLogin(login)
-                .SetPassword(password)
-                .Build();
-
-            var passwordGrantAuthenticator = application.NewPasswordGrantAuthenticator();
-
-            var grantResult = await passwordGrantAuthenticator
-                .AuthenticateAsync(passwordGrantRequest, cancellationToken);
+            var grantResult = await HandleLogin(client, login, password, cancellationToken);
             // Errors will be caught up in AbstractRouteMiddleware
 
             Cookies.AddToResponse(context, client, grantResult, _configuration);
