@@ -26,6 +26,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
+    using Common;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public sealed partial class StormpathMiddleware

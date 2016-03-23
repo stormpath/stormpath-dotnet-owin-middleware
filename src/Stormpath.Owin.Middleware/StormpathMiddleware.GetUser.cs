@@ -20,6 +20,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Model;
+using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;

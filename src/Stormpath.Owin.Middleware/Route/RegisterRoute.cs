@@ -26,6 +26,7 @@ using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
+using Stormpath.Owin.Middleware.Model;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -44,17 +45,11 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task PostJson(IOwinEnvironment context, IClient scopedClient, CancellationToken cancellationToken)
         {
-            IDictionary<string, object> postData = null;
+            var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var body = Serializer.Deserialize<RegisterPostModel>(bodyString);
 
-            using (var streamReader = new StreamReader(context.Request.Body))
-            using (var jsonReader = new JsonTextReader(streamReader))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                postData = serializer.Deserialize<IDictionary<string, object>>(jsonReader);
-            }
-
-            var email = postData.GetOrNull("email")?.ToString();
-            var password = postData.GetOrNull("password")?.ToString();
+            var email = body?.Email;
+            var password = body?.Password;
 
             bool missingEmailOrPassword = string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password);
             if (missingEmailOrPassword)
@@ -62,10 +57,10 @@ namespace Stormpath.Owin.Middleware.Route
                 throw new Exception("Missing email or password!");
             }
 
-            var givenName = postData.GetOrNull("givenName")?.ToString() ?? "UNKNOWN";
-            var middleName = postData.GetOrNull("middleName")?.ToString();
-            var surname = postData.GetOrNull("surname")?.ToString() ?? "UNKNOWN";
-            var username = postData.GetOrNull("username")?.ToString();
+            var givenName = body?.GivenName ?? "UNKNOWN";
+            var middleName = body?.MiddleName;
+            var surname = body?.Surname ?? "UNKNOWN";
+            var username = body?.Username;
 
             var application = await scopedClient.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
