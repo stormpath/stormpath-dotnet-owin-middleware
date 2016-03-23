@@ -1,6 +1,7 @@
 ﻿@model Stormpath.Owin.Common.ViewModel.LoginViewModelExtended
 @using System
 @using System.Linq
+/*ignore*/@using Stormpath.Owin.Common.View
 
 @functions {
     /*ignore*/private Stormpath.Owin.Common.ViewModel.LoginViewModelExtended Model { get; }
@@ -502,7 +503,7 @@ p {
                                 }
 
                                 <div class="col-sm-8"> @* switch to col-sm-12 if social providers are present *@
-                                    <input autofocus="true" placeholder="@(Model.RegistrationEnabled ? "Email or Username" : "Email")" required name="login" type="text" value="@(Model.FormData.GetOrNull("login") ?? string.Empty)" class="form-control">
+                                    <input autofocus="true" placeholder="@(Model.DisplayUsernameOrEmail ? "Email or Username" : "Email")" required name="login" type="text" value="@(Model.FormData.GetOrNull("login") ?? string.Empty)" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group group-password">

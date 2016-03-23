@@ -342,7 +342,8 @@ p {
 
 .login-view .email-password-area label {
   height: 14px;
-  line-height: 14px;");
+  line-height: 14px;
+");
             WriteLiteral(@"
 }
 
@@ -677,17 +678,17 @@ p {
 #line hidden
 
             WriteLiteral("\r\n                                <div class=\"col-sm-8\"> \r\n                                    <input autofocus=\"true\"");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 17058, "\"", 17132, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 17058, "\"", 17135, 1);
 #line 499 "Login.cshtml"
-WriteAttributeValue("", 17072, Model.RegistrationEnabled ? "Email or Username" : "Email", 17072, 60, false);
+WriteAttributeValue("", 17072, Model.DisplayUsernameOrEmail ? "Email or Username" : "Email", 17072, 63, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" required name=\"login\" type=\"text\"");
-            BeginWriteAttribute("value", " value=\"", 17167, "\"", 17227, 1);
+            BeginWriteAttribute("value", " value=\"", 17170, "\"", 17230, 1);
 #line 499 "Login.cshtml"
-WriteAttributeValue("", 17175, Model.FormData.GetOrNull("login") ?? string.Empty, 17175, 52, false);
+WriteAttributeValue("", 17178, Model.FormData.GetOrNull("login") ?? string.Empty, 17178, 52, false);
 
 #line default
 #line hidden
@@ -722,9 +723,9 @@ WriteAttributeValue("", 17175, Model.FormData.GetOrNull("login") ?? string.Empty
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18277, "\"", 18305, 1);
+            BeginWriteAttribute("href", " href=\"", 18280, "\"", 18308, 1);
 #line 517 "Login.cshtml"
-WriteAttributeValue("", 18284, Model.VerifyEmailUri, 18284, 21, false);
+WriteAttributeValue("", 18287, Model.VerifyEmailUri, 18287, 21, false);
 
 #line default
 #line hidden
@@ -751,9 +752,9 @@ WriteAttributeValue("", 18284, Model.VerifyEmailUri, 18284, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18477, "\"", 18508, 1);
+            BeginWriteAttribute("href", " href=\"", 18480, "\"", 18511, 1);
 #line 522 "Login.cshtml"
-WriteAttributeValue("", 18484, Model.ForgotPasswordUri, 18484, 24, false);
+WriteAttributeValue("", 18487, Model.ForgotPasswordUri, 18487, 24, false);
 
 #line default
 #line hidden
