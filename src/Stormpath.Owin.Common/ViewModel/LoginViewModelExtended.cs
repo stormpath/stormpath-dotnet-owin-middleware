@@ -20,6 +20,15 @@ namespace Stormpath.Owin.Common.ViewModel
 {
     public class LoginViewModelExtended : LoginViewModel
     {
+        public static readonly string[] AcceptableStatuses = new string[]
+        {
+            "unverified",
+            "verified",
+            "created",
+            "forgot",
+            "reset"
+        };
+
         public LoginViewModelExtended()
         {
         }

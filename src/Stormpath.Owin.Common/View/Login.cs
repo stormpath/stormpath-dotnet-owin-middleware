@@ -456,7 +456,7 @@ p {
 #line hidden
 
 #line 416 "Login.cshtml"
-                 if (!string.IsNullOrEmpty(Model.Status)) {
+                 if (Stormpath.Owin.Common.ViewModel.LoginViewModelExtended.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
 
 #line default
 #line hidden
@@ -481,9 +481,9 @@ p {
                                         account by clicking the link we sent to your inbox.
                                     </p>
                                     <p>Didn't get the email? <a");
-            BeginWriteAttribute("href", " href=\"", 13078, "\"", 13106, 1);
+            BeginWriteAttribute("href", " href=\"", 13185, "\"", 13213, 1);
 #line 427 "Login.cshtml"
-WriteAttributeValue("", 13085, Model.VerifyEmailUri, 13085, 21, false);
+WriteAttributeValue("", 13192, Model.VerifyEmailUri, 13192, 21, false);
 
 #line default
 #line hidden
@@ -581,9 +581,9 @@ WriteAttributeValue("", 13085, Model.VerifyEmailUri, 13085, 21, false);
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Log In or <a");
-            BeginWriteAttribute("href", " href=\"", 15390, "\"", 15415, 1);
+            BeginWriteAttribute("href", " href=\"", 15497, "\"", 15522, 1);
 #line 468 "Login.cshtml"
-WriteAttributeValue("", 15397, Model.RegisterUri, 15397, 18, false);
+WriteAttributeValue("", 15504, Model.RegisterUri, 15504, 18, false);
 
 #line default
 #line hidden
@@ -691,17 +691,17 @@ WriteAttributeValue("", 15397, Model.RegisterUri, 15397, 18, false);
 #line hidden
 
             WriteLiteral("\r\n                                <div class=\"col-sm-8\"> \r\n                                    <input autofocus=\"true\"");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 17085, "\"", 17162, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 17192, "\"", 17269, 1);
 #line 499 "Login.cshtml"
-WriteAttributeValue("", 17099, Model.DisplayUsernameOrEmail ? "Email or Username" : "Email", 17099, 63, false);
+WriteAttributeValue("", 17206, Model.DisplayUsernameOrEmail ? "Email or Username" : "Email", 17206, 63, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" required name=\"login\" type=\"text\"");
-            BeginWriteAttribute("value", " value=\"", 17197, "\"", 17257, 1);
+            BeginWriteAttribute("value", " value=\"", 17304, "\"", 17364, 1);
 #line 499 "Login.cshtml"
-WriteAttributeValue("", 17205, Model.FormData.GetOrNull("login") ?? string.Empty, 17205, 52, false);
+WriteAttributeValue("", 17312, Model.FormData.GetOrNull("login") ?? string.Empty, 17312, 52, false);
 
 #line default
 #line hidden
@@ -736,9 +736,9 @@ WriteAttributeValue("", 17205, Model.FormData.GetOrNull("login") ?? string.Empty
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18307, "\"", 18335, 1);
+            BeginWriteAttribute("href", " href=\"", 18414, "\"", 18442, 1);
 #line 517 "Login.cshtml"
-WriteAttributeValue("", 18314, Model.VerifyEmailUri, 18314, 21, false);
+WriteAttributeValue("", 18421, Model.VerifyEmailUri, 18421, 21, false);
 
 #line default
 #line hidden
@@ -765,9 +765,9 @@ WriteAttributeValue("", 18314, Model.VerifyEmailUri, 18314, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18507, "\"", 18538, 1);
+            BeginWriteAttribute("href", " href=\"", 18614, "\"", 18645, 1);
 #line 522 "Login.cshtml"
-WriteAttributeValue("", 18514, Model.ForgotPasswordUri, 18514, 24, false);
+WriteAttributeValue("", 18621, Model.ForgotPasswordUri, 18621, 24, false);
 
 #line default
 #line hidden

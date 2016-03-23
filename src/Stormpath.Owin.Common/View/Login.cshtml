@@ -420,7 +420,7 @@ p {
     <div class="container custom-container">
         <div class="va-wrapper">
             <div class="view login-view container">
-                @if (!string.IsNullOrEmpty(Model.Status)) {
+                @if (Stormpath.Owin.Common.ViewModel.LoginViewModelExtended.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
                     <div class="box row">
                         <div class="email-password-area col-xs-12 large col-sm-12">
                             <div class="header">
