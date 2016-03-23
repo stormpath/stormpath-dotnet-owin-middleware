@@ -342,7 +342,8 @@ p {
 
 .login-view .email-password-area label {
   height: 14px;
-  line-height: 14px;");
+  line-height: 14px;
+");
             WriteLiteral(@"
 }
 
@@ -648,36 +649,36 @@ WriteAttributeValue("", 15504, Model.RegisterUri, 15504, 18, false);
 
             WriteLiteral("                        <form method=\"post\" role=\"form\" action=\"/login\" class=\"login-form form-horizontal\">\r\n                            <div class=\"form-group group-email\">\r\n                                <label class=\"col-sm-4\">");
 #line 489 "Login.cshtml"
-                                                   Write(Model.Form.Fields["login"].Label);
+                                                   Write(Model.Form.Fields.Where(f => f.Name == "login").Single().Label);
 
 #line default
 #line hidden
             WriteLiteral("</label> \r\n                                <div class=\"col-sm-8\"> \r\n                                    <input autofocus");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 16816, "\"", 16869, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 16846, "\"", 16929, 1);
 #line 491 "Login.cshtml"
-WriteAttributeValue("", 16830, Model.Form.Fields["login"].Placeholder, 16830, 39, false);
+WriteAttributeValue("", 16860, Model.Form.Fields.Where(f => f.Name == "login").Single().Placeholder, 16860, 69, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" required name=\"login\" type=\"text\"");
-            BeginWriteAttribute("value", " value=\"", 16904, "\"", 16964, 1);
+            BeginWriteAttribute("value", " value=\"", 16964, "\"", 17024, 1);
 #line 491 "Login.cshtml"
-WriteAttributeValue("", 16912, Model.FormData.GetOrNull("login") ?? string.Empty, 16912, 52, false);
+WriteAttributeValue("", 16972, Model.FormData.GetOrNull("login") ?? string.Empty, 16972, 52, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"form-control\">\r\n                                </div>\r\n                            </div>\r\n                            <div class=\"form-group group-password\">\r\n                                <label class=\"col-sm-4\">");
 #line 495 "Login.cshtml"
-                                                   Write(Model.Form.Fields["password"].Label);
+                                                   Write(Model.Form.Fields.Where(f => f.Name == "password").Single().Label);
 
 #line default
 #line hidden
             WriteLiteral("</label> \r\n                                <div class=\"col-sm-8\"> \r\n                                    <input");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 17450, "\"", 17506, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 17540, "\"", 17626, 1);
 #line 497 "Login.cshtml"
-WriteAttributeValue("", 17464, Model.Form.Fields["password"].Placeholder, 17464, 42, false);
+WriteAttributeValue("", 17554, Model.Form.Fields.Where(f => f.Name == "password").Single().Placeholder, 17554, 72, false);
 
 #line default
 #line hidden
@@ -706,9 +707,9 @@ WriteAttributeValue("", 17464, Model.Form.Fields["password"].Placeholder, 17464,
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18076, "\"", 18104, 1);
+            BeginWriteAttribute("href", " href=\"", 18196, "\"", 18224, 1);
 #line 509 "Login.cshtml"
-WriteAttributeValue("", 18083, Model.VerifyEmailUri, 18083, 21, false);
+WriteAttributeValue("", 18203, Model.VerifyEmailUri, 18203, 21, false);
 
 #line default
 #line hidden
@@ -735,9 +736,9 @@ WriteAttributeValue("", 18083, Model.VerifyEmailUri, 18083, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18276, "\"", 18307, 1);
+            BeginWriteAttribute("href", " href=\"", 18396, "\"", 18427, 1);
 #line 514 "Login.cshtml"
-WriteAttributeValue("", 18283, Model.ForgotPasswordUri, 18283, 24, false);
+WriteAttributeValue("", 18403, Model.ForgotPasswordUri, 18403, 24, false);
 
 #line default
 #line hidden

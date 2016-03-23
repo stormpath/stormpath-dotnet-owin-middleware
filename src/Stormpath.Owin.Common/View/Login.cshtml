@@ -1,10 +1,10 @@
-﻿@model Stormpath.Owin.Common.ViewModel.LoginViewModelExtended
+﻿@model Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel
 @using System
 @using System.Linq
 /*ignore*/@using Stormpath.Owin.Common.View
 
 @functions {
-    /*ignore*/private Stormpath.Owin.Common.ViewModel.LoginViewModelExtended Model { get; }
+    /*ignore*/private Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel Model { get; }
 }
 
 <!DOCTYPE html>
@@ -420,7 +420,7 @@ p {
     <div class="container custom-container">
         <div class="va-wrapper">
             <div class="view login-view container">
-                @if (Stormpath.Owin.Common.ViewModel.LoginViewModelExtended.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
+                @if (Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
                     <div class="box row">
                         <div class="email-password-area col-xs-12 large col-sm-12">
                             <div class="header">
@@ -493,15 +493,15 @@ p {
                         <form method="post" role="form" action="/login" class="login-form form-horizontal">
                             @* <input name="_csrf" type="hidden"> *@
                             <div class="form-group group-email">
-                                <label class="col-sm-4">@Model.Form.Fields["login"].Label</label> @* switch to col-sm-12 if social providers are present *@
+                                <label class="col-sm-4">@Model.Form.Fields.Where(f => f.Name == "login").Single().Label</label> @* switch to col-sm-12 if social providers are present *@
                                 <div class="col-sm-8"> @* switch to col-sm-12 if social providers are present *@
-                                    <input autofocus placeholder="@Model.Form.Fields["login"].Placeholder" required name="login" type="text" value="@(Model.FormData.GetOrNull("login") ?? string.Empty)" class="form-control">
+                                    <input autofocus placeholder="@Model.Form.Fields.Where(f => f.Name == "login").Single().Placeholder" required name="login" type="text" value="@(Model.FormData.GetOrNull("login") ?? string.Empty)" class="form-control">
                                 </div>
                             </div>
                             <div class="form-group group-password">
-                                <label class="col-sm-4">@Model.Form.Fields["password"].Label</label> @* switch to col-sm-12 if social providers are present *@
+                                <label class="col-sm-4">@Model.Form.Fields.Where(f => f.Name == "password").Single().Label</label> @* switch to col-sm-12 if social providers are present *@
                                 <div class="col-sm-8"> @* switch to col-sm-12 if social providers are present *@
-                                    <input placeholder="@Model.Form.Fields["password"].Placeholder" required type="password" name="password" class="form-control">
+                                    <input placeholder="@Model.Form.Fields.Where(f => f.Name == "password").Single().Placeholder" required type="password" name="password" class="form-control">
                                 </div>
                             </div>
                             <div>

@@ -41,7 +41,7 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
                     throw new Exception($"Invalid field '{fieldName}' in fieldOrder list.");
                 }
 
-                result.Form.Fields.Add(fieldName, new LoginFormFieldViewModel()
+                result.Form.Fields.Add(new LoginFormFieldViewModel()
                 {
                     Label = field.Label,
                     Name = fieldName,

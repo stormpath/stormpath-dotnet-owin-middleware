@@ -20,6 +20,6 @@ namespace Stormpath.Owin.Common.ViewModel
 {
     public class LoginFormViewModel
     {
-        public IDictionary<string, LoginFormFieldViewModel> Fields { get; set; } = new Dictionary<string, LoginFormFieldViewModel>();
+        public List<LoginFormFieldViewModel> Fields { get; set; } = new List<LoginFormFieldViewModel>();
     }
 }
