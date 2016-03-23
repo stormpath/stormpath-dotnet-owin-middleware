@@ -15,11 +15,14 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
+using Stormpath.Owin.Common;
 using Stormpath.Owin.Common.ViewModel;
+using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
@@ -47,12 +50,15 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override Task GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var loginViewModel = BuildExtendedViewModel(context);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+
+            var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, null);
+            var loginViewModel = viewModelBuilder.Build();
 
             return RenderForm(context, loginViewModel, cancellationToken);
         }
 
-        private Task RenderForm(IOwinEnvironment context, LoginViewModelExtended viewModel, CancellationToken cancellationToken)
+        private Task RenderForm(IOwinEnvironment context, ExtendedLoginViewModel viewModel, CancellationToken cancellationToken)
         {
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
@@ -79,6 +85,8 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
+            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+
             var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var formData = FormContentParser.Parse(requestBody);
 
@@ -88,8 +96,10 @@ namespace Stormpath.Owin.Middleware.Route
             bool missingLoginOrPassword = string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password);
             if (missingLoginOrPassword)
             {
-                var loginViewModel = BuildExtendedViewModel(context);
+                var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, formData);
+                var loginViewModel = viewModelBuilder.Build();
                 loginViewModel.FormErrors.Add("The login and password fields are required.");
+
                 await RenderForm(context, loginViewModel, cancellationToken);
                 return;
             }
@@ -102,15 +112,16 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                var loginViewModel = BuildExtendedViewModel(context);
+                var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, formData);
+                var loginViewModel = viewModelBuilder.Build();
                 loginViewModel.FormErrors.Add(rex.Message);
+
                 await RenderForm(context, loginViewModel, cancellationToken);
                 return;
             }
 
             var nextUri = _configuration.Web.Login.NextUri;
 
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
             var nextUriFromQueryString = queryString["next"]?.FirstOrDefault();
             if (!string.IsNullOrEmpty(nextUriFromQueryString))
             {
@@ -123,7 +134,8 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var loginViewModel = BuildViewModel();
+            var viewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login);
+            var loginViewModel = viewModelBuilder.Build();
 
             return JsonResponse.Ok(context, loginViewModel);
         }
@@ -158,48 +170,6 @@ namespace Stormpath.Owin.Middleware.Route
 
             await JsonResponse.Ok(context, responseModel);
             return;
-        }
-
-        private LoginViewModel BuildViewModel()
-        {
-            var result = new LoginViewModel();
-
-            foreach (var fieldName in _configuration.Web.Login.Form.FieldOrder)
-            {
-                Configuration.Abstractions.Model.WebFieldConfiguration field = null;
-                if (!_configuration.Web.Login.Form.Fields.TryGetValue(fieldName, out field))
-                {
-                    throw new Exception($"Invalid field '{fieldName}' in fieldOrder list.");
-                }
-
-                result.Form.Fields.Add(fieldName, new LoginFormFieldViewModel()
-                {
-                    Label = field.Label,
-                    Name = fieldName,
-                    Placeholder = field.Placeholder,
-                    Required = field.Required,
-                    Type = field.Type
-                });
-            }
-
-            return result;
-        }
-
-        private LoginViewModelExtended BuildExtendedViewModel(IOwinEnvironment context)
-        {
-            var result = new LoginViewModelExtended(BuildViewModel());
-
-            result.ForgotPasswordEnabled = _configuration.Web.ForgotPassword.Enabled ?? false; // TODO handle null values here
-            result.ForgotPasswordUri = _configuration.Web.ForgotPassword.Uri;
-            result.RegistrationEnabled = _configuration.Web.Register.Enabled ?? false;
-            result.RegisterUri = _configuration.Web.Register.Uri;
-            result.VerifyEmailEnabled = _configuration.Web.VerifyEmail.Enabled ?? false; // TODO handle null values here
-            result.VerifyEmailUri = _configuration.Web.VerifyEmail.Uri;
-
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
-            result.Status = queryString.GetString("status");
-
-            return result;
         }
     }
 }

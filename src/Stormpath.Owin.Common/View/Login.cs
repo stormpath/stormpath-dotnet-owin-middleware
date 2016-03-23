@@ -14,7 +14,7 @@ using System.Linq
     ;
     using System.Threading.Tasks;
 
-    public class Login : BaseView<Stormpath.Owin.Common.ViewModel.LoginViewModelExtended>
+    public class Login : BaseView<Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel>
     {
         #line hidden
         public Login()
@@ -456,7 +456,7 @@ p {
 #line hidden
 
 #line 416 "Login.cshtml"
-                 if (Stormpath.Owin.Common.ViewModel.LoginViewModelExtended.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
+                 if (Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
 
 #line default
 #line hidden

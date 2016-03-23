@@ -16,17 +16,10 @@
 
 using System.Collections.Generic;
 
-namespace Stormpath.Owin.Middleware.Internal
+namespace Stormpath.Owin.Common
 {
     public static class DictionaryExtensions
     {
-        public static object GetOrNull(this IDictionary<string, object> source, string key)
-        {
-            object value = null;
-            source.TryGetValue(key, out value);
-            return value;
-        }
-
         public static TValue Get<TValue>(this IDictionary<string, TValue> source, string key)
         {
             TValue value;

@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Stormpath.Owin.Common.ViewModel
 {
-    public class LoginViewModelExtended : LoginViewModel
+    public class ExtendedLoginViewModel : LoginViewModel
     {
         public static readonly string[] AcceptableStatuses = new string[]
         {
@@ -29,11 +29,11 @@ namespace Stormpath.Owin.Common.ViewModel
             "reset"
         };
 
-        public LoginViewModelExtended()
+        public ExtendedLoginViewModel()
         {
         }
 
-        public LoginViewModelExtended(LoginViewModel existing)
+        public ExtendedLoginViewModel(LoginViewModel existing)
         {
             // Copy and extend
             this.Form = existing.Form;

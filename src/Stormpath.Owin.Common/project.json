@@ -1,6 +1,8 @@
 {
   "authors": [ "Nate Barbettini" ],
-  "dependencies": { },
+  "dependencies": {
+    "Stormpath.Configuration.Abstractions": "2.0.0"
+  },
   "description": "Common components (views, view models) for the Stormpath OWIN middleware library.",
   "frameworks": {
     "dnx451": { },
