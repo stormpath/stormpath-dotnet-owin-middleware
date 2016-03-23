@@ -46,7 +46,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override Task GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var loginViewModel = BuildExtendedViewModel();
+            var loginViewModel = BuildExtendedViewModel(context);
 
             return RenderForm(context, loginViewModel, cancellationToken);
         }
@@ -70,7 +70,7 @@ namespace Stormpath.Owin.Middleware.Route
             bool missingLoginOrPassword = string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password);
             if (missingLoginOrPassword)
             {
-                var loginViewModel = BuildExtendedViewModel();
+                var loginViewModel = BuildExtendedViewModel(context);
                 loginViewModel.FormErrors.Add("The login and password fields are required.");
                 await RenderForm(context, loginViewModel, cancellationToken);
                 return;
@@ -94,7 +94,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                var loginViewModel = BuildExtendedViewModel();
+                var loginViewModel = BuildExtendedViewModel(context);
                 loginViewModel.FormErrors.Add(rex.Message);
                 await RenderForm(context, loginViewModel, cancellationToken);
                 return;
@@ -181,7 +181,7 @@ namespace Stormpath.Owin.Middleware.Route
             return result;
         }
 
-        private LoginViewModelExtended BuildExtendedViewModel()
+        private LoginViewModelExtended BuildExtendedViewModel(IOwinEnvironment context)
         {
             var result = new LoginViewModelExtended(BuildViewModel());
 
@@ -191,6 +191,9 @@ namespace Stormpath.Owin.Middleware.Route
             result.RegistrationEnabled = _configuration.Web.Register.Enabled ?? false;
             result.VerifyEmailEnabled = _configuration.Web.VerifyEmail.Enabled ?? false; // TODO handle null values here
             result.VerifyEmailUri = _configuration.Web.VerifyEmail.Uri;
+
+            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            result.Status = queryString.GetString("status");
 
             return result;
         }
