@@ -646,73 +646,43 @@ WriteAttributeValue("", 15504, Model.RegisterUri, 15504, 18, false);
 #line default
 #line hidden
 
-            WriteLiteral("                        <form method=\"post\" role=\"form\" action=\"/login\" class=\"login-form form-horizontal\">\r\n                            <div class=\"form-group group-email\">\r\n");
+            WriteLiteral("                        <form method=\"post\" role=\"form\" action=\"/login\" class=\"login-form form-horizontal\">\r\n                            <div class=\"form-group group-email\">\r\n                                <label class=\"col-sm-4\">");
 #line 489 "Login.cshtml"
-                                
+                                                   Write(Model.Form.Fields["login"].Label);
 
 #line default
 #line hidden
-
-#line 489 "Login.cshtml"
-                                 if (Model.DisplayUsernameOrEmail)
-                                {
-
-#line default
-#line hidden
-
-            WriteLiteral("                                    <label class=\"col-sm-4\">Username or Email</label> ");
+            WriteLiteral("</label> \r\n                                <div class=\"col-sm-8\"> \r\n                                    <input autofocus");
+            BeginWriteAttribute("placeholder", " placeholder=\"", 16816, "\"", 16869, 1);
 #line 491 "Login.cshtml"
-                                                                                      
-
-#line default
-#line hidden
-
-#line 491 "Login.cshtml"
-                                                                                                                                               
-                                }
-                                else
-                                {
-
-#line default
-#line hidden
-
-            WriteLiteral("                                    <label class=\"col-sm-4\">Email</label> ");
-#line 495 "Login.cshtml"
-                                                                          
-
-#line default
-#line hidden
-
-#line 495 "Login.cshtml"
-                                                                                                                                   
-                                }
-
-#line default
-#line hidden
-
-            WriteLiteral("\r\n                                <div class=\"col-sm-8\"> \r\n                                    <input autofocus=\"true\"");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 17192, "\"", 17269, 1);
-#line 499 "Login.cshtml"
-WriteAttributeValue("", 17206, Model.DisplayUsernameOrEmail ? "Email or Username" : "Email", 17206, 63, false);
+WriteAttributeValue("", 16830, Model.Form.Fields["login"].Placeholder, 16830, 39, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" required name=\"login\" type=\"text\"");
-            BeginWriteAttribute("value", " value=\"", 17304, "\"", 17364, 1);
-#line 499 "Login.cshtml"
-WriteAttributeValue("", 17312, Model.FormData.GetOrNull("login") ?? string.Empty, 17312, 52, false);
+            BeginWriteAttribute("value", " value=\"", 16904, "\"", 16964, 1);
+#line 491 "Login.cshtml"
+WriteAttributeValue("", 16912, Model.FormData.GetOrNull("login") ?? string.Empty, 16912, 52, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            WriteLiteral(@" class=""form-control"">
-                                </div>
-                            </div>
-                            <div class=""form-group group-password"">
-                                <label class=""col-sm-4"">Password</label> 
-                                <div class=""col-sm-8""> 
-                                    <input placeholder=""Password"" required type=""password"" name=""password"" class=""form-control"">
+            WriteLiteral(" class=\"form-control\">\r\n                                </div>\r\n                            </div>\r\n                            <div class=\"form-group group-password\">\r\n                                <label class=\"col-sm-4\">");
+#line 495 "Login.cshtml"
+                                                   Write(Model.Form.Fields["password"].Label);
+
+#line default
+#line hidden
+            WriteLiteral("</label> \r\n                                <div class=\"col-sm-8\"> \r\n                                    <input");
+            BeginWriteAttribute("placeholder", " placeholder=\"", 17450, "\"", 17506, 1);
+#line 497 "Login.cshtml"
+WriteAttributeValue("", 17464, Model.Form.Fields["password"].Placeholder, 17464, 42, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(@" required type=""password"" name=""password"" class=""form-control"">
                                 </div>
                             </div>
                             <div>
@@ -722,13 +692,13 @@ WriteAttributeValue("", 17312, Model.FormData.GetOrNull("login") ?? string.Empty
                     </div>
                 </div>
 ");
-#line 515 "Login.cshtml"
+#line 507 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 515 "Login.cshtml"
+#line 507 "Login.cshtml"
                  if (Model.VerifyEmailEnabled)
                 {
 
@@ -736,28 +706,28 @@ WriteAttributeValue("", 17312, Model.FormData.GetOrNull("login") ?? string.Empty
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18414, "\"", 18442, 1);
-#line 517 "Login.cshtml"
-WriteAttributeValue("", 18421, Model.VerifyEmailUri, 18421, 21, false);
+            BeginWriteAttribute("href", " href=\"", 18076, "\"", 18104, 1);
+#line 509 "Login.cshtml"
+WriteAttributeValue("", 18083, Model.VerifyEmailUri, 18083, 21, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Forgot Password?</a>\r\n");
-#line 518 "Login.cshtml"
+#line 510 "Login.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 520 "Login.cshtml"
+#line 512 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 520 "Login.cshtml"
+#line 512 "Login.cshtml"
                  if (Model.ForgotPasswordEnabled)
                 {
 
@@ -765,15 +735,15 @@ WriteAttributeValue("", 18421, Model.VerifyEmailUri, 18421, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 18614, "\"", 18645, 1);
-#line 522 "Login.cshtml"
-WriteAttributeValue("", 18621, Model.ForgotPasswordUri, 18621, 24, false);
+            BeginWriteAttribute("href", " href=\"", 18276, "\"", 18307, 1);
+#line 514 "Login.cshtml"
+WriteAttributeValue("", 18283, Model.ForgotPasswordUri, 18283, 24, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Forgot Password?</a>\r\n");
-#line 523 "Login.cshtml"
+#line 515 "Login.cshtml"
                 }
 
 #line default

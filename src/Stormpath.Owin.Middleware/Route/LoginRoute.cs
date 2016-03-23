@@ -172,7 +172,7 @@ namespace Stormpath.Owin.Middleware.Route
                     throw new Exception($"Invalid field '{fieldName}' in fieldOrder list.");
                 }
 
-                result.Form.Fields.Add(new LoginFormFieldViewModel()
+                result.Form.Fields.Add(fieldName, new LoginFormFieldViewModel()
                 {
                     Label = field.Label,
                     Name = fieldName,
@@ -189,7 +189,6 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var result = new LoginViewModelExtended(BuildViewModel());
 
-            result.DisplayUsernameOrEmail = _configuration.Web.Register.Form.Fields.Get("username")?.Enabled ?? false;
             result.ForgotPasswordEnabled = _configuration.Web.ForgotPassword.Enabled ?? false; // TODO handle null values here
             result.ForgotPasswordUri = _configuration.Web.ForgotPassword.Uri;
             result.RegistrationEnabled = _configuration.Web.Register.Enabled ?? false;
