@@ -15,6 +15,8 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
@@ -23,6 +25,7 @@ using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
+using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
@@ -34,6 +37,18 @@ namespace Stormpath.Owin.Middleware.Route
     {
         private readonly static string[] SupportedMethods = { "GET", "POST" };
         private readonly static string[] SupportedContentTypes = { "text/html", "application/json" };
+
+        private static readonly string[] defaultFields =
+        {
+            "givenName",
+            "middleName",
+            "surname",
+            "username",
+            "email",
+            "password",
+            "confirmPassword",
+            "customData"
+        };
 
         public RegisterRoute(
             StormpathConfiguration configuration,
@@ -70,23 +85,64 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task PostJson(IOwinEnvironment context, IClient scopedClient, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var body = Serializer.Deserialize<RegisterPostModel>(bodyString);
+            var bodyDictionary = Serializer.DeserializeDictionary(bodyString);
 
-            var email = body?.Email;
-            var password = body?.Password;
+            var email = bodyDictionary.Get<string>("email");
+            var password = bodyDictionary.Get<string>("password");
 
             bool missingEmailOrPassword = string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password);
             if (missingEmailOrPassword)
             {
-                throw new Exception("Missing email or password!");
+                await Error.Create(context, new BadRequest("Missing email or password."), cancellationToken);
+                return;
             }
 
-            var givenName = body?.GivenName ?? "UNKNOWN";
-            var middleName = body?.MiddleName;
-            var surname = body?.Surname ?? "UNKNOWN";
-            var username = body?.Username;
+            var confirmPassword = bodyDictionary.Get<string>("confirmPassword");
+            if (_configuration.Web.Register.Form.Fields["confirmPassword"].Enabled)
+            {
+                if (password != confirmPassword)
+                {
+                    await Error.Create(context, new BadRequest($"Passwords do not match."), cancellationToken);
+                    return;
+                }
+            }
 
-            var application = await scopedClient.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var registerViewModel = new RegisterViewModelBuilder(_configuration.Web.Register).Build();
+            foreach (var field in registerViewModel.Form.Fields)
+            {
+                if (field.Required)
+                {
+                    var fieldValue = bodyDictionary.Get<string>(field.Name);
+                    if (string.IsNullOrEmpty(fieldValue))
+                    {
+                        await Error.Create(context, new BadRequest($"Required field '{field.Name}' is missing."), cancellationToken);
+                        return;
+                    }
+                }
+            }
+
+            var givenName = bodyDictionary.Get<string>("givenName");
+
+            bool givenNameIsNotRequired =
+                !_configuration.Web.Register.Form.Fields["givenName"].Required
+                || !_configuration.Web.Register.Form.Fields["givenName"].Enabled;
+            if (string.IsNullOrEmpty(givenName) && givenNameIsNotRequired)
+            {
+                givenName = "UNKNOWN";
+            }
+
+            var surname = bodyDictionary.Get<string>("surname");
+
+            bool surnameIsNotRequired =
+                !_configuration.Web.Register.Form.Fields["surname"].Required
+                || !_configuration.Web.Register.Form.Fields["surname"].Enabled;
+            if (string.IsNullOrEmpty(surname) && surnameIsNotRequired)
+            {
+                surname = "UNKNOWN";
+            }
+
+            var middleName = bodyDictionary.Get<string>("middleName");
+            var username = bodyDictionary.Get<string>("username");
 
             var newAccount = scopedClient.Instantiate<IAccount>()
                 .SetEmail(email)
@@ -103,6 +159,41 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 newAccount.SetMiddleName(middleName);
             }
+
+            // Any custom fields must be defined in configuration
+            var definedCustomFields = registerViewModel.Form.Fields
+                .Where(f => !defaultFields.Contains(f.Name))
+                .Select(f => f.Name);
+
+            var providedCustomFields = new Dictionary<string, object>();
+
+            var customDataObject = bodyDictionary.Get<IDictionary<string, object>>("customData");
+            if (customDataObject != null && customDataObject.Any())
+            {
+                foreach (var item in customDataObject)
+                {
+                    providedCustomFields.Add(item.Key, item.Value);
+                }
+            }
+
+            foreach (var item in bodyDictionary.Where(x => !defaultFields.Contains(x.Key)))
+            {
+                providedCustomFields.Add(item.Key, item.Value);
+            }
+
+            bool containsUndefinedCustomFields = providedCustomFields.Select(x => x.Key).Except(definedCustomFields).Any();
+            if (containsUndefinedCustomFields)
+            {
+                await Error.Create(context, new BadRequest($"Unknown field '{providedCustomFields.Select(x => x.Key).Except(definedCustomFields).First()}'"), cancellationToken);
+                return;
+            }
+
+            foreach (var item in providedCustomFields)
+            {
+                newAccount.CustomData.Put(item.Key, item.Value);
+            }
+
+            var application = await scopedClient.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             await application.CreateAccountAsync(newAccount, cancellationToken);
 

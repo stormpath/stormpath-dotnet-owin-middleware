@@ -22,6 +22,11 @@ namespace Stormpath.Owin.Common
     {
         public static TValue Get<TValue>(this IDictionary<string, TValue> source, string key)
         {
+            if (source == null)
+            {
+                return default(TValue);
+            }
+
             TValue value;
             return source.TryGetValue(key, out value)
                 ? value
@@ -30,6 +35,11 @@ namespace Stormpath.Owin.Common
 
         public static TValue Get<TValue>(this IReadOnlyDictionary<string, TValue> source, string key)
         {
+            if (source == null)
+            {
+                return default(TValue);
+            }
+
             TValue value;
             return source.TryGetValue(key, out value)
                 ? value
@@ -38,6 +48,11 @@ namespace Stormpath.Owin.Common
 
         public static T Get<T>(this IDictionary<string, object> source, string key)
         {
+            if (source == null)
+            {
+                return default(T);
+            }
+
             object value;
             return source.TryGetValue(key, out value)
                 ? (T)value
