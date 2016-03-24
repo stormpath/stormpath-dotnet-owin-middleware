@@ -375,7 +375,7 @@ p {
     padding: 0 50px;
   }
 
-  .login-view .email-password-area.large .group-email label,
+  .login-view .email-password-area.large .group-login label,
   .login-view .email-password-area.large .group-password label {
     height: 45px;
     line-height: 45px;
@@ -495,14 +495,14 @@ p {
 
                             @foreach (var field in Model.Form.Fields)
                             {
-                                <div class="form-group group-@field.Name">
+                                <div class="form-group @($"group-{field.Name}")">
                                     <label class="col-sm-4">@field.Label</label> @* switch to col-sm-12 if social providers are present *@
                                     <div class="col-sm-8">
                                         @* switch to col-sm-12 if social providers are present *@
                                         <input placeholder="@field.Placeholder"
                                                name="@field.Name"
                                                type="@field.Type"
-                                               value="@(Model.FormData.GetOrNull(field.Name))"
+                                               value="@(Model.FormData.GetOrNull(field.Name) ?? string.Empty)"
                                                class="form-control"
                                                @(field.Required ? "required" : string.Empty)>
                                     </div>
