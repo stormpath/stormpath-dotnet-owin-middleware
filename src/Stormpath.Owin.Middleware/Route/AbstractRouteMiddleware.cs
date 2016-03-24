@@ -60,7 +60,7 @@ namespace Stormpath.Owin.Middleware.Route
             _configuration = configuration;
             _client = client;
             _supportedMethods = supportedMethods.ToArray();
-            _supportedContentTypes = supportedContentTypes.ToArray();
+            _supportedContentTypes = _configuration.Web.Produces.Intersect(supportedContentTypes).ToArray();
         }
 
         public async Task Invoke(IOwinEnvironment owinContext)
