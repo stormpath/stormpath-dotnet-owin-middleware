@@ -437,14 +437,14 @@ p {
                             <form method="post" role="form" class="registration-form form-horizontal sp-form">
                                 @foreach (var field in Model.Form.Fields)
                                 {
-                                    <div form-group="true" class="form-group group-@field.Name">
+                                    <div form-group="true" class="form-group @($"group-{field.Name}")">
                                         <label class="col-sm-4">@field.Label</label>
                                         <div class="col-sm-8">
                                             <input placeholder="@field.Placeholder"
                                                    name="@field.Name"
                                                    type="@field.Type"
                                                    class="form-control"
-                                                   value="@Model.FormData.GetOrNull(field.Name)"
+                                                   value="@(Model.FormData.GetOrNull(field.Name) ?? string.Empty)"
                                                    @(field.Required ? "required" : string.Empty)>
                                         </div>
                                     </div>

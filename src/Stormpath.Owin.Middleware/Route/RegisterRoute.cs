@@ -15,25 +15,25 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Configuration.Abstractions;
+using Stormpath.Owin.Common;
+using Stormpath.Owin.Common.ViewModel;
+using Stormpath.Owin.Common.ViewModelBuilder;
+using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model;
+using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
-using Stormpath.Owin.Middleware.Model;
 
 namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class RegisterRoute : AbstractRouteMiddleware
     {
-        private readonly static string[] SupportedMethods = { "POST" };
-        private readonly static string[] SupportedContentTypes = { "application/json" }; // todo
+        private readonly static string[] SupportedMethods = { "GET", "POST" };
+        private readonly static string[] SupportedContentTypes = { "text/html", "application/json" };
 
         public RegisterRoute(
             StormpathConfiguration configuration,
@@ -41,6 +41,22 @@ namespace Stormpath.Owin.Middleware.Route
             IClient client)
             : base(configuration, logger, client, SupportedMethods, SupportedContentTypes)
         {
+        }
+
+        private Task RenderForm(IOwinEnvironment context, ExtendedRegisterViewModel viewModel, CancellationToken cancellationToken)
+        {
+            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
+
+            var registerView = new Common.View.Register();
+            return HttpResponse.Ok(registerView, viewModel, context);
+        }
+
+        protected override Task GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        {
+            var viewModelBuilder = new ExtendedRegisterViewModelBuilder(_configuration.Web, null);
+            var registerViewModel = viewModelBuilder.Build();
+
+            return RenderForm(context, registerViewModel, cancellationToken);
         }
 
         protected override async Task PostJson(IOwinEnvironment context, IClient scopedClient, CancellationToken cancellationToken)

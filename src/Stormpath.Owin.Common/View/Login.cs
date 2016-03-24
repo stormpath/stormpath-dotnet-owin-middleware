@@ -342,8 +342,7 @@ p {
 
 .login-view .email-password-area label {
   height: 14px;
-  line-height: 14px;
-");
+  line-height: 14px;");
             WriteLiteral(@"
 }
 
