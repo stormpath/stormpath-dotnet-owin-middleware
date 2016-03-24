@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System;
 using Stormpath.Configuration.Abstractions.Model;
 using Stormpath.Owin.Common.ViewModel;
 
@@ -33,23 +32,8 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
         {
             var result = new RegisterViewModel();
 
-            foreach (var fieldName in registerRouteConfiguration.Form.FieldOrder)
-            {
-                WebFieldConfiguration field = null;
-                if (!registerRouteConfiguration.Form.Fields.TryGetValue(fieldName, out field))
-                {
-                    throw new Exception($"Invalid field '{fieldName}' in fieldOrder list.");
-                }
-
-                result.Form.Fields.Add(new FormFieldViewModel()
-                {
-                    Label = field.Label,
-                    Name = fieldName,
-                    Placeholder = field.Placeholder,
-                    Required = field.Required,
-                    Type = field.Type
-                });
-            }
+            var fieldViewModelBuilder = new FormFieldViewModelBuilder(registerRouteConfiguration.Form.FieldOrder, registerRouteConfiguration.Form.Fields);
+            result.Form.Fields = fieldViewModelBuilder.Build();
 
             return result;
         }
