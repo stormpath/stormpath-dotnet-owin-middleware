@@ -59,6 +59,14 @@ namespace Stormpath.Owin.Middleware.Route
             return RenderForm(context, registerViewModel, cancellationToken);
         }
 
+        protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        {
+            var viewModelBuilder = new RegisterViewModelBuilder(_configuration.Web.Register);
+            var registerViewModel = viewModelBuilder.Build();
+
+            return JsonResponse.Ok(context, registerViewModel);
+        }
+
         protected override async Task PostJson(IOwinEnvironment context, IClient scopedClient, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
