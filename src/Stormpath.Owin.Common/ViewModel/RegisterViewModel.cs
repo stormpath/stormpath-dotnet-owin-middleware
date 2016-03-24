@@ -20,7 +20,7 @@ namespace Stormpath.Owin.Common.ViewModel
 {
     public class RegisterViewModel
     {
-        public RegisterFormViewModel Form { get; set; } = new LoginFormViewModel();
+        public RegisterFormViewModel Form { get; set; } = new RegisterFormViewModel();
 
         public List<AccountStoreViewModel> AccountStores { get; set; } = new List<AccountStoreViewModel>();
     }
