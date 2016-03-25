@@ -57,7 +57,12 @@ namespace Stormpath.Owin.Middleware.Internal
         /// <returns><see cref="IDictionary{TKey, TValue}"/> of primitive items, and embedded objects as nested <see cref="IDictionary{TKey, TValue}"/></returns>
         private static IDictionary<string, object> Sanitize(JObject map)
         {
-            var result = new Dictionary<string, object>(map.Count);
+            var result = new Dictionary<string, object>();
+
+            if (map == null)
+            {
+                return result;
+            }
 
             foreach (var prop in map.Properties())
             {

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
+
 namespace Stormpath.Owin.Middleware.Model
 {
     public class RegisterPostModel
@@ -22,6 +24,8 @@ namespace Stormpath.Owin.Middleware.Model
 
         public string Password { get; set; }
 
+        public string ConfirmPassword { get; set; }
+
         public string GivenName { get; set; }
 
         public string MiddleName { get; set; }
@@ -29,5 +33,9 @@ namespace Stormpath.Owin.Middleware.Model
         public string Surname { get; set; }
 
         public string Username { get; set; }
+
+        public List<string> AllNonEmptyFieldNames { get; set; }
+
+        public Dictionary<string, object> CustomFields { get; set; }
     }
 }
