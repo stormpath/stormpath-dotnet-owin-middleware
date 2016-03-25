@@ -29,6 +29,7 @@ using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Error;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
@@ -89,7 +90,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 if (field.Required && !postData.AllNonEmptyFieldNames.Contains(field.Name, StringComparer.Ordinal))
                 {
-                    await errorHandler($"Required field '{field.Name}' is missing.", cancellationToken);
+                    await errorHandler($"{field.Label} is missing.", cancellationToken);
                     return null;
                 }
             }
@@ -110,6 +111,18 @@ namespace Stormpath.Owin.Middleware.Route
                 postData.Surname = "UNKNOWN";
             }
 
+            // Any custom fields must be defined in configuration
+            var definedCustomFields = registerViewModel.Form.Fields
+                .Where(f => !defaultFields.Contains(f.Name))
+                .Select(f => f.Name);
+
+            bool containsUndefinedCustomFields = postData.CustomFields.Select(x => x.Key).Except(definedCustomFields).Any();
+            if (containsUndefinedCustomFields)
+            {
+                await errorHandler($"Unknown field '{postData.CustomFields.Select(x => x.Key).Except(definedCustomFields).First()}'.", cancellationToken);
+                return null;
+            }
+
             var newAccount = client.Instantiate<IAccount>()
                 .SetEmail(postData.Email)
                 .SetPassword(postData.Password)
@@ -126,17 +139,6 @@ namespace Stormpath.Owin.Middleware.Route
                 newAccount.SetMiddleName(postData.MiddleName);
             }
 
-            // Any custom fields must be defined in configuration
-            var definedCustomFields = registerViewModel.Form.Fields
-                .Where(f => !defaultFields.Contains(f.Name))
-                .Select(f => f.Name);
-
-            bool containsUndefinedCustomFields = postData.CustomFields.Select(x => x.Key).Except(definedCustomFields).Any();
-            if (containsUndefinedCustomFields)
-            {
-                await errorHandler($"Unknown field '{postData.CustomFields.Select(x => x.Key).Except(definedCustomFields).First()}'.", cancellationToken);
-                return null;
-            }
 
             foreach (var item in postData.CustomFields)
             {
@@ -161,7 +163,68 @@ namespace Stormpath.Owin.Middleware.Route
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var formData = FormContentParser.Parse(bodyString);
 
-            throw new NotImplementedException();
+            var registerPostModel = new RegisterPostModel()
+            {
+                Email = formData.GetString("email"),
+                Password = formData.GetString("password"),
+                ConfirmPassword = formData.GetString("confirmPassword"),
+                GivenName = formData.GetString("givenName"),
+                Surname = formData.GetString("surname"),
+                MiddleName = formData.GetString("middleName"),
+                Username = formData.GetString("username"),
+                AllNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value))).Select(f => f.Key).ToList(),
+            };
+
+            var providedCustomFields = new Dictionary<string, object>();
+            foreach (var item in formData.Where(f => !defaultFields.Contains(f.Key)))
+            {
+                providedCustomFields.Add(item.Key, string.Join(",", item.Value));
+            }
+
+            registerPostModel.CustomFields = providedCustomFields;
+
+            var htmlErrorHandler = new Func<string, CancellationToken, Task>((message, ct) =>
+            {
+                var viewModelBuilder = new ExtendedRegisterViewModelBuilder(_configuration.Web, formData);
+                var registerViewModel = viewModelBuilder.Build();
+                registerViewModel.Errors.Add(message);
+
+                return RenderForm(context, registerViewModel, ct);
+            });
+
+            IAccount newAccount = null;
+            try
+            {
+                newAccount = await this.HandleRegistration(registerPostModel, client, htmlErrorHandler, cancellationToken);
+                if (newAccount == null)
+                {
+                    return; // Some error occurred and the handler was invoked
+                }
+            }
+            catch (ResourceException rex)
+            {
+                await htmlErrorHandler(rex.Message, cancellationToken);
+                return;
+            }
+
+            var nextUri = string.Empty;
+            
+            if (newAccount.Status == AccountStatus.Enabled)
+            {
+                // TODO: Autologin
+                nextUri = $"{_configuration.Web.Login.Uri}?status=created";
+            }
+            else if (newAccount.Status == AccountStatus.Unverified)
+            {
+                nextUri = $"{_configuration.Web.Login.Uri}?status=unverified";
+            }
+            else
+            {
+                nextUri = _configuration.Web.Login.Uri;
+            }
+
+            await HttpResponse.Redirect(context, nextUri);
+            return;
         }
 
         protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -215,7 +278,7 @@ namespace Stormpath.Owin.Middleware.Route
             var newAccount = await this.HandleRegistration(registerPostModel, client, jsonErrorHandler, cancellationToken);
             if (newAccount == null)
             {
-                return;
+                return; // Some error occurred and the handler was invoked
             }
 
             var sanitizer = new ResponseSanitizer<IAccount>();
