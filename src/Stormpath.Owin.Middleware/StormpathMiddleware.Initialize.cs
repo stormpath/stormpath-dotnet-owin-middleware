@@ -15,14 +15,14 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Configuration.Abstractions.Model;
+using Stormpath.Owin.Common.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Directory;
 using Stormpath.SDK.Http;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Serialization;
@@ -50,14 +50,19 @@ namespace Stormpath.Owin.Middleware
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
             var updatedConfiguration = ResolveApplication(client);
 
-            // Ensure the application exists
-            EnsureApplication(client, updatedConfiguration);
+            // Check the tenant environment for 
+            var integrationConfiguration = GetIntegrationConfiguration(client, updatedConfiguration);
+
+            // Ensure that the application exists
+            EnsureApplication(client, integrationConfiguration);
 
             // Validate Account Store configuration
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
-            EnsureAccountStores(client, updatedConfiguration);
+            EnsureAccountStores(client, integrationConfiguration);
 
-            return new StormpathMiddleware(logger, userAgentBuilder, clientFactory, updatedConfiguration);
+            EnsureEnvironment(client, integrationConfiguration);
+
+            return new StormpathMiddleware(logger, userAgentBuilder, clientFactory, integrationConfiguration);
         }
 
         private static IScopedClientFactory InitializeClient(object initialConfiguration)
@@ -149,6 +154,32 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
+        private static IntegrationConfiguration GetIntegrationConfiguration(IClient client, StormpathConfiguration updatedConfiguration)
+        {
+            var application = client.GetApplication(updatedConfiguration.Application.Href);
+
+            var defaultAccountStore = application.GetDefaultAccountStore();
+            var defaultAccountStoreHref = defaultAccountStore?.Href;
+
+            var defaultAccountStoreDirectory = defaultAccountStore as IDirectory;
+
+            bool emailVerificationEnabled = false;
+            bool passwordResetEnabled = false;
+
+            if (defaultAccountStoreDirectory != null)
+            {
+                var accountCreationPolicy = defaultAccountStoreDirectory.GetAccountCreationPolicy();
+                emailVerificationEnabled = accountCreationPolicy.VerificationEmailStatus == SDK.Mail.EmailStatus.Enabled;
+
+                var passwordPolicy = defaultAccountStoreDirectory.GetPasswordPolicy();
+                passwordResetEnabled = passwordPolicy.ResetEmailStatus == SDK.Mail.EmailStatus.Enabled;
+            }
+
+            return new IntegrationConfiguration(
+                updatedConfiguration,
+                new TenantConfiguration(defaultAccountStoreHref, emailVerificationEnabled, passwordResetEnabled));
+        }
+
         private static void EnsureApplication(IClient client, StormpathConfiguration updatedConfiguration)
         {
             try
@@ -166,9 +197,9 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
-        private static void EnsureAccountStores(IClient client, StormpathConfiguration updatedConfiguration)
+        private static void EnsureAccountStores(IClient client, IntegrationConfiguration integrationConfiguration)
         {
-            var application = client.GetApplication(updatedConfiguration.Application.Href);
+            var application = client.GetApplication(integrationConfiguration.Application.Href);
 
             // The application should have at least one mapped Account Store
             var accountStoreCount = application.GetAccountStoreMappings().Synchronously().Count();
@@ -177,22 +208,27 @@ namespace Stormpath.Owin.Middleware
                 throw new InitializationException("No account stores are mapped to the specified application. Account stores are required for login and registration.");
             }
 
-            // register.autoLogin and email verification workflow should not both be enabled
-            if (updatedConfiguration.Web.Register.AutoLogin)
-            {
-                // TODO
-            }
-
             // If the registration route is enabled, we need a default Account Store
-            if (updatedConfiguration.Web.Register.Enabled == true)
+            if (integrationConfiguration.Web.Register.Enabled == true)
             {
                 var defaultAccountStore = application.GetDefaultAccountStore();
 
-                if (defaultAccountStore == null)
+                if (string.IsNullOrEmpty(integrationConfiguration.Tenant.DefaultAccountStoreHref))
                 {
                     throw new InitializationException("No default account store is mapped to the specified application. A default account store is required for registration.");
                 }
             }
+        }
+
+        private static void EnsureEnvironment(IClient client, IntegrationConfiguration integrationConfiguration)
+        {
+            // register.autoLogin and email verification workflow should not both be enabled
+            if (integrationConfiguration.Web.Register.AutoLogin && integrationConfiguration.Tenant.EmailVerificationWorkflowEnabled)
+            {
+                throw new InitializationException("Invalid configuration: stormpath.web.register.autoLogin is true, but the default account store of the specified application has the email verification workflow enabled. Auto login is only possible if email verification is disabled. Please disable this workflow on this application's default account store.");
+            }
+
+
         }
     }
 }

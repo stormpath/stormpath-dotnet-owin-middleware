@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Owin.Middleware.Route;
@@ -27,6 +26,7 @@ using Stormpath.SDK.Logging;
 namespace Stormpath.Owin.Middleware
 {
     using Common;
+    using Common.Configuration;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public sealed partial class StormpathMiddleware
@@ -34,7 +34,7 @@ namespace Stormpath.Owin.Middleware
         private readonly ILogger logger = null;
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
         private readonly IScopedClientFactory clientFactory;
-        private readonly StormpathConfiguration configuration;
+        private readonly IntegrationConfiguration configuration;
         private readonly IReadOnlyDictionary<string, RouteHandler> routingTable;
         private AppFunc next;
 
@@ -42,7 +42,7 @@ namespace Stormpath.Owin.Middleware
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
             IScopedClientFactory clientFactory,
-            StormpathConfiguration configuration)
+            IntegrationConfiguration configuration)
         {
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;
