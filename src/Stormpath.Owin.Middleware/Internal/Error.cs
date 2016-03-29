@@ -53,17 +53,20 @@ namespace Stormpath.Owin.Middleware.Internal
             }
         }
 
-        public static async Task<bool> CreateFromApiError(IOwinEnvironment context, ResourceException rex, CancellationToken cancellationToken)
+        public static Task<bool> CreateFromApiError(IOwinEnvironment context, ResourceException rex, CancellationToken cancellationToken)
+            => Create(context, rex.HttpStatus, rex.Message, cancellationToken);
+
+        public static async Task<bool> Create(IOwinEnvironment context, int statusCode, string message, CancellationToken cancellationToken)
         {
-            context.Response.StatusCode = rex.HttpStatus;
+            context.Response.StatusCode = statusCode;
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
             context.Response.Headers.SetString("Cache-Control", "no-store");
             context.Response.Headers.SetString("Pragma", "no-cache");
 
             var errorModel = new
             {
-                status = rex.HttpStatus,
-                message = rex.Message
+                status = statusCode,
+                message = message
             };
 
             await context.Response.WriteAsync(Serializer.Serialize(errorModel), Encoding.UTF8, cancellationToken);

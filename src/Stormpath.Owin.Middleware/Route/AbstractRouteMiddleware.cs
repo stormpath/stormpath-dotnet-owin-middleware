@@ -99,11 +99,19 @@ namespace Stormpath.Owin.Middleware.Route
                     throw;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                // Sanitize framework-level errors
-                // todo
-                throw;
+                if (targetContentType == "application/json")
+                {
+                    // Sanitize framework-level errors
+                    await Error.Create(owinContext, 400, ex.Message, owinContext.CancellationToken);
+                    return true;
+                }
+                else
+                {
+                    // todo
+                    throw;
+                }
             }
         }
 
@@ -146,6 +154,7 @@ namespace Stormpath.Owin.Middleware.Route
                 throw new Exception($"Unknown verb to Stormpath middleware: '{method}'.");
             }
 
+            // todo: probably remove this
             throw new Exception($"Unknown target Content-Type: '{targetContentType}'.");
         }
 
