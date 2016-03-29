@@ -3,9 +3,9 @@
   "copyright": "(c) 2016 Stormpath, Inc.",
   "dependencies": {
     "Newtonsoft.Json": "7.0.1",
-    "Stormpath.Configuration.Abstractions": "2.0.0",
+    "Stormpath.Configuration.Abstractions": "3.0.0",
     "Stormpath.Owin.Common": "0.1.0",
-    "Stormpath.SDK": "0.7.1-beta3"
+    "Stormpath.SDK": "0.8.0"
   },
   "description": "Stormpath OWIN middleware for .NET.",
   "frameworks": {
