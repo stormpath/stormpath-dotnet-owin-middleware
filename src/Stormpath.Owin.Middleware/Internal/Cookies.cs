@@ -62,7 +62,7 @@ namespace Stormpath.Owin.Middleware.Internal
                 ? $"expires={FormatDate(expirationDate.Value)}"
                 : null;
 
-            var httpOnly = cookieConfig.HttpOnly ?? false
+            var httpOnly = cookieConfig.HttpOnly
                 ? "HttpOnly"
                 : null;
 

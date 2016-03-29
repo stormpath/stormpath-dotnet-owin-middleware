@@ -46,7 +46,7 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
             // Copy values from configuration
             result.ForgotPasswordEnabled = this.webConfiguration.ForgotPassword.Enabled ?? false; // TODO handle null values here
             result.ForgotPasswordUri = this.webConfiguration.ForgotPassword.Uri;
-            result.RegistrationEnabled = this.webConfiguration.Register.Enabled ?? false;
+            result.RegistrationEnabled = this.webConfiguration.Register.Enabled;
             result.RegisterUri = this.webConfiguration.Register.Uri;
             result.VerifyEmailEnabled = this.webConfiguration.VerifyEmail.Enabled ?? false; // TODO handle null values here
             result.VerifyEmailUri = this.webConfiguration.VerifyEmail.Uri;
