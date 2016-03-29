@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stormpath.Configuration.Abstractions.Model;
@@ -45,7 +46,14 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
             // Previous form submission (if any)
             if (this.previousFormData != null)
             {
-                result.FormData = previousFormData.ToDictionary(kvp => kvp.Key, kvp => string.Join(",", kvp.Value));
+                result.FormData = previousFormData
+                    .Where(kvp =>
+                    {
+                        var definedField = this.webConfiguration.Register.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
+                        bool include = !definedField.Value?.Type.Equals("password", StringComparison.OrdinalIgnoreCase) ?? false;
+                        return include;
+                    })
+                    .ToDictionary(kvp => kvp.Key, kvp => string.Join(",", kvp.Value));
             }
 
             return result;
