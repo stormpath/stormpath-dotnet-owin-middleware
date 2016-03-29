@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
