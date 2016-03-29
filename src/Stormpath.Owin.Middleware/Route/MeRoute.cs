@@ -39,7 +39,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
         }
 
-        protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
             context.Response.Headers.SetString("Cache-Control", "no-store");

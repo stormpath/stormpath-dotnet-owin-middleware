@@ -59,7 +59,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
         }
 
-        private Task RenderForm(IOwinEnvironment context, ExtendedRegisterViewModel viewModel, CancellationToken cancellationToken)
+        private Task<bool> RenderForm(IOwinEnvironment context, ExtendedRegisterViewModel viewModel, CancellationToken cancellationToken)
         {
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
@@ -150,7 +150,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await application.CreateAccountAsync(newAccount, cancellationToken);
         }
 
-        protected override Task GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new ExtendedRegisterViewModelBuilder(_configuration.Web, null);
             var registerViewModel = viewModelBuilder.Build();
@@ -158,7 +158,7 @@ namespace Stormpath.Owin.Middleware.Route
             return RenderForm(context, registerViewModel, cancellationToken);
         }
 
-        protected override async Task PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var formData = FormContentParser.Parse(bodyString);
@@ -198,13 +198,13 @@ namespace Stormpath.Owin.Middleware.Route
                 newAccount = await this.HandleRegistration(registerPostModel, client, htmlErrorHandler, cancellationToken);
                 if (newAccount == null)
                 {
-                    return; // Some error occurred and the handler was invoked
+                    return true; // Some error occurred and the handler was invoked
                 }
             }
             catch (ResourceException rex)
             {
                 await htmlErrorHandler(rex.Message, cancellationToken);
-                return;
+                return true;
             }
 
             var nextUri = string.Empty;
@@ -223,11 +223,10 @@ namespace Stormpath.Owin.Middleware.Route
                 nextUri = _configuration.Web.Login.Uri;
             }
 
-            await HttpResponse.Redirect(context, nextUri);
-            return;
+            return await HttpResponse.Redirect(context, nextUri);
         }
 
-        protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new RegisterViewModelBuilder(_configuration.Web.Register);
             var registerViewModel = viewModelBuilder.Build();
@@ -235,7 +234,7 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, registerViewModel);
         }
 
-        protected override async Task PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var bodyDictionary = Serializer.DeserializeDictionary(bodyString);
@@ -278,7 +277,7 @@ namespace Stormpath.Owin.Middleware.Route
             var newAccount = await this.HandleRegistration(registerPostModel, client, jsonErrorHandler, cancellationToken);
             if (newAccount == null)
             {
-                return; // Some error occurred and the handler was invoked
+                return true; // Some error occurred and the handler was invoked
             }
 
             var sanitizer = new ResponseSanitizer<IAccount>();
@@ -287,7 +286,7 @@ namespace Stormpath.Owin.Middleware.Route
                 account = sanitizer.Sanitize(newAccount)
             };
 
-            await JsonResponse.Ok(context, responseModel);
+            return await JsonResponse.Ok(context, responseModel);
         }
     }
 }

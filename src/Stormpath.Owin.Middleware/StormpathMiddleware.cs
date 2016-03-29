@@ -97,8 +97,12 @@ namespace Stormpath.Owin.Middleware
                     }
                 }
 
-                await routeHandler.Handler(scopedClient)(context);
-                return;
+                var handled = await routeHandler.Handler(scopedClient)(context);
+
+                if (!handled)
+                {
+                    await this.next.Invoke(environment);
+                }
             }
         }
 
@@ -147,63 +151,6 @@ namespace Stormpath.Owin.Middleware
             return string
                 .Join(" ", callingAgent, userAgentBuilder.GetUserAgent())
                 .Trim();
-        }
-
-        private IReadOnlyDictionary<string, RouteHandler> BuildRoutingTable()
-        {
-            var routingTable = new Dictionary<string, RouteHandler>();
-
-            if (this.configuration.Web.Oauth2.Enabled == true)
-            {
-                routingTable.Add(
-                    this.configuration.Web.Oauth2.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => new Oauth2Route(this.configuration, this.logger, client).Invoke)
-                    );
-            }
-
-            if (this.configuration.Web.Register.Enabled == true)
-            {
-                routingTable.Add(
-                    this.configuration.Web.Register.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => new RegisterRoute(this.configuration, this.logger, client).Invoke)
-                    );
-            }
-
-            if (this.configuration.Web.Login.Enabled == true)
-            {
-                routingTable.Add(
-                    this.configuration.Web.Login.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => new LoginRoute(this.configuration, this.logger, client).Invoke)
-                    );
-            }
-
-            if (this.configuration.Web.Me.Enabled == true)
-            {
-                routingTable.Add(
-                    this.configuration.Web.Me.Uri,
-                    new RouteHandler(
-                        authenticationRequired: true,
-                        handler: client => new MeRoute(this.configuration, this.logger, client).Invoke)
-                    );
-            }
-
-            if (this.configuration.Web.Logout.Enabled == true)
-            {
-                routingTable.Add(
-                    this.configuration.Web.Logout.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => new LogoutRoute(this.configuration, this.logger, client).Invoke)
-                    );
-            }
-
-            return routingTable;
         }
     }
 }

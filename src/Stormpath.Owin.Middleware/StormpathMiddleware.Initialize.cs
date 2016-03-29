@@ -15,11 +15,13 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Configuration.Abstractions.Model;
 using Stormpath.Owin.Common.Configuration;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Route;
 using Stormpath.SDK;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Directory;
@@ -227,6 +229,77 @@ namespace Stormpath.Owin.Middleware
             {
                 throw new InitializationException("Invalid configuration: stormpath.web.register.autoLogin is true, but the default account store of the specified application has the email verification workflow enabled. Auto login is only possible if email verification is disabled. Please disable this workflow on this application's default account store.");
             }
+        }
+
+        private IReadOnlyDictionary<string, RouteHandler> BuildRoutingTable()
+        {
+            var routingTable = new Dictionary<string, RouteHandler>();
+
+            if (this.configuration.Web.Oauth2.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Oauth2.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new Oauth2Route(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            if (this.configuration.Web.Register.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Register.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new RegisterRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            if (this.configuration.Web.Login.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Login.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new LoginRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            if (this.configuration.Web.Me.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Me.Uri,
+                    new RouteHandler(
+                        authenticationRequired: true,
+                        handler: client => new MeRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            if (this.configuration.Web.Logout.Enabled == true)
+            {
+                routingTable.Add(
+                    this.configuration.Web.Logout.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new LogoutRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            bool shouldEnableForgotRoute =
+                this.configuration.Web.ForgotPassword.Enabled == true
+                || (this.configuration.Web.ForgotPassword.Enabled == null && this.configuration.Tenant.PasswordResetWorkflowEnabled);
+
+            if (shouldEnableForgotRoute)
+            {
+                routingTable.Add(
+                    this.configuration.Web.ForgotPassword.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new ForgotRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            return routingTable;
         }
     }
 }

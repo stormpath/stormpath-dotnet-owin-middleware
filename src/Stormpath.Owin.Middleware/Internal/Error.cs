@@ -26,7 +26,7 @@ namespace Stormpath.Owin.Middleware.Internal
 {
     public static class Error
     {
-        public static Task Create<T>(IOwinEnvironment context, CancellationToken cancellationToken)
+        public static Task<bool> Create<T>(IOwinEnvironment context, CancellationToken cancellationToken)
             where T : AbstractError, new()
         {
             var instance = new T();
@@ -34,7 +34,7 @@ namespace Stormpath.Owin.Middleware.Internal
             return Create(context, instance, cancellationToken);
         }
 
-        public static Task Create(IOwinEnvironment context, AbstractError error, CancellationToken cancellationToken)
+        public static async Task<bool> Create(IOwinEnvironment context, AbstractError error, CancellationToken cancellationToken)
         {
             context.Response.StatusCode = error.StatusCode;
 
@@ -44,15 +44,16 @@ namespace Stormpath.Owin.Middleware.Internal
                 context.Response.Headers.SetString("Cache-Control", "no-store");
                 context.Response.Headers.SetString("Pragma", "no-cache");
 
-                return context.Response.WriteAsync(Serializer.Serialize(error.Body), Encoding.UTF8);
+                await context.Response.WriteAsync(Serializer.Serialize(error.Body), Encoding.UTF8);
+                return true;
             }
             else
             {
-                return Task.FromResult(0);
+                return true;
             }
         }
 
-        public static Task CreateFromApiError(IOwinEnvironment context, ResourceException rex, CancellationToken cancellationToken)
+        public static async Task<bool> CreateFromApiError(IOwinEnvironment context, ResourceException rex, CancellationToken cancellationToken)
         {
             context.Response.StatusCode = rex.HttpStatus;
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
@@ -65,7 +66,8 @@ namespace Stormpath.Owin.Middleware.Internal
                 message = rex.Message
             };
 
-            return context.Response.WriteAsync(Serializer.Serialize(errorModel), Encoding.UTF8, cancellationToken);
+            await context.Response.WriteAsync(Serializer.Serialize(errorModel), Encoding.UTF8, cancellationToken);
+            return true;
         }
     }
 }

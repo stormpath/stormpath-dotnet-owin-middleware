@@ -42,12 +42,12 @@ namespace Stormpath.Owin.Middleware.Route
         {
         }
 
-        protected override async Task PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             if (!context.Request.Headers.GetString("Content-Type").StartsWith("application/x-www-form-urlencoded"))
             {
                 await Error.Create<OauthInvalidRequest>(context, cancellationToken);
-                return;
+                return true;
             }
 
             var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
@@ -60,23 +60,23 @@ namespace Stormpath.Owin.Middleware.Route
             if (string.IsNullOrEmpty(grantType))
             {
                 await Error.Create<OauthInvalidRequest>(context, cancellationToken);
-                return;
+                return true;
             }
 
             if (grantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase))
             {
                 await ExecuteClientCredentialsFlow(context, username, password, cancellationToken);
-                return;
+                return true;
             }
             else if (grantType.Equals("password", StringComparison.OrdinalIgnoreCase))
             {
                 await ExecutePasswordFlow(context, client, username, password, cancellationToken);
-                return;
+                return true;
             }
             else
             {
                 await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);
-                return;
+                return true;
             }
         }
 

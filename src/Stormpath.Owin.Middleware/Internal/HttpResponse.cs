@@ -23,20 +23,21 @@ namespace Stormpath.Owin.Middleware.Internal
 {
     public static class HttpResponse
     {
-        public static Task Ok<T>(BaseView<T> view, T viewModel, IOwinEnvironment context)
+        public static async Task<bool> Ok<T>(BaseView<T> view, T viewModel, IOwinEnvironment context)
         {
             context.Response.StatusCode = 200;
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
-            return view.ExecuteAsync(viewModel, context.Response.Body);
+            await view.ExecuteAsync(viewModel, context.Response.Body);
+            return true;
         }
 
-        public static Task Redirect(IOwinEnvironment context, string uri)
+        public static Task<bool> Redirect(IOwinEnvironment context, string uri)
         {
             context.Response.StatusCode = 302;
             context.Response.Headers.SetString("Location", uri);
 
-            return Task.FromResult(false);
+            return Task.FromResult(true);
         }
     }
 }

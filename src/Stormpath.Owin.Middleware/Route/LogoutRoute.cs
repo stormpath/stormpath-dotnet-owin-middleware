@@ -41,20 +41,20 @@ namespace Stormpath.Owin.Middleware.Route
         {
         }
 
-        protected override async Task PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             await HandleLogout(context, client, cancellationToken);
 
             await HttpResponse.Redirect(context, _configuration.Web.Logout.NextUri);
-            return;
+            return true;
         }
 
-        protected override async Task PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             await HandleLogout(context, client, cancellationToken);
 
             await JsonResponse.Ok(context);
-            return;
+            return true;
         }
 
         private async Task HandleLogout(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)

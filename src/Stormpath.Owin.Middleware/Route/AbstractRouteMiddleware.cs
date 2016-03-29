@@ -63,18 +63,18 @@ namespace Stormpath.Owin.Middleware.Route
             _supportedContentTypes = _configuration.Web.Produces.Intersect(supportedContentTypes).ToArray();
         }
 
-        public async Task Invoke(IOwinEnvironment owinContext)
+        public async Task<bool> Invoke(IOwinEnvironment owinContext)
         {
             if (!IsSupportedVerb(owinContext))
             {
                 await Error.Create<MethodNotAllowed>(owinContext, owinContext.CancellationToken);
-                return;
+                return true;
             }
 
             if (!HasSupportedAccept(owinContext))
             {
                 await Error.Create<NotAcceptable>(owinContext, owinContext.CancellationToken);
-                return;
+                return true;
             }
 
             _logger.Info($"Stormpath middleware handling request {owinContext.Request.Path}");
@@ -83,8 +83,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                await Dispatch(owinContext, _client, targetContentType, owinContext.CancellationToken);
-                return;
+                return await Dispatch(owinContext, _client, targetContentType, owinContext.CancellationToken);
             }
             catch (ResourceException rex)
             {
@@ -92,7 +91,7 @@ namespace Stormpath.Owin.Middleware.Route
                 {
                     // Sanitize Stormpath API errors
                     await Error.CreateFromApiError(owinContext, rex, owinContext.CancellationToken);
-                    return;
+                    return true;
                 }
                 else
                 {
@@ -114,7 +113,7 @@ namespace Stormpath.Owin.Middleware.Route
         private bool HasSupportedAccept(IOwinEnvironment context)
             => true; //todo
 
-        private Task Dispatch(IOwinEnvironment context, IClient scopedClient, string targetContentType, CancellationToken cancellationToken)
+        private Task<bool> Dispatch(IOwinEnvironment context, IClient scopedClient, string targetContentType, CancellationToken cancellationToken)
         {
             var method = context.Request.Method;
 
@@ -150,28 +149,28 @@ namespace Stormpath.Owin.Middleware.Route
             throw new Exception($"Unknown target Content-Type: '{targetContentType}'.");
         }
 
-        protected virtual Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected virtual Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            // This should not happen with proper configuration.
-            throw new NotImplementedException("Fatal error: this controller does not support GET with application/json.");
+            // Do nothing and pass on to next middleware by default.
+            return Task.FromResult(false);
         }
 
-        protected virtual Task GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected virtual Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            // This should not happen with proper configuration.
-            throw new NotImplementedException("Fatal error: this controller does not support GET with text/html.");
+            // Do nothing and pass on to next middleware by default.
+            return Task.FromResult(false);
         }
 
-        protected virtual Task PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            // This should not happen with proper configuration.
-            throw new NotImplementedException("Fatal error: this controller does not support POST with application/json.");
+            // Do nothing and pass on to next middleware by default.
+            return Task.FromResult(false);
         }
 
-        protected virtual Task PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            // This should not happen with proper configuration.
-            throw new NotImplementedException("Fatal error: this controller does not support POST with text/html.");
+            // Do nothing and pass on to next middleware by default.
+            return Task.FromResult(false);
         }
     }
 }

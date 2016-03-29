@@ -45,7 +45,15 @@ namespace Stormpath.Owin.Middleware.Route
         {
         }
 
-        protected override Task GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        private Task<bool> RenderForm(IOwinEnvironment context, ExtendedLoginViewModel viewModel, CancellationToken cancellationToken)
+        {
+            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
+
+            var loginView = new Common.View.Login();
+            return HttpResponse.Ok(loginView, viewModel, context);
+        }
+
+        protected override Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
@@ -53,14 +61,6 @@ namespace Stormpath.Owin.Middleware.Route
             var loginViewModel = viewModelBuilder.Build();
 
             return RenderForm(context, loginViewModel, cancellationToken);
-        }
-
-        private Task RenderForm(IOwinEnvironment context, ExtendedLoginViewModel viewModel, CancellationToken cancellationToken)
-        {
-            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
-
-            var loginView = new Common.View.Login();
-            return HttpResponse.Ok(loginView, viewModel, context);
         }
 
         private async Task<IOauthGrantAuthenticationResult> HandleLogin(IClient client, string login, string password, CancellationToken cancellationToken)
@@ -80,7 +80,7 @@ namespace Stormpath.Owin.Middleware.Route
             return grantResult;
         }
 
-        protected override async Task PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
@@ -97,8 +97,7 @@ namespace Stormpath.Owin.Middleware.Route
                 var loginViewModel = viewModelBuilder.Build();
                 loginViewModel.Errors.Add("The login and password fields are required.");
 
-                await RenderForm(context, loginViewModel, cancellationToken);
-                return;
+                return await RenderForm(context, loginViewModel, cancellationToken);
             }
 
             try
@@ -113,8 +112,7 @@ namespace Stormpath.Owin.Middleware.Route
                 var loginViewModel = viewModelBuilder.Build();
                 loginViewModel.Errors.Add(rex.Message);
 
-                await RenderForm(context, loginViewModel, cancellationToken);
-                return;
+                return await RenderForm(context, loginViewModel, cancellationToken);
             }
 
             var nextUri = _configuration.Web.Login.NextUri;
@@ -125,11 +123,10 @@ namespace Stormpath.Owin.Middleware.Route
                 nextUri = nextUriFromQueryString;
             }
 
-            await HttpResponse.Redirect(context, nextUri);
-            return;
+            return await HttpResponse.Redirect(context, nextUri);
         }
 
-        protected override Task GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login);
             var loginViewModel = viewModelBuilder.Build();
@@ -137,7 +134,7 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, loginViewModel);
         }
 
-        protected override async Task PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var body = Serializer.Deserialize<LoginPostModel>(bodyString);
@@ -147,8 +144,7 @@ namespace Stormpath.Owin.Middleware.Route
             bool missingLoginOrPassword = string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password);
             if (missingLoginOrPassword)
             {
-                await Error.Create(context, new BadRequest("Missing login or password."), cancellationToken);
-                return;
+                return await Error.Create(context, new BadRequest("Missing login or password."), cancellationToken);
             }
 
             var grantResult = await HandleLogin(client, login, password, cancellationToken);
@@ -165,8 +161,7 @@ namespace Stormpath.Owin.Middleware.Route
                 account = sanitizer.Sanitize(account)
             };
 
-            await JsonResponse.Ok(context, responseModel);
-            return;
+            return await JsonResponse.Ok(context, responseModel);
         }
     }
 }
