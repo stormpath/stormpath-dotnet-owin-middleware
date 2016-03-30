@@ -56,7 +56,10 @@ namespace Stormpath.Owin.Middleware
 
             Cookies.DeleteTokenCookies(context, configuration.Web);
 
-            if (ContentNegotiation.SelectBestContentType(environment, new string[] { "text/html", "application/json" }).Equals("text/html"))
+            var acceptHeader = context.Request.Headers.GetString("Accept");
+            var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, configuration.Web.Produces);
+
+            if (contentNegotiationResult.Success && contentNegotiationResult.Preferred == ContentType.Html)
             {
                 context.Response.StatusCode = 302;
 

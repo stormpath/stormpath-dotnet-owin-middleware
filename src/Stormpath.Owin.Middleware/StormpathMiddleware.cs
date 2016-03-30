@@ -81,12 +81,6 @@ namespace Stormpath.Owin.Middleware
                     return;
                 }
 
-                if (!ContentNegotiation.IsSupportedByConfiguration(context, this.configuration))
-                {
-                    context.Response.StatusCode = 406;
-                    return;
-                }
-
                 if (routeHandler.AuthenticationRequired)
                 {
                     var filter = new AuthenticationRequiredFilter(this.logger);

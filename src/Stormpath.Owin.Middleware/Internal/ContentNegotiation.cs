@@ -17,9 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stormpath.Configuration.Abstractions;
-using Stormpath.Owin.Common;
-using Stormpath.Owin.Middleware.Owin;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -85,67 +82,6 @@ namespace Stormpath.Owin.Middleware.Internal
                 .Select(kvp => kvp.Key);
 
             return sorted.ToArray();
-        }
-
-        public static bool IsSupportedByConfiguration(IOwinEnvironment context, StormpathConfiguration configuration)
-        {
-            // TODO this may need to be fleshed out.
-
-            var acceptHeader = context.Request.Headers.GetString("Accept");
-
-            if (string.IsNullOrEmpty(acceptHeader))
-            {
-                acceptHeader = "*/*";
-            }
-
-            if (acceptHeader.Equals("*/*"))
-            {
-                return true;
-            }
-
-            return configuration.Web.Produces
-                .Where(produces => acceptHeader.Contains(produces))
-                .Any();
-        }
-
-        public static string SelectBestContentType(IOwinEnvironment context, IEnumerable<string> supportedContentTypes)
-        {
-            var acceptHeader = context.Request.Headers.GetString("Accept");
-            return SelectBestContentType(acceptHeader, supportedContentTypes);
-        }
-
-        public static string SelectBestContentType(IDictionary<string, object> environment, IEnumerable<string> supportedContentTypes)
-        {
-            var headerCollection = environment[OwinKeys.RequestHeaders] as IDictionary<string, string[]>;
-            var acceptHeader = headerCollection.GetString("Accept");
-            return SelectBestContentType(acceptHeader, supportedContentTypes);
-        }
-
-        public static string SelectBestContentType(string acceptHeader, IEnumerable<string> supportedContentTypes)
-        {
-            // TODO might need to be smarter about parsing the acceptedContentTypes
-
-            bool acceptAny = string.IsNullOrEmpty(acceptHeader) || acceptHeader.Equals("*/*");
-            if (acceptAny)
-            {
-                supportedContentTypes.First();
-            }
-
-            var acceptedContentTypes = acceptHeader.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-
-            foreach (var contentType in acceptedContentTypes)
-            {
-                var supportedContentType = supportedContentTypes
-                    .Where(s => s.Contains(contentType.Trim()))
-                    .FirstOrDefault();
-
-                if (!string.IsNullOrEmpty(supportedContentType))
-                {
-                    return supportedContentType;
-                }
-            }
-
-            return supportedContentTypes.First();
         }
     }
 }
