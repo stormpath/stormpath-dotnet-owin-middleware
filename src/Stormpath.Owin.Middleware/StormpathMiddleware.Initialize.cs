@@ -235,6 +235,7 @@ namespace Stormpath.Owin.Middleware
         {
             var routingTable = new Dictionary<string, RouteHandler>();
 
+            // /oauth/token
             if (this.configuration.Web.Oauth2.Enabled == true)
             {
                 routingTable.Add(
@@ -245,6 +246,7 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
+            // /register
             if (this.configuration.Web.Register.Enabled == true)
             {
                 routingTable.Add(
@@ -255,6 +257,7 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
+            // /login
             if (this.configuration.Web.Login.Enabled == true)
             {
                 routingTable.Add(
@@ -265,6 +268,7 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
+            // /me
             if (this.configuration.Web.Me.Enabled == true)
             {
                 routingTable.Add(
@@ -275,6 +279,7 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
+            // /logout
             if (this.configuration.Web.Logout.Enabled == true)
             {
                 routingTable.Add(
@@ -285,10 +290,10 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
+            // /forgot
             bool shouldEnableForgotPasswordRoute =
                 this.configuration.Web.ForgotPassword.Enabled == true
                 || (this.configuration.Web.ForgotPassword.Enabled == null && this.configuration.Tenant.PasswordResetWorkflowEnabled);
-
             if (shouldEnableForgotPasswordRoute)
             {
                 routingTable.Add(
@@ -299,10 +304,10 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
+            // /change
             bool shouldEnableChangePasswordRoute =
                 this.configuration.Web.ChangePassword.Enabled == true
                 || (this.configuration.Web.ChangePassword.Enabled == null && this.configuration.Tenant.PasswordResetWorkflowEnabled);
-
             if (shouldEnableChangePasswordRoute)
             {
                 routingTable.Add(
@@ -310,6 +315,20 @@ namespace Stormpath.Owin.Middleware
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => new ChangePasswordRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            // /verify
+            bool shouldEnableVerifyEmailRoute =
+                this.configuration.Web.VerifyEmail.Enabled == true
+                || (this.configuration.Web.VerifyEmail.Enabled == null && this.configuration.Tenant.EmailVerificationWorkflowEnabled);
+            if (shouldEnableVerifyEmailRoute)
+            {
+                routingTable.Add(
+                    this.configuration.Web.VerifyEmail.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new VerifyEmailRoute(this.configuration, this.logger, client).Invoke)
                     );
             }
 
