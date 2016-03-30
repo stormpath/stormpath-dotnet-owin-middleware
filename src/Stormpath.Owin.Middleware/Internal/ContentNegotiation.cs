@@ -65,17 +65,19 @@ namespace Stormpath.Owin.Middleware.Internal
 
             foreach (var mediaRange in mediaRanges)
             {
-                var tokens = mediaRange.Split(';');
+                var tokens = mediaRange
+                    .Split(';')
+                    .Select(t => t.Trim());
 
                 var qualityFactor = 1.0;
                 var qualityFactorToken = tokens.Where(t => t.StartsWith("q=")).SingleOrDefault();
 
                 if (!string.IsNullOrEmpty(qualityFactorToken))
                 {
-                    qualityFactor = double.Parse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=")));
+                    qualityFactor = double.Parse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=") + 2));
                 }
 
-                results.Add(tokens[0], qualityFactor);
+                results.Add(tokens.ElementAt(0), qualityFactor);
             }
 
             var sorted = results
