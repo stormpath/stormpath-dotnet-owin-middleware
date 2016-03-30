@@ -522,15 +522,8 @@ using System.Linq
 #line default
 #line hidden
 
-            WriteLiteral("\r\n                        <form method=\"post\" role=\"form\"");
-            BeginWriteAttribute("action", " action=\"", 16842, "\"", 16875, 1);
-#line 448 "ChangePassword.cshtml"
-WriteAttributeValue("", 16851, Model.ChangePasswordUri, 16851, 24, false);
-
-#line default
-#line hidden
-            EndWriteAttribute();
-            WriteLiteral(@" class=""login-form form-horizontal"">
+            WriteLiteral(@"
+                        <form method=""post"" role=""form"" class=""login-form form-horizontal"">
                             <div class=""form-group group-password"">
                                 <label class=""col-sm-4"">Password</label>
                                 <div class=""col-sm-8"">
@@ -544,9 +537,9 @@ WriteAttributeValue("", 16851, Model.ChangePasswordUri, 16851, 24, false);
                                 </div>
                             </div>
                             <div>
-                                <button type=""submit"" class=""login btn btn-login btn-sp-green"">Submit</button>
-        ");
-            WriteLiteral(@"                    </div>
+                                <button type=""submit"" class=""lo");
+            WriteLiteral(@"gin btn btn-login btn-sp-green"">Submit</button>
+                            </div>
                         </form>
                     </div>
                 </div>
