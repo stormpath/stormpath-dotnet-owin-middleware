@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
@@ -21,6 +22,7 @@ using Stormpath.Owin.Common;
 using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
@@ -63,9 +65,24 @@ namespace Stormpath.Owin.Middleware.Route
             return base.PostHtml(context, client, cancellationToken);
         }
 
-        protected override Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            return base.PostJson(context, client, cancellationToken);
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+
+            try
+            {
+                var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
+                var body = Serializer.Deserialize<ForgotPostModel>(bodyString);
+                var email = body?.Email;
+
+                await application.SendPasswordResetEmailAsync(email, cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                _logger.Error(ex, source: "ForgotRoute.PostJson");
+            }
+
+            return await JsonResponse.Ok(context);
         }
     }
 }
