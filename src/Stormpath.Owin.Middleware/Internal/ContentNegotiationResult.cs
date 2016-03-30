@@ -1,4 +1,4 @@
-﻿// <copyright file="ForgotRoute.cs" company="Stormpath, Inc.">
+﻿// <copyright file="AbstractMiddlewareController.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,20 +14,18 @@
 // limitations under the License.
 // </copyright>
 
-using Stormpath.Configuration.Abstractions;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
-
-namespace Stormpath.Owin.Middleware.Route
+namespace Stormpath.Owin.Middleware.Internal
 {
-    public sealed class ChangePasswordRoute : AbstractRouteMiddleware
+    public struct ContentNegotiationResult
     {
-        public ChangePasswordRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
+        public ContentNegotiationResult(bool success, ContentType prefers)
         {
+            this.Preferred = prefers;
+            this.Success = success;
         }
+
+        public ContentType Preferred { get; private set; }
+
+        public bool Success { get; private set; }
     }
 }

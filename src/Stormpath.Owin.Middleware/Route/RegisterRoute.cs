@@ -36,9 +36,6 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class RegisterRoute : AbstractRouteMiddleware
     {
-        private readonly static string[] SupportedMethods = { "GET", "POST" };
-        private readonly static string[] SupportedContentTypes = { "text/html", "application/json" };
-
         private static readonly string[] defaultFields =
         {
             "givenName",
@@ -55,7 +52,7 @@ namespace Stormpath.Owin.Middleware.Route
             StormpathConfiguration configuration,
             ILogger logger,
             IClient client)
-            : base(configuration, logger, client, SupportedMethods, SupportedContentTypes)
+            : base(configuration, logger, client)
         {
         }
 

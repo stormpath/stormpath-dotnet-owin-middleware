@@ -31,14 +31,11 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class Oauth2Route : AbstractRouteMiddleware
     {
-        private readonly static string[] SupportedMethods = { "POST" };
-        private readonly static string[] SupportedContentTypes = { "application/json" };
-
         public Oauth2Route(
             StormpathConfiguration configuration,
             ILogger logger,
             IClient client)
-            : base(configuration, logger, client, SupportedMethods, SupportedContentTypes)
+            : base(configuration, logger, client)
         {
         }
 

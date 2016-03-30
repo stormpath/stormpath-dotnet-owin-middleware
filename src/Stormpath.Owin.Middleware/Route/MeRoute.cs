@@ -28,14 +28,11 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public class MeRoute : AbstractRouteMiddleware
     {
-        private readonly static string[] SupportedMethods = { "GET" };
-        private readonly static string[] SupportedContentTypes = { "application/json" };
-
         public MeRoute(
             StormpathConfiguration configuration,
             ILogger logger,
             IClient client)
-            : base(configuration, logger, client, SupportedMethods, SupportedContentTypes)
+            : base(configuration, logger, client)
         {
         }
 

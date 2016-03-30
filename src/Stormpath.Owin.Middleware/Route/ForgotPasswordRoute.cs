@@ -31,14 +31,11 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class ForgotPasswordRoute : AbstractRouteMiddleware
     {
-        private readonly static string[] SupportedMethods = { "GET", "POST" };
-        private readonly static string[] SupportedContentTypes = { "text/html", "application/json" };
-
         public ForgotPasswordRoute(
             StormpathConfiguration configuration,
             ILogger logger,
             IClient client)
-            : base(configuration, logger, client, SupportedMethods, SupportedContentTypes)
+            : base(configuration, logger, client)
         {
         }
 

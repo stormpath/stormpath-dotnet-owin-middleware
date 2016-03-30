@@ -28,13 +28,12 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
+    using Common;
     using SDK.Error;
 
     public abstract class AbstractRouteMiddleware
     {
         private readonly IClient _client;
-        private readonly string[] _supportedMethods;
-        private readonly string[] _supportedContentTypes;
 
         protected readonly ILogger _logger;
         protected readonly StormpathConfiguration _configuration;
@@ -42,9 +41,7 @@ namespace Stormpath.Owin.Middleware.Route
         public AbstractRouteMiddleware(
             StormpathConfiguration configuration,
             ILogger logger,
-            IClient client,
-            IEnumerable<string> supportedMethods,
-            IEnumerable<string> supportedContentTypes)
+            IClient client)
         {
             if (configuration == null)
             {
@@ -59,35 +56,27 @@ namespace Stormpath.Owin.Middleware.Route
             _logger = logger;
             _configuration = configuration;
             _client = client;
-            _supportedMethods = supportedMethods.ToArray();
-            _supportedContentTypes = _configuration.Web.Produces.Intersect(supportedContentTypes).ToArray();
         }
 
         public async Task<bool> Invoke(IOwinEnvironment owinContext)
         {
-            if (!IsSupportedVerb(owinContext))
-            {
-                await Error.Create<MethodNotAllowed>(owinContext, owinContext.CancellationToken);
-                return true;
-            }
-
             if (!HasSupportedAccept(owinContext))
             {
-                await Error.Create<NotAcceptable>(owinContext, owinContext.CancellationToken);
-                return true;
+                return false;
             }
 
             _logger.Info($"Stormpath middleware handling request {owinContext.Request.Path}");
 
-            var targetContentType = ContentNegotiation.SelectBestContentType(owinContext, _supportedContentTypes);
+            var acceptHeader = owinContext.Request.Headers.GetString("Accept");
+            var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, _configuration.Web.Produces);
 
             try
             {
-                return await Dispatch(owinContext, _client, targetContentType, owinContext.CancellationToken);
+                return await Dispatch(owinContext, _client, contentNegotiationResult, owinContext.CancellationToken);
             }
             catch (ResourceException rex)
             {
-                if (targetContentType == "application/json")
+                if (contentNegotiationResult.Preferred == ContentType.Json)
                 {
                     // Sanitize Stormpath API errors
                     await Error.CreateFromApiError(owinContext, rex, owinContext.CancellationToken);
@@ -101,7 +90,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (Exception ex)
             {
-                if (targetContentType == "application/json")
+                if (contentNegotiationResult.Preferred == ContentType.Json)
                 {
                     // Sanitize framework-level errors
                     await Error.Create(owinContext, 400, ex.Message, owinContext.CancellationToken);
@@ -115,47 +104,62 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        private bool IsSupportedVerb(IOwinEnvironment context)
-            => _supportedMethods.Contains(context.Request.Method, StringComparer.OrdinalIgnoreCase);
-
         private bool HasSupportedAccept(IOwinEnvironment context)
-            => true; //todo
+        {
+            // if any Accept matches web.produces, true
+            // else false
+            // todo
+            return true;
+        }
 
-        private Task<bool> Dispatch(IOwinEnvironment context, IClient scopedClient, string targetContentType, CancellationToken cancellationToken)
+        private Task<bool> Dispatch(IOwinEnvironment context, IClient scopedClient, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             var method = context.Request.Method;
 
-            if (targetContentType == "application/json")
+            if (method.Equals("GET", StringComparison.OrdinalIgnoreCase))
             {
-                if (method.Equals("GET", StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetJson(context, scopedClient, cancellationToken);
-                }
-
-                if (method.Equals("POST", StringComparison.OrdinalIgnoreCase))
-                {
-                    return PostJson(context, scopedClient, cancellationToken);
-                }
-
-                throw new Exception($"Unknown verb to Stormpath middleware: '{method}'.");
-            }
-            else if (targetContentType == "text/html")
-            {
-                if (method.Equals("GET", StringComparison.OrdinalIgnoreCase))
-                {
-                    return GetHtml(context, scopedClient, cancellationToken);
-                }
-
-                if (method.Equals("POST", StringComparison.OrdinalIgnoreCase))
-                {
-                    return PostHtml(context, scopedClient, cancellationToken);
-                }
-
-                throw new Exception($"Unknown verb to Stormpath middleware: '{method}'.");
+                return Get(context, scopedClient, contentNegotiationResult, cancellationToken);
             }
 
-            // todo: probably remove this
-            throw new Exception($"Unknown target Content-Type: '{targetContentType}'.");
+            if (method.Equals("POST", StringComparison.OrdinalIgnoreCase))
+            {
+                return Post(context, scopedClient, contentNegotiationResult, cancellationToken);
+            }
+
+            // Do nothing and pass on to next middleware.
+            return Task.FromResult(false);
+        }
+
+        protected virtual Task<bool> Get(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        {
+            if (contentNegotiationResult.Preferred == ContentType.Json)
+            {
+                return GetJson(context, client, cancellationToken);
+            }
+
+            if (contentNegotiationResult.Preferred == ContentType.Html)
+            {
+                return GetHtml(context, client, cancellationToken);
+            }
+
+            // Do nothing and pass on to next middleware.
+            return Task.FromResult(false);
+        }
+
+        protected virtual Task<bool> Post(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        {
+            if (contentNegotiationResult.Preferred == ContentType.Json)
+            {
+                return PostJson(context, client, cancellationToken);
+            }
+
+            if (contentNegotiationResult.Preferred == ContentType.Html)
+            {
+                return PostHtml(context, client, cancellationToken);
+            }
+
+            // Do nothing and pass on to next middleware.
+            return Task.FromResult(false);
         }
 
         protected virtual Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)

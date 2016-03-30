@@ -25,6 +25,66 @@ namespace Stormpath.Owin.Middleware.Internal
 {
     public static class ContentNegotiation
     {
+        public static ContentNegotiationResult Negotiate(string acceptHeader, IEnumerable<string> producesList)
+        {
+            if (string.IsNullOrEmpty(acceptHeader))
+            {
+                acceptHeader = "*/*";
+            }
+
+            var sortedAccept = ParseAndSortHeader(acceptHeader);
+
+            foreach (var potentialContentType in sortedAccept)
+            {
+                if (potentialContentType == ContentType.Any)
+                {
+                    return new ContentNegotiationResult(
+                        success: true,
+                        prefers: ContentType.Parse(producesList.First()));
+                }
+
+                if (producesList.Contains(potentialContentType))
+                {
+                    return new ContentNegotiationResult(
+                        success: true,
+                        prefers: ContentType.Parse(potentialContentType));
+                }
+            }
+
+            // Negotiation failed
+            return new ContentNegotiationResult(
+                success: false,
+                prefers: ContentType.Parse(sortedAccept.First()));
+        }
+
+        private static string[] ParseAndSortHeader(string acceptHeader)
+        {
+            var results = new Dictionary<string, double>();
+
+            var mediaRanges = acceptHeader.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var mediaRange in mediaRanges)
+            {
+                var tokens = mediaRange.Split(';');
+
+                var qualityFactor = 1.0;
+                var qualityFactorToken = tokens.Where(t => t.StartsWith("q=")).SingleOrDefault();
+
+                if (!string.IsNullOrEmpty(qualityFactorToken))
+                {
+                    qualityFactor = double.Parse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=")));
+                }
+
+                results.Add(tokens[0], qualityFactor);
+            }
+
+            var sorted = results
+                .OrderByDescending(kvp => kvp.Value)
+                .Select(kvp => kvp.Key);
+
+            return sorted.ToArray();
+        }
+
         public static bool IsSupportedByConfiguration(IOwinEnvironment context, StormpathConfiguration configuration)
         {
             // TODO this may need to be fleshed out.
