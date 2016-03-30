@@ -43,8 +43,8 @@ namespace Stormpath.Owin.Middleware.Route
 
         private Task<bool> RenderForm(IOwinEnvironment context, ChangePasswordViewModel viewModel, CancellationToken cancellationToken)
         {
-            var loginView = new Common.View.ChangePassword();
-            return HttpResponse.Ok(loginView, viewModel, context);
+            var changePasswordView = new Common.View.ChangePassword();
+            return HttpResponse.Ok(changePasswordView, viewModel, context);
         }
 
         protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
