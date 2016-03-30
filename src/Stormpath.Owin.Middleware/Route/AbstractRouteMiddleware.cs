@@ -15,22 +15,18 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Configuration.Abstractions;
+using Stormpath.Owin.Common;
+using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Error;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    using Common;
-    using SDK.Error;
-
     public abstract class AbstractRouteMiddleware
     {
         private readonly IClient _client;
@@ -60,15 +56,15 @@ namespace Stormpath.Owin.Middleware.Route
 
         public async Task<bool> Invoke(IOwinEnvironment owinContext)
         {
-            if (!HasSupportedAccept(owinContext))
+            var acceptHeader = owinContext.Request.Headers.GetString("Accept");
+            var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, _configuration.Web.Produces);
+
+            if (!contentNegotiationResult.Success)
             {
                 return false;
             }
 
             _logger.Info($"Stormpath middleware handling request {owinContext.Request.Path}");
-
-            var acceptHeader = owinContext.Request.Headers.GetString("Accept");
-            var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, _configuration.Web.Produces);
 
             try
             {
@@ -102,14 +98,6 @@ namespace Stormpath.Owin.Middleware.Route
                     throw;
                 }
             }
-        }
-
-        private bool HasSupportedAccept(IOwinEnvironment context)
-        {
-            // if any Accept matches web.produces, true
-            // else false
-            // todo
-            return true;
         }
 
         private Task<bool> Dispatch(IOwinEnvironment context, IClient scopedClient, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
