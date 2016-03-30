@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
 using Stormpath.Configuration.Abstractions.Model;
 using Stormpath.Owin.Common.ViewModel;
 
@@ -23,14 +22,11 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
     public class ChangePasswordViewModelBuilder
     {
         private readonly WebConfiguration webConfiguration;
-        private readonly IDictionary<string, string[]> queryString;
 
         public ChangePasswordViewModelBuilder(
-            WebConfiguration webConfiguration,
-            IDictionary<string, string[]> queryString)
+            WebConfiguration webConfiguration)
         {
             this.webConfiguration = webConfiguration;
-            this.queryString = queryString;
         }
 
         public ChangePasswordViewModel Build()

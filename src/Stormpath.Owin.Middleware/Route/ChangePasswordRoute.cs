@@ -63,7 +63,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
 
-                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web, queryString);
+                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
                 var changePasswordViewModel = viewModelBuilder.Build();
 
                 return await RenderForm(context, changePasswordViewModel, cancellationToken);
@@ -85,7 +85,7 @@ namespace Stormpath.Owin.Middleware.Route
             var passwordAgain = formData.GetString("passwordAgain");
             if (!password.Equals(passwordAgain, StringComparison.Ordinal))
             {
-                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web, queryString);
+                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
                 var changePasswordViewModel = viewModelBuilder.Build();
                 changePasswordViewModel.Errors.Add("Passwords do not match.");
 
@@ -111,7 +111,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web, queryString);
+                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
                 var changePasswordViewModel = viewModelBuilder.Build();
                 changePasswordViewModel.Errors.Add(rex.Message);
 
