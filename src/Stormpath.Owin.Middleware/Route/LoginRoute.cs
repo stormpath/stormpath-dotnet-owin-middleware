@@ -44,8 +44,6 @@ namespace Stormpath.Owin.Middleware.Route
 
         private Task<bool> RenderForm(IOwinEnvironment context, ExtendedLoginViewModel viewModel, CancellationToken cancellationToken)
         {
-            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
-
             var loginView = new Common.View.Login();
             return HttpResponse.Ok(loginView, viewModel, context);
         }

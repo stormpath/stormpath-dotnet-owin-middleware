@@ -41,8 +41,6 @@ namespace Stormpath.Owin.Middleware.Route
 
         private Task<bool> RenderForm(IOwinEnvironment context, ForgotPasswordViewModel viewModel, CancellationToken cancellationToken)
         {
-            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
-
             var forgotView = new Common.View.ForgotPassword();
             return HttpResponse.Ok(forgotView, viewModel, context);
         }

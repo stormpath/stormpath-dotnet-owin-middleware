@@ -58,8 +58,6 @@ namespace Stormpath.Owin.Middleware.Route
 
         private Task<bool> RenderForm(IOwinEnvironment context, ExtendedRegisterViewModel viewModel, CancellationToken cancellationToken)
         {
-            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
-
             var registerView = new Common.View.Register();
             return HttpResponse.Ok(registerView, viewModel, context);
         }
