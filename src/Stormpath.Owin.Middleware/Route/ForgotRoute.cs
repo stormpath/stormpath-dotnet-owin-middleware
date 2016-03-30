@@ -60,9 +60,24 @@ namespace Stormpath.Owin.Middleware.Route
             return RenderForm(context, forgotViewModel, cancellationToken);
         }
 
-        protected override Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            return base.PostHtml(context, client, cancellationToken);
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+
+            try
+            {
+                var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
+                var formData = FormContentParser.Parse(requestBody);
+                var email = formData.GetString("email");
+
+                await application.SendPasswordResetEmailAsync(email, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, source: "ForgotRoute.PostHtml");
+            }
+
+            return await HttpResponse.Redirect(context, _configuration.Web.ForgotPassword.NextUri);
         }
 
         protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
