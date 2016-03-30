@@ -14,8 +14,17 @@
 // limitations under the License.
 // </copyright>
 
+using System.Threading;
+using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
+using Stormpath.Owin.Common;
+using Stormpath.Owin.Common.ViewModel;
+using Stormpath.Owin.Common.ViewModelBuilder;
+using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model.Error;
+using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Error;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
@@ -28,6 +37,63 @@ namespace Stormpath.Owin.Middleware.Route
             IClient client)
             : base(configuration, logger, client)
         {
+        }
+
+        private Task<bool> RenderForm(IOwinEnvironment context, ChangePasswordViewModel viewModel, CancellationToken cancellationToken)
+        {
+            var loginView = new Common.View.ChangePassword();
+            return HttpResponse.Ok(loginView, viewModel, context);
+        }
+
+        protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        {
+            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var spToken = queryString.GetString("sptoken");
+
+            if (string.IsNullOrEmpty(spToken))
+            {
+                return await HttpResponse.Redirect(context, _configuration.Web.ForgotPassword.Uri);
+            }
+
+            var application = await client.GetApplicationAsync(_configuration.Application.Href);
+
+            try
+            {
+                await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+
+                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web, queryString);
+                var changePasswordViewModel = viewModelBuilder.Build();
+
+                return await RenderForm(context, changePasswordViewModel, cancellationToken);
+            }
+            catch (ResourceException)
+            {
+                return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
+            }
+        }
+
+        protected override async Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        {
+            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var spToken = queryString.GetString("sptoken");
+
+            if (string.IsNullOrEmpty(spToken))
+            {
+                return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
+            }
+
+            var application = await client.GetApplicationAsync(_configuration.Application.Href);
+
+            try
+            {
+                await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+
+                return await JsonResponse.Ok(context);
+            }
+            catch (ResourceException rex)
+            {
+                return await Error.CreateFromApiError(context, rex, cancellationToken);
+            }
         }
     }
 }

@@ -285,17 +285,31 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
-            bool shouldEnableForgotRoute =
+            bool shouldEnableForgotPasswordRoute =
                 this.configuration.Web.ForgotPassword.Enabled == true
                 || (this.configuration.Web.ForgotPassword.Enabled == null && this.configuration.Tenant.PasswordResetWorkflowEnabled);
 
-            if (shouldEnableForgotRoute)
+            if (shouldEnableForgotPasswordRoute)
             {
                 routingTable.Add(
                     this.configuration.Web.ForgotPassword.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => new ForgotPasswordRoute(this.configuration, this.logger, client).Invoke)
+                    );
+            }
+
+            bool shouldEnableChangePasswordRoute =
+                this.configuration.Web.ChangePassword.Enabled == true
+                || (this.configuration.Web.ChangePassword.Enabled == null && this.configuration.Tenant.PasswordResetWorkflowEnabled);
+
+            if (shouldEnableChangePasswordRoute)
+            {
+                routingTable.Add(
+                    this.configuration.Web.ChangePassword.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => new ChangePasswordRoute(this.configuration, this.logger, client).Invoke)
                     );
             }
 
