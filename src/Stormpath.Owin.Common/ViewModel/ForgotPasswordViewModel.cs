@@ -1,4 +1,4 @@
-﻿// <copyright file="ForgotViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="ForgotPasswordViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Stormpath.Owin.Common.ViewModel
 {
-    public class ForgotViewModel
+    public class ForgotPasswordViewModel
     {
         public string Status { get; set; } = string.Empty;
 

@@ -29,12 +29,12 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class ForgotRoute : AbstractRouteMiddleware
+    public sealed class ForgotPasswordRoute : AbstractRouteMiddleware
     {
         private readonly static string[] SupportedMethods = { "GET", "POST" };
         private readonly static string[] SupportedContentTypes = { "text/html", "application/json" };
 
-        public ForgotRoute(
+        public ForgotPasswordRoute(
             StormpathConfiguration configuration,
             ILogger logger,
             IClient client)
@@ -42,7 +42,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
         }
 
-        private Task<bool> RenderForm(IOwinEnvironment context, ForgotViewModel viewModel, CancellationToken cancellationToken)
+        private Task<bool> RenderForm(IOwinEnvironment context, ForgotPasswordViewModel viewModel, CancellationToken cancellationToken)
         {
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
@@ -54,7 +54,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
-            var viewModelBuilder = new ForgotViewModelBuilder(_configuration.Web, queryString);
+            var viewModelBuilder = new ForgotPasswordViewModelBuilder(_configuration.Web, queryString);
             var forgotViewModel = viewModelBuilder.Build();
 
             return RenderForm(context, forgotViewModel, cancellationToken);
@@ -87,7 +87,7 @@ namespace Stormpath.Owin.Middleware.Route
             try
             {
                 var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
-                var body = Serializer.Deserialize<ForgotPostModel>(bodyString);
+                var body = Serializer.Deserialize<ForgotPasswordPostModel>(bodyString);
                 var email = body?.Email;
 
                 await application.SendPasswordResetEmailAsync(email, cancellationToken);

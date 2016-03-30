@@ -295,7 +295,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.ForgotPassword.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
-                        handler: client => new ForgotRoute(this.configuration, this.logger, client).Invoke)
+                        handler: client => new ForgotPasswordRoute(this.configuration, this.logger, client).Invoke)
                     );
             }
 

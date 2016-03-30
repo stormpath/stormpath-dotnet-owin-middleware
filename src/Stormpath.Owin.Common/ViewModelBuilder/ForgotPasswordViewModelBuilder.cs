@@ -20,12 +20,12 @@ using Stormpath.Owin.Common.ViewModel;
 
 namespace Stormpath.Owin.Common.ViewModelBuilder
 {
-    public class ForgotViewModelBuilder
+    public class ForgotPasswordViewModelBuilder
     {
         private readonly WebConfiguration webConfiguration;
         private readonly IDictionary<string, string[]> queryString;
 
-        public ForgotViewModelBuilder(
+        public ForgotPasswordViewModelBuilder(
             WebConfiguration webConfiguration,
             IDictionary<string, string[]> queryString)
         {
@@ -33,9 +33,9 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
             this.queryString = queryString;
         }
 
-        public ForgotViewModel Build()
+        public ForgotPasswordViewModel Build()
         {
-            var result = new ForgotViewModel();
+            var result = new ForgotPasswordViewModel();
 
             // status parameter from queryString
             result.Status = this.queryString.GetString("status");

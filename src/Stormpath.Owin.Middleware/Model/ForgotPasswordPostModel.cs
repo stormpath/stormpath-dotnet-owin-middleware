@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Middleware.Model
 {
-    public class ForgotPostModel
+    public class ForgotPasswordPostModel
     {
         public string Email { get; set; }
     }

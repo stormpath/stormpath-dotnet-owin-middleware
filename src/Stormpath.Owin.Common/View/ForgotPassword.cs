@@ -1,12 +1,12 @@
 namespace Stormpath.Owin.Common.View
 {
-#line 1 "Forgot.cshtml"
+#line 1 "ForgotPassword.cshtml"
 using System
 
 #line default
 #line hidden
     ;
-#line 2 "Forgot.cshtml"
+#line 2 "ForgotPassword.cshtml"
 using System.Linq
 
 #line default
@@ -14,16 +14,23 @@ using System.Linq
     ;
     using System.Threading.Tasks;
 
-    public class Forgot : BaseView<Stormpath.Owin.Common.ViewModel.ForgotViewModel>
+    public class ForgotPassword : BaseView<Stormpath.Owin.Common.ViewModel.ForgotPasswordViewModel>
     {
+#line 4 "ForgotPassword.cshtml"
+
+    private Stormpath.Owin.Common.ViewModel.ForgotPasswordViewModel Model { get; }
+
+#line default
+#line hidden
         #line hidden
-        public Forgot()
+        public ForgotPassword()
         {
         }
 
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
+            WriteLiteral("\r\n");
             WriteLiteral(@"<!DOCTYPE html>
 <!--[if lt IE 7]>      <html class=""no-js lt-ie9 lt-ie8 lt-ie7""> <![endif]-->
 <!--[if IE 7]>         <html class=""no-js lt-ie9 lt-ie8""> <![endif]-->
@@ -449,13 +456,13 @@ p {
         <div class=""va-wrapper"">
             <div class=""view login-view container"">
 ");
-#line 416 "Forgot.cshtml"
+#line 420 "ForgotPassword.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 416 "Forgot.cshtml"
+#line 420 "ForgotPassword.cshtml"
                  if (Model.Status.Equals("invalid_sptoken", StringComparison.OrdinalIgnoreCase))
                 {
 
@@ -471,7 +478,7 @@ p {
                         </div>
                     </div>
 ");
-#line 426 "Forgot.cshtml"
+#line 430 "ForgotPassword.cshtml"
                 }
 
 #line default
@@ -491,13 +498,13 @@ p {
                         </div>
 
 ");
-#line 440 "Forgot.cshtml"
+#line 444 "ForgotPassword.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 440 "Forgot.cshtml"
+#line 444 "ForgotPassword.cshtml"
                          if (Model.Errors.Any())
                         {
 
@@ -505,13 +512,13 @@ p {
 #line hidden
 
             WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n");
-#line 443 "Forgot.cshtml"
+#line 447 "ForgotPassword.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 443 "Forgot.cshtml"
+#line 447 "ForgotPassword.cshtml"
                                  foreach (var error in Model.Errors)
                                 {
 
@@ -519,29 +526,29 @@ p {
 #line hidden
 
             WriteLiteral("                                    <p>");
-#line 445 "Forgot.cshtml"
+#line 449 "ForgotPassword.cshtml"
                                   Write(error);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n");
-#line 446 "Forgot.cshtml"
+#line 450 "ForgotPassword.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </div>\r\n");
-#line 448 "Forgot.cshtml"
+#line 452 "ForgotPassword.cshtml"
                         }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n                        <form method=\"post\" role=\"form\"");
-            BeginWriteAttribute("action", " action=\"", 13956, "\"", 13989, 1);
-#line 450 "Forgot.cshtml"
-WriteAttributeValue("", 13965, Model.ForgotPasswordUri, 13965, 24, false);
+            BeginWriteAttribute("action", " action=\"", 14059, "\"", 14092, 1);
+#line 454 "ForgotPassword.cshtml"
+WriteAttributeValue("", 14068, Model.ForgotPasswordUri, 14068, 24, false);
 
 #line default
 #line hidden
@@ -560,13 +567,13 @@ WriteAttributeValue("", 13965, Model.ForgotPasswordUri, 13965, 24, false);
                     </div>
                 </div>
 ");
-#line 464 "Forgot.cshtml"
+#line 468 "ForgotPassword.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 464 "Forgot.cshtml"
+#line 468 "ForgotPassword.cshtml"
                  if (Model.LoginEnabled)
                 {
 
@@ -574,15 +581,15 @@ WriteAttributeValue("", 13965, Model.ForgotPasswordUri, 13965, 24, false);
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 14840, "\"", 14862, 1);
-#line 466 "Forgot.cshtml"
-WriteAttributeValue("", 14847, Model.LoginUri, 14847, 15, false);
+            BeginWriteAttribute("href", " href=\"", 14943, "\"", 14965, 1);
+#line 470 "ForgotPassword.cshtml"
+WriteAttributeValue("", 14950, Model.LoginUri, 14950, 15, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Back to Log In</a>\r\n");
-#line 467 "Forgot.cshtml"
+#line 471 "ForgotPassword.cshtml"
                 }
 
 #line default
