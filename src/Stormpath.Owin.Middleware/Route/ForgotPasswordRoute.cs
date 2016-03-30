@@ -46,7 +46,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
-            var forgotView = new Common.View.Forgot();
+            var forgotView = new Common.View.ForgotPassword();
             return HttpResponse.Ok(forgotView, viewModel, context);
         }
 
