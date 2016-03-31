@@ -22,6 +22,7 @@ using Stormpath.Owin.Common;
 using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
@@ -72,6 +73,54 @@ namespace Stormpath.Owin.Middleware.Route
 
                 return await RenderForm(context, forgotViewModel, cancellationToken);
             }
+        }
+
+        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        {
+            var postContent = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var formData = FormContentParser.Parse(postContent);
+
+            var email = formData.GetString("email");
+
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+
+            try
+            {
+                await application.SendVerificationEmailAsync(email, cancellationToken);
+            }
+            catch (ResourceException rex) when (rex.Code == 2016)
+            {
+                // Code 2016 means that an account does not exist for the given email
+                // address.  We don't want to leak information about the account
+                // list, so allow this continue without error.
+                _logger.Info($"A user tried to resend their account verification email, but failed: {rex.DeveloperMessage}");
+            }
+            catch (ResourceException rex)
+            {
+                var viewModelBuilder = new VerifyEmailViewModelBuilder(_configuration.Web);
+                var verifyEmailViewModel = viewModelBuilder.Build();
+                verifyEmailViewModel.Errors.Add(rex.Message);
+
+                return await RenderForm(context, verifyEmailViewModel, cancellationToken);
+            }
+
+            return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=unverified");
+        }
+
+        protected override async Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        {
+            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var spToken = queryString.GetString("sptoken");
+
+            if (string.IsNullOrEmpty(spToken))
+            {
+                return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
+            }
+
+            await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+            // Errors are caught in AbstractRouteMiddleware
+
+            return await JsonResponse.Ok(context);
         }
     }
 }
