@@ -135,16 +135,10 @@ namespace Stormpath.Owin.Middleware.Route
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href);
 
-            try
-            {
-                await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+            await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+            // Errors are caught in AbstractRouteMiddleware
 
-                return await JsonResponse.Ok(context);
-            }
-            catch (ResourceException rex)
-            {
-                return await Error.CreateFromApiError(context, rex, cancellationToken);
-            }
+            return await JsonResponse.Ok(context);
         }
 
         protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -159,23 +153,10 @@ namespace Stormpath.Owin.Middleware.Route
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href);
 
-            try
-            {
-                await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
-            }
-            catch (ResourceException rex)
-            {
-                return await Error.CreateFromApiError(context, rex, cancellationToken);
-            }
+            await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+            // Errors are caught in AbstractRouteMiddleware
 
-            try
-            {
-                await application.ResetPasswordAsync(spToken, password, cancellationToken);
-            }
-            catch (ResourceException rex)
-            {
-                return await Error.CreateFromApiError(context, rex, cancellationToken);
-            }
+            await application.ResetPasswordAsync(spToken, password, cancellationToken);
 
             // TODO autologin
 
