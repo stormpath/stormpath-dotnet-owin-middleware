@@ -26,6 +26,7 @@ using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 using Stormpath.Owin.Common;
+using Stormpath.SDK.Error;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -37,6 +38,12 @@ namespace Stormpath.Owin.Middleware.Route
             IClient client)
             : base(configuration, logger, client)
         {
+        }
+
+        protected override Task<bool> Get(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        {
+            context.Response.StatusCode = 405;
+            return Task.FromResult(true);
         }
 
         protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -60,21 +67,34 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            if (grantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase))
+            try
             {
-                await ExecuteClientCredentialsFlow(context, username, password, cancellationToken);
-                return true;
+                if (grantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase))
+                {
+                    await ExecuteClientCredentialsFlow(context, username, password, cancellationToken);
+                    return true;
+                }
+
+                if (grantType.Equals("password", StringComparison.OrdinalIgnoreCase))
+                {
+                    await ExecutePasswordFlow(context, client, username, password, cancellationToken);
+                    return true;
+                }
+
+                if (grantType.Equals("refresh_token", StringComparison.OrdinalIgnoreCase))
+                {
+                    var refreshToken = WebUtility.UrlDecode(formData.GetString("refresh_token"));
+                    await ExecuteRefreshFlow(context, client, refreshToken, cancellationToken);
+                    return true;
+                }
             }
-            else if (grantType.Equals("password", StringComparison.OrdinalIgnoreCase))
+            catch (ResourceException rex)
             {
-                await ExecutePasswordFlow(context, client, username, password, cancellationToken);
-                return true;
+                // Special handling of API errors for the OAuth route
+                return await Error.Create(context, new OauthError(rex.Message, rex.GetProperty("error")), cancellationToken);
             }
-            else
-            {
-                await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);
-                return true;
-            }
+
+            return await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);
         }
 
         private static Task ExecuteClientCredentialsFlow(IOwinEnvironment context, string username, string password, CancellationToken cancellationToken)
@@ -93,6 +113,23 @@ namespace Stormpath.Owin.Middleware.Route
 
             var tokenResult = await application.NewPasswordGrantAuthenticator()
                 .AuthenticateAsync(passwordGrantRequest, cancellationToken);
+
+            var sanitizer = new ResponseSanitizer<IOauthGrantAuthenticationResult>();
+            var responseModel = sanitizer.Sanitize(tokenResult);
+
+            await JsonResponse.Ok(context, responseModel);
+        }
+
+        private async Task ExecuteRefreshFlow(IOwinEnvironment context, IClient client, string refreshToken, CancellationToken cancellationToken)
+        {
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+
+            var refreshGrantRequest = OauthRequests.NewRefreshGrantRequest()
+                .SetRefreshToken(refreshToken)
+                .Build();
+
+            var tokenResult = await application.NewRefreshGrantAuthenticator()
+                .AuthenticateAsync(refreshGrantRequest, cancellationToken);
 
             var sanitizer = new ResponseSanitizer<IOauthGrantAuthenticationResult>();
             var responseModel = sanitizer.Sanitize(tokenResult);
