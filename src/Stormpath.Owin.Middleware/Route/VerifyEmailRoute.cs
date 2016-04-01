@@ -22,6 +22,7 @@ using Stormpath.Owin.Common;
 using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Client;
@@ -44,6 +45,34 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var verifyEmailView = new Common.View.VerifyEmail();
             return HttpResponse.Ok(verifyEmailView, viewModel, context);
+        }
+
+        private async Task<bool> ResendVerification(
+            string email,
+            IClient client,
+            Func<ResourceException, CancellationToken, Task<bool>> errorHandler,
+            Func<CancellationToken, Task<bool>> successHandler,
+            CancellationToken cancellationToken)
+        {
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+
+            try
+            {
+                await application.SendVerificationEmailAsync(email, cancellationToken);
+            }
+            catch (ResourceException rex) when (rex.Code == 2016)
+            {
+                // Code 2016 means that an account does not exist for the given email
+                // address.  We don't want to leak information about the account
+                // list, so allow this continue without error.
+                _logger.Info($"A user tried to resend their account verification email, but failed: {rex.DeveloperMessage}");
+            }
+            catch (ResourceException rex) when (errorHandler != null)
+            {
+                return await errorHandler(rex, cancellationToken);
+            }
+
+            return await successHandler(cancellationToken);
         }
 
         protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -84,27 +113,26 @@ namespace Stormpath.Owin.Middleware.Route
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
-            try
-            {
-                await application.SendVerificationEmailAsync(email, cancellationToken);
-            }
-            catch (ResourceException rex) when (rex.Code == 2016)
-            {
-                // Code 2016 means that an account does not exist for the given email
-                // address.  We don't want to leak information about the account
-                // list, so allow this continue without error.
-                _logger.Info($"A user tried to resend their account verification email, but failed: {rex.DeveloperMessage}");
-            }
-            catch (ResourceException rex)
+            var htmlErrorHandler = new Func<ResourceException, CancellationToken, Task<bool>>((rex, ct) =>
             {
                 var viewModelBuilder = new VerifyEmailViewModelBuilder(_configuration.Web);
                 var verifyEmailViewModel = viewModelBuilder.Build();
                 verifyEmailViewModel.Errors.Add(rex.Message);
 
-                return await RenderForm(context, verifyEmailViewModel, cancellationToken);
-            }
+                return RenderForm(context, verifyEmailViewModel, cancellationToken);
+            });
 
-            return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=unverified");
+            var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(ct =>
+            {
+                return HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=unverified");
+            });
+
+            return await ResendVerification(
+                email,
+                client,
+                htmlErrorHandler,
+                htmlSuccessHandler,
+                cancellationToken);
         }
 
         protected override async Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -121,6 +149,23 @@ namespace Stormpath.Owin.Middleware.Route
             // Errors are caught in AbstractRouteMiddleware
 
             return await JsonResponse.Ok(context);
+        }
+
+        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        {
+            var postData = Serializer.Deserialize<VerifyEmailPostModel>(await context.Request.GetBodyAsStringAsync(cancellationToken));
+
+            var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct =>
+            {
+                return JsonResponse.Ok(context);
+            });
+
+            return await ResendVerification(
+                email: postData?.Email,
+                client: client,
+                errorHandler: null, // Errors are caught in AbstractRouteMiddleware
+                successHandler: jsonSuccessHandler,
+                cancellationToken: cancellationToken);
         }
     }
 }
