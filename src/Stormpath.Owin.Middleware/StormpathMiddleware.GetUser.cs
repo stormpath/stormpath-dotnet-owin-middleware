@@ -50,8 +50,8 @@ namespace Stormpath.Owin.Middleware
             // Attempt to validate incoming Access Token
             if (!string.IsNullOrEmpty(accessToken))
             {
-                var passwordGrantSuccess = await AttemptValidationAsync(context, client, accessToken);
-                if (passwordGrantSuccess)
+                var validationSuccess = await AttemptValidationAsync(context, client, accessToken);
+                if (validationSuccess)
                 {
                     return;
                 }
