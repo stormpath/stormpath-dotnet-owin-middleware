@@ -25,8 +25,11 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
+    using System.Security.Claims;
     using Common;
     using Common.Configuration;
+    using Configuration.Abstractions;
+    using SDK.Account;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public sealed partial class StormpathMiddleware
@@ -64,13 +67,17 @@ namespace Stormpath.Owin.Middleware
                 throw new ArgumentNullException(nameof(next));
             }
 
-            AddStormpathVariablesToEnvironment(environment);
-
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
 
             using (var scopedClient = this.CreateScopedClient(context))
             {
-                await GetUserAsync(context, scopedClient);
+                var currentUser = await GetUserAsync(context, scopedClient);
+
+                AddStormpathVariablesToEnvironment(
+                    environment,
+                    configuration,
+                    scopedClient,
+                    currentUser);
 
                 var requestPath = GetRequestPathOrThrow(context);
                 var routeHandler = GetRouteHandler(requestPath);
@@ -119,9 +126,32 @@ namespace Stormpath.Owin.Middleware
             return handler;
         }
 
-        private void AddStormpathVariablesToEnvironment(IDictionary<string, object> environment)
+        private static void AddStormpathVariablesToEnvironment(
+            IDictionary<string, object> environment,
+            StormpathConfiguration configuration,
+            IClient client,
+            IAccount currentUser)
         {
-            environment[OwinKeys.StormpathConfiguration] = this.configuration;
+            environment[OwinKeys.StormpathConfiguration] = configuration;
+            environment[OwinKeys.StormpathClient] = client;
+
+            if (currentUser != null)
+            {
+                environment[OwinKeys.StormpathUser] = currentUser;
+
+                // Build an IPrincipal and return it
+                var claims = new List<Claim>();
+                claims.Add(new Claim(ClaimTypes.Email, currentUser.Email));
+                claims.Add(new Claim(ClaimTypes.GivenName, currentUser.GivenName));
+                claims.Add(new Claim(ClaimTypes.Surname, currentUser.Surname));
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, currentUser.Username));
+                var identity = new ClaimsIdentity(claims, "Token");
+                var principal = new ClaimsPrincipal(identity);
+                //context.Request[OwinKeys.RequestUser] = principal; TODO kestrel
+                environment[OwinKeys.RequestUserLegacy] = principal;
+
+                // TODO deal with groups/scopes
+            }
         }
 
         private IClient CreateScopedClient(IOwinEnvironment context)

@@ -15,14 +15,13 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Model;
 using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
+using Stormpath.SDK;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
@@ -33,14 +32,14 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
-        private async Task GetUserAsync(IOwinEnvironment context, IClient client)
+        private async Task<IAccount> GetUserAsync(IOwinEnvironment context, IClient client)
         {
             // TODO API authentication
 
             var cookieHeader = context.Request.Headers.GetString("Cookie");
             if (string.IsNullOrEmpty(cookieHeader))
             {
-                return;
+                return null;
             }
 
             var cookieParser = new CookieParser(cookieHeader);
@@ -50,28 +49,30 @@ namespace Stormpath.Owin.Middleware
             // Attempt to validate incoming Access Token
             if (!string.IsNullOrEmpty(accessToken))
             {
-                var validationSuccess = await AttemptValidationAsync(context, client, accessToken);
-                if (validationSuccess)
+                var validAccount = await AttemptValidationAsync(context, client, accessToken);
+                if (validAccount != null)
                 {
-                    return;
+                    return validAccount;
                 }
             }
 
             // Try using refresh token instead
             if (!string.IsNullOrEmpty(refreshToken))
             {
-                var refreshGrantSuccess = await AttemptRefreshGrantAsync(context, client, refreshToken);
-                if (refreshGrantSuccess)
+                var refreshedAccount = await AttemptRefreshGrantAsync(context, client, refreshToken);
+                if (refreshedAccount != null)
                 {
-                    return;
+                    return refreshedAccount;
                 }
             }
 
             // Failed on both counts. Delete access and refresh token cookies in response
             Cookies.DeleteTokenCookies(context, this.configuration.Web);
+
+            return null;
         }
 
-        private async Task<bool> AttemptValidationAsync(IOwinEnvironment context, IClient client, string accessTokenJwt)
+        private async Task<IAccount> AttemptValidationAsync(IOwinEnvironment context, IClient client, string accessTokenJwt)
         {
             var request = OauthRequests.NewJwtAuthenticationRequest()
                 .SetJwt(accessTokenJwt)
@@ -93,7 +94,7 @@ namespace Stormpath.Owin.Middleware
             catch (ResourceException rex)
             {
                 logger.Info($"Failed to authenticate the request. Invalid access_token found. Message: '{rex.DeveloperMessage}'", "GetUserAsync");
-                return false;
+                return null;
             }
 
             IAccount account = null;
@@ -104,15 +105,12 @@ namespace Stormpath.Owin.Middleware
             catch (ResourceException)
             {
                 logger.Info($"Failed to get account {account.Href}", "GetUserAsync"); // TODO result.AccountHref
-                return false;
             }
 
-            AddUserToRequest(context, account);
-
-            return true;
+            return account;
         }
 
-        private async Task<bool> AttemptRefreshGrantAsync(IOwinEnvironment context, IClient client, string refreshTokenJwt)
+        private async Task<IAccount> AttemptRefreshGrantAsync(IOwinEnvironment context, IClient client, string refreshTokenJwt)
         {
             // Attempt refresh grant against Stormpath
             var request = OauthRequests.NewRefreshGrantRequest()
@@ -130,7 +128,7 @@ namespace Stormpath.Owin.Middleware
             catch (ResourceException rex)
             {
                 logger.Info($"Failed to refresh an access_token given a refresh_token. Message: '{rex.DeveloperMessage}'");
-                return false;
+                return null;
             }
 
             // Get a new access token
@@ -153,37 +151,19 @@ namespace Stormpath.Owin.Middleware
             catch (ResourceException)
             {
                 logger.Info($"Failed to get account {account.Href}", "AttemptRefreshGrantAsync"); // TODO result.AccountHref
-                return false;
+                return null;
             }
-
-            AddUserToRequest(context, account);
 
             Cookies.AddToResponse(context, client, grantResult, this.configuration);
 
-            return true;
+            return account;
         }
 
         private Task<IAccount> GetExpandedAccountAsync(IAccessToken accessToken, CancellationToken cancellationToken)
         {
-            return accessToken.GetAccountAsync(cancellationToken); // TODO expand
-        }
-
-        private void AddUserToRequest(IOwinEnvironment context, IAccount account)
-        {
-            context.Request[OwinKeys.StormpathUser] = account;
-
-            // Build an IPrincipal and return it
-            var claims = new List<Claim>();
-            claims.Add(new Claim(ClaimTypes.Email, account.Email));
-            claims.Add(new Claim(ClaimTypes.GivenName, account.GivenName));
-            claims.Add(new Claim(ClaimTypes.Surname, account.Surname));
-            claims.Add(new Claim(ClaimTypes.NameIdentifier, account.Username));
-            var identity = new ClaimsIdentity(claims, "Token");
-            var principal = new ClaimsPrincipal(identity);
-            //context.Request[OwinKeys.RequestUser] = principal; TODO kestrel
-            context.Request[OwinKeys.RequestUserLegacy] = principal;
-
-            // TODO deal with groups/scopes
+            return accessToken.GetAccountAsync(
+                opt => opt.Expand(a => a.GetCustomData()), // TODO support expansion options
+                cancellationToken);
         }
     }
 }

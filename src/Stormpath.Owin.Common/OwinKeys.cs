@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Middleware.Owin
+namespace Stormpath.Owin.Common
 {
     /// <summary>
     /// OWIN keys, as defined in <see href="http://owin.org/html/spec/owin-1.0.html"/>.
@@ -53,7 +53,9 @@ namespace Stormpath.Owin.Middleware.Owin
 
         public static readonly string CallCancelled = "owin.CallCancelled";
 
-        public static readonly string StormpathUser = "Stormpath.User";
+        public static readonly string StormpathClient = "Stormpath.RequestClient";
+
+        public static readonly string StormpathUser = "Stormpath.RequestUser";
 
         public static readonly string StormpathConfiguration = "Stormpath.Configuration";
     }
