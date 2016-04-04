@@ -15,7 +15,11 @@ namespace Stormpath.Owin.CoreHarness
 
         public async Task<string> Get()
         {
-            await StormpathClient.GetApplications().FirstOrDefaultAsync();
+            var app = await StormpathClient.GetApplicationAsync("https://api.stormpath.com/v1/applications/5GBFI3wqIpipk0QIr65wxh");
+
+            var app2 = await StormpathClient.GetApplicationAsync("https://api.stormpath.com/v1/applications/5GBFI3wqIpipk0QIr65wxh");
+
+            var prop = await app.GetDefaultAccountStoreAsync();
 
             return "hello world";
         }
