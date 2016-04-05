@@ -46,7 +46,6 @@ namespace Stormpath.Owin.CoreHarness
                     name = "My Application"
                 }
             };
-
             services.AddStormpath(stormpathConfiguration);
 
             // Add framework services.

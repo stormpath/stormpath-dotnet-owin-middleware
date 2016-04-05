@@ -15,13 +15,9 @@
 // </copyright>
 
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware;
 
 namespace Stormpath.Owin.CoreHarness
@@ -42,14 +38,14 @@ namespace Stormpath.Owin.CoreHarness
                 throw new ArgumentNullException(nameof(services));
             }
 
-            var stormpath = StormpathMiddleware.Create(configuration: configuration);
-            services.AddInstance(stormpath);
-            services.AddScoped<StormpathClientAccessor>();
-            services.AddScoped(provider =>
-            {
-                var accessor = provider.GetRequiredService<StormpathClientAccessor>();
-                return accessor.Get();
-            });
+            services.AddInstance(new StormpathUserConfiguration(configuration));
+
+            services.AddScoped<ScopedClientAccessor>();
+            services.AddScoped<ScopedLazyUserAccessor>();
+
+            services.AddScoped(provider => provider.GetRequiredService<ScopedClientAccessor>().GetItem());
+            services.AddScoped(provider => provider.GetRequiredService<ScopedLazyUserAccessor>().GetItem());
+            services.AddScoped(provider => provider.GetRequiredService<ScopedLazyUserAccessor>().GetItem().Value);
 
             return services;
         }
@@ -68,9 +64,12 @@ namespace Stormpath.Owin.CoreHarness
                 throw new ArgumentNullException(nameof(app));
             }
 
-            var stormpathMiddleware = app.ApplicationServices.GetRequiredService<StormpathMiddleware>();
+            var suppliedConfiguration = app.ApplicationServices.GetRequiredService<StormpathUserConfiguration>();
+            var hostingAssembly = app.GetType().GetTypeInfo().Assembly;
 
-            //app.UseServices()
+            var stormpathMiddleware = StormpathMiddleware.Create(
+                runtimeUserAgent: GetLibraryUserAgent(hostingAssembly),
+                configuration: suppliedConfiguration.Configuration);
 
             app.UseOwin(addToPipeline =>
             {
@@ -79,55 +78,15 @@ namespace Stormpath.Owin.CoreHarness
                     stormpathMiddleware.Initialize(next);
                     return stormpathMiddleware.Invoke;
                 });
-
-                //addToPipeline(next =>
-                //{
-                //    return OwinHello;
-                //});
             });
 
             return app;
         }
 
-        //public static Task OwinHello(IDictionary<string, object> environment)
-        //{
-        //    var configuration = environment["Stormpath.Configuration"];
-
-        //    return Task.FromResult(false);
-        //}
-
-        public class StormpathUserAccessor
+        private static string GetLibraryUserAgent(Assembly hostingAssembly)
         {
-            private readonly IHttpContextAccessor httpContextAccessor;
-            private readonly string Id = Guid.NewGuid().ToString();
-
-            public StormpathUserAccessor(IHttpContextAccessor httpContextAccessor)
-            {
-                this.httpContextAccessor = httpContextAccessor;
-            }
-
-            public SDK.Account.IAccount Get()
-            {
-                var context = this.httpContextAccessor.HttpContext;
-                return context.Items[OwinKeys.StormpathUser] as SDK.Account.IAccount;
-            }
-        }
-
-        public class StormpathClientAccessor
-        {
-            private readonly IHttpContextAccessor httpContextAccessor;
-            private readonly string Id = Guid.NewGuid().ToString();
-
-            public StormpathClientAccessor(IHttpContextAccessor httpContextAccessor)
-            {
-                this.httpContextAccessor = httpContextAccessor;
-            }
-
-            public SDK.Client.IClient Get()
-            {
-                var context = this.httpContextAccessor.HttpContext;
-                return context.Items[OwinKeys.StormpathClient] as SDK.Client.IClient;
-            }
+            var hostingVersion = hostingAssembly.GetName().Version;
+            return $"aspnetcore/{hostingVersion.Major}.{hostingVersion.Minor}.{hostingVersion.Build}";
         }
     }
 }
