@@ -100,7 +100,7 @@ namespace Stormpath.Owin.Middleware
             IAccount account = null;
             try
             {
-                account = await GetExpandedAccountAsync(result, context.CancellationToken);
+                account = await GetExpandedAccountAsync(client, result, context.CancellationToken);
             }
             catch (ResourceException)
             {
@@ -146,7 +146,7 @@ namespace Stormpath.Owin.Middleware
             IAccount account = null;
             try
             {
-                account = await GetExpandedAccountAsync(newAccessToken, context.CancellationToken);
+                account = await GetExpandedAccountAsync(client, newAccessToken, context.CancellationToken);
             }
             catch (ResourceException)
             {
@@ -159,9 +159,11 @@ namespace Stormpath.Owin.Middleware
             return account;
         }
 
-        private Task<IAccount> GetExpandedAccountAsync(IAccessToken accessToken, CancellationToken cancellationToken)
+        private Task<IAccount> GetExpandedAccountAsync(IClient client, IAccessToken accessToken, CancellationToken cancellationToken)
         {
-            return accessToken.GetAccountAsync(
+            // TODO: This is a bit of a hack until we have better support for scoped user agents through the stack.
+            return client.GetAccountAsync(
+                accessToken.AccountHref,
                 opt => opt.Expand(a => a.GetCustomData()), // TODO support expansion options
                 cancellationToken);
         }
