@@ -26,6 +26,7 @@ using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
+using Stormpath.SDK.Jwt;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 
@@ -130,9 +131,14 @@ namespace Stormpath.Owin.Middleware
                 result = await authenticator.AuthenticateAsync(request, context.CancellationToken);
 
             }
+            catch (InvalidJwtException jwe)
+            {
+                logger.Info($"Failed to authenticate the request due to a malformed or expired access token. Message: '{jwe.Message}'", nameof(ValidateAccessTokenAsync));
+                return false;
+            }
             catch (ResourceException rex)
             {
-                logger.Info($"Failed to authenticate the request. Invalid access_token found. Message: '{rex.DeveloperMessage}'", "GetUserAsync");
+                logger.Info($"Failed to authenticate the request. Invalid access_token found. Message: '{rex.DeveloperMessage}'", nameof(ValidateAccessTokenAsync));
                 return false;
             }
 
@@ -167,9 +173,14 @@ namespace Stormpath.Owin.Middleware
             {
                 grantResult = await authenticator.AuthenticateAsync(request, context.CancellationToken);
             }
+            catch (InvalidJwtException jwe)
+            {
+                logger.Info($"Failed to authenticate the request due to a malformed or expired refresh token. Message: '{jwe.Message}'", nameof(RefreshAccessTokenAsync));
+                return false;
+            }
             catch (ResourceException rex)
             {
-                logger.Info($"Failed to refresh an access_token given a refresh_token. Message: '{rex.DeveloperMessage}'");
+                logger.Info($"Failed to refresh an access_token given a refresh_token. Message: '{rex.DeveloperMessage}'", nameof(RefreshAccessTokenAsync));
                 return false;
             }
 
@@ -181,7 +192,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (ResourceException rex)
             {
-                logger.Info($"Failed to get a new access token after receiving grant response. Message: '{rex.DeveloperMessage}'");
+                logger.Info($"Failed to get a new access token after receiving grant response. Message: '{rex.DeveloperMessage}'", nameof(RefreshAccessTokenAsync));
             }
 
             // Get the account details
@@ -192,7 +203,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (ResourceException)
             {
-                logger.Info($"Failed to get account {account.Href}", "AttemptRefreshGrantAsync"); // TODO result.AccountHref
+                logger.Info($"Failed to get account {account.Href}", nameof(RefreshAccessTokenAsync)); // TODO result.AccountHref
                 return false;
             }
 
