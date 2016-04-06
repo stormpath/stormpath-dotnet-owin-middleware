@@ -59,10 +59,10 @@ namespace Stormpath.Owin.Middleware
             return null;
         }
 
-        private async Task<IAccount> TryApiAuthenticationAsync(IOwinEnvironment context, IClient client)
+        private Task<IAccount> TryApiAuthenticationAsync(IOwinEnvironment context, IClient client)
         {
             // TODO
-            return null;
+            return Task.FromResult<IAccount>(null);
         }
 
         private Task<IAccount> TryBearerAuthenticationAsync(IOwinEnvironment context, IClient client)
