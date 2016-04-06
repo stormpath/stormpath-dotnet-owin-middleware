@@ -56,6 +56,12 @@ namespace Stormpath.Owin.Middleware
 
             Cookies.DeleteTokenCookies(context, configuration.Web);
 
+            await WriteError(context, configuration);
+            return false; // Authentication check failed
+        }
+
+        private Task WriteError(IOwinEnvironment context, StormpathConfiguration configuration)
+        {
             var acceptHeader = context.Request.Headers.GetString("Accept");
             var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, configuration.Web.Produces);
 
@@ -67,11 +73,10 @@ namespace Stormpath.Owin.Middleware
                 var loginUri = $"{configuration.Web.Login.Uri}?next={Uri.EscapeUriString(originalUri)}";
                 context.Response.Headers.SetString("Location", loginUri);
 
-                return false; // Authentication check failed
+                return Task.FromResult(0);
             }
 
-            await JsonResponse.Unauthorized(context);
-            return false; // Authentication check failed
+            return JsonResponse.Unauthorized(context);
         }
     }
 }

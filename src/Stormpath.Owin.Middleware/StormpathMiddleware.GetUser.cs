@@ -25,6 +25,7 @@ using Stormpath.SDK;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
+using Stormpath.SDK.Jwt;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 
@@ -34,8 +35,53 @@ namespace Stormpath.Owin.Middleware
     {
         private async Task<IAccount> GetUserAsync(IOwinEnvironment context, IClient client)
         {
-            // TODO API authentication
+            var bearerAuthenticationResult = await TryBearerAuthenticationAsync(context, client);
+            if (bearerAuthenticationResult != null)
+            {
+                return bearerAuthenticationResult;
+            }
 
+            var cookieAuthenticationResult = await TryCookieAuthenticationAsync(context, client);
+            if (cookieAuthenticationResult != null)
+            {
+                return cookieAuthenticationResult;
+            }
+
+            var apiAuthenticationResult = await TryApiAuthenticationAsync(context, client);
+            if (apiAuthenticationResult != null)
+            {
+                return apiAuthenticationResult;
+            }
+
+            return null;
+        }
+
+        private async Task<IAccount> TryApiAuthenticationAsync(IOwinEnvironment context, IClient client)
+        {
+            // TODO
+            return null;
+        }
+
+        private Task<IAccount> TryBearerAuthenticationAsync(IOwinEnvironment context, IClient client)
+        {
+            var bearerHeader = context.Request.Headers.GetString("Authorization");
+            bool isValid = !string.IsNullOrEmpty(bearerHeader) && bearerHeader.StartsWith("Bearer ");
+            if (!isValid)
+            {
+                return Task.FromResult<IAccount>(null);
+            }
+
+            var bearerPayload = bearerHeader?.Substring(7); // Bearer_
+            if (string.IsNullOrEmpty(bearerPayload))
+            {
+                return Task.FromResult<IAccount>(null);
+            }
+
+            return ValidateAccessTokenAsync(context, client, bearerPayload);
+        }
+
+        private async Task<IAccount> TryCookieAuthenticationAsync(IOwinEnvironment context, IClient client)
+        {
             var cookieHeader = context.Request.Headers.GetString("Cookie");
             if (string.IsNullOrEmpty(cookieHeader))
             {
@@ -49,7 +95,7 @@ namespace Stormpath.Owin.Middleware
             // Attempt to validate incoming Access Token
             if (!string.IsNullOrEmpty(accessToken))
             {
-                var validAccount = await AttemptValidationAsync(context, client, accessToken);
+                var validAccount = await ValidateAccessTokenAsync(context, client, accessToken);
                 if (validAccount != null)
                 {
                     return validAccount;
@@ -59,20 +105,20 @@ namespace Stormpath.Owin.Middleware
             // Try using refresh token instead
             if (!string.IsNullOrEmpty(refreshToken))
             {
-                var refreshedAccount = await AttemptRefreshGrantAsync(context, client, refreshToken);
+                var refreshedAccount = await RefreshAccessTokenAsync(context, client, refreshToken);
                 if (refreshedAccount != null)
                 {
                     return refreshedAccount;
                 }
             }
 
-            // Failed on both counts. Delete access and refresh token cookies in response
+            // Failed on both counts. Delete access and refresh token cookies
             Cookies.DeleteTokenCookies(context, this.configuration.Web);
 
             return null;
         }
 
-        private async Task<IAccount> AttemptValidationAsync(IOwinEnvironment context, IClient client, string accessTokenJwt)
+        private async Task<IAccount> ValidateAccessTokenAsync(IOwinEnvironment context, IClient client, string accessTokenJwt)
         {
             var request = OauthRequests.NewJwtAuthenticationRequest()
                 .SetJwt(accessTokenJwt)
@@ -90,6 +136,11 @@ namespace Stormpath.Owin.Middleware
             {
                 result = await authenticator.AuthenticateAsync(request, context.CancellationToken);
 
+            }
+            catch (InvalidJwtException jwe)
+            {
+                logger.Info($"Failed to authenticate the request due to a malformed or expired access token. Message: '{jwe.Message}'", nameof(ValidateAccessTokenAsync));
+                return null;
             }
             catch (ResourceException rex)
             {
@@ -110,7 +161,7 @@ namespace Stormpath.Owin.Middleware
             return account;
         }
 
-        private async Task<IAccount> AttemptRefreshGrantAsync(IOwinEnvironment context, IClient client, string refreshTokenJwt)
+        private async Task<IAccount> RefreshAccessTokenAsync(IOwinEnvironment context, IClient client, string refreshTokenJwt)
         {
             // Attempt refresh grant against Stormpath
             var request = OauthRequests.NewRefreshGrantRequest()
@@ -124,6 +175,11 @@ namespace Stormpath.Owin.Middleware
             try
             {
                 grantResult = await authenticator.AuthenticateAsync(request, context.CancellationToken);
+            }
+            catch (InvalidJwtException jwe)
+            {
+                logger.Info($"Failed to authenticate the request due to a malformed or expired refresh token. Message: '{jwe.Message}'", nameof(RefreshAccessTokenAsync));
+                return null;
             }
             catch (ResourceException rex)
             {
@@ -139,7 +195,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (ResourceException rex)
             {
-                logger.Info($"Failed to get a new access token after receiving grant response. Message: '{rex.DeveloperMessage}'");
+                logger.Info($"Failed to get a new access token after receiving grant response. Message: '{rex.DeveloperMessage}'", nameof(RefreshAccessTokenAsync));
             }
 
             // Get the account details
