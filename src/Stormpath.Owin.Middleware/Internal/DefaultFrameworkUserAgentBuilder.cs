@@ -23,14 +23,14 @@ namespace Stormpath.Owin.Middleware.Internal
     {
         private readonly Lazy<string> _value;
 
-        public DefaultFrameworkUserAgentBuilder()
+        public DefaultFrameworkUserAgentBuilder(string runtimeUserAgent)
         {
-            _value = new Lazy<string>(() => Generate());
+            _value = new Lazy<string>(() => Generate(runtimeUserAgent));
         }
 
         public string GetUserAgent() => _value.Value;
 
-        private static string Generate()
+        private static string Generate(string runtimeToken)
         {
             var frameworkVersion = typeof(DefaultFrameworkUserAgentBuilder).GetTypeInfo()
                 .Assembly
@@ -39,9 +39,9 @@ namespace Stormpath.Owin.Middleware.Internal
 
             var frameworkToken = $"stormpath-owin/{frameworkVersion.Major}.{frameworkVersion.Minor}.{frameworkVersion.Build}";
 
-            // Todo get ASP.NET/MVC library version
-
-            return frameworkToken;
+            return string.Join(" ",
+                frameworkToken,
+                runtimeToken);
         }
     }
 }

@@ -48,7 +48,9 @@ namespace Stormpath.Owin.NowinHarness
     {
         public void Configuration(IAppBuilder app)
         {
-            var stormpath = StormpathMiddleware.Create(configuration: new
+            var stormpath = StormpathMiddleware.Create(
+                runtimeUserAgent: "nowin/0.22.2",
+                configuration: new
             {
                 application = new
                 {

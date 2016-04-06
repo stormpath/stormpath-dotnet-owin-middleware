@@ -19,7 +19,6 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Stormpath.Owin.Middleware;
 
 namespace Stormpath.Owin.CoreHarness
 {
@@ -39,6 +38,16 @@ namespace Stormpath.Owin.CoreHarness
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add Stormpath services
+            var stormpathConfiguration = new
+            {
+                application = new
+                {
+                    name = "My Application"
+                }
+            };
+            services.AddStormpath(stormpathConfiguration);
+
             // Add framework services.
             services.AddMvc();
         }
@@ -49,24 +58,10 @@ namespace Stormpath.Owin.CoreHarness
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            var stormpath = StormpathMiddleware.Create(configuration: new
-            {
-                application = new
-                {
-                    name = "My Application"
-                }
-            });
+            // Use Stormpath middleware
+            app.UseStormpath();
 
-            app.UseOwin(addToPipeline =>
-            {
-                addToPipeline(next =>
-                {
-                    stormpath.Initialize(next);
-                    return stormpath.Invoke;
-                });
-            });
-
-            app.UseStaticFiles();
+            app.UseMvc();
         }
 
         // Entry point for the application.
