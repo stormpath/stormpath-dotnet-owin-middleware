@@ -22,14 +22,13 @@ using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Owin.Middleware.Route;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
+using Stormpath.Owin.Common;
+using Stormpath.Owin.Common.Configuration;
+using Stormpath.Configuration.Abstractions;
+using Stormpath.SDK.Account;
 
 namespace Stormpath.Owin.Middleware
 {
-    using System.Security.Claims;
-    using Common;
-    using Common.Configuration;
-    using Configuration.Abstractions;
-    using SDK.Account;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public sealed partial class StormpathMiddleware
@@ -138,17 +137,6 @@ namespace Stormpath.Owin.Middleware
             if (currentUser != null)
             {
                 environment[OwinKeys.StormpathUser] = currentUser;
-
-                // Build an IPrincipal and return it
-                var claims = new List<Claim>();
-                claims.Add(new Claim(ClaimTypes.Email, currentUser.Email));
-                claims.Add(new Claim(ClaimTypes.GivenName, currentUser.GivenName));
-                claims.Add(new Claim(ClaimTypes.Surname, currentUser.Surname));
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, currentUser.Username));
-                var identity = new ClaimsIdentity(claims, "Token");
-                var principal = new ClaimsPrincipal(identity);
-                //context.Request[OwinKeys.RequestUser] = principal; TODO kestrel
-                environment[OwinKeys.RequestUserLegacy] = principal;
 
                 // TODO deal with groups/scopes
             }
