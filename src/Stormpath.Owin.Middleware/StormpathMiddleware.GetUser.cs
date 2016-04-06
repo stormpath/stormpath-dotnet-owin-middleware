@@ -21,7 +21,6 @@ using Stormpath.Configuration.Abstractions.Model;
 using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
-using Stormpath.SDK;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
@@ -209,7 +208,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (ResourceException)
             {
-                logger.Info($"Failed to get account {account.Href}", "AttemptRefreshGrantAsync"); // TODO result.AccountHref
+                logger.Info($"Failed to get account {newAccessToken.AccountHref}", "AttemptRefreshGrantAsync");
                 return null;
             }
 
@@ -223,7 +222,6 @@ namespace Stormpath.Owin.Middleware
             // TODO: This is a bit of a hack until we have better support for scoped user agents through the stack.
             return client.GetAccountAsync(
                 accessToken.AccountHref,
-                opt => opt.Expand(a => a.GetCustomData()), // TODO support expansion options
                 cancellationToken);
         }
     }
