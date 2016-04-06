@@ -93,7 +93,8 @@ namespace Stormpath.Owin.CoreHarness
                 });
             });
 
-            app.UseMiddleware<StormpathAuthenticationMiddleware>();
+            app.UseMiddleware<StormpathAuthenticationMiddleware>(new StormpathAuthenticationOptions() { AuthenticationScheme = "Cookie" });
+            app.UseMiddleware<StormpathAuthenticationMiddleware>(new StormpathAuthenticationOptions() { AuthenticationScheme = "Bearer" });
 
             return app;
         }

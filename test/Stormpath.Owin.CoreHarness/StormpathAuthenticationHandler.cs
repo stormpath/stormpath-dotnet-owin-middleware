@@ -29,6 +29,17 @@ namespace Stormpath.Owin.CoreHarness
     {
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            object schemeValue;
+            string scheme;
+
+            Context.Items.TryGetValue(OwinKeys.StormpathUserScheme, out schemeValue);
+            scheme = schemeValue as string;
+
+            if (!string.Equals(scheme, Options.AuthenticationScheme, System.StringComparison.OrdinalIgnoreCase))
+            {
+                return Task.FromResult(AuthenticateResult.Failed("Invalid authentication scheme."));
+            }
+
             object accountValue;
             IAccount authenticatedAccount;
 
@@ -40,16 +51,6 @@ namespace Stormpath.Owin.CoreHarness
                 return Task.FromResult(AuthenticateResult.Failed("No account found."));
             }
 
-            object schemeValue;
-            string scheme;
-
-            Context.Items.TryGetValue(OwinKeys.StormpathUserScheme, out schemeValue);
-            scheme = schemeValue as string;
-
-            if (string.IsNullOrEmpty(scheme))
-            {
-                return Task.FromResult(AuthenticateResult.Failed("Invalid authentication scheme."));
-            }
 
             var principal = CreatePrincipal(authenticatedAccount, scheme);
             var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), scheme);

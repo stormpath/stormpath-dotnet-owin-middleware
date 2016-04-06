@@ -29,8 +29,8 @@ namespace Stormpath.Owin.CoreHarness
             RequestDelegate next,
             ILoggerFactory loggerFactory,
             IUrlEncoder encoder,
-            IOptions<StormpathAuthenticationOptions> options)
-            : base(next, options.Value, loggerFactory, encoder)
+            StormpathAuthenticationOptions options)
+            : base(next, options, loggerFactory, encoder)
         {
             if (next == null)
             {
@@ -51,8 +51,6 @@ namespace Stormpath.Owin.CoreHarness
             {
                 throw new ArgumentNullException(nameof(options));
             }
-
-            //AuthenticationScheme = "Cookie";
         }
         protected override AuthenticationHandler<StormpathAuthenticationOptions> CreateHandler()
         {

@@ -23,7 +23,6 @@ namespace Stormpath.Owin.CoreHarness
         public StormpathAuthenticationOptions() 
             : base()
         {
-            AuthenticationScheme = "Cookie";
             AutomaticAuthenticate = true;
             AutomaticChallenge = true;
         }
