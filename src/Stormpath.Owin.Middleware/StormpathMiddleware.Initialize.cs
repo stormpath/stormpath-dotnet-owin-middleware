@@ -34,10 +34,10 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
-        public static StormpathMiddleware Create(string runtimeUserAgent, object configuration = null, ILogger logger = null)
+        public static StormpathMiddleware Create(string libraryUserAgent, object configuration = null, ILogger logger = null)
         {
             // Construct the framework User-Agent
-            IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(runtimeUserAgent);
+            IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(libraryUserAgent);
 
             // Initialize and warm up SDK
             var clientFactory = InitializeClient(configuration);
