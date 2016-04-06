@@ -38,18 +38,21 @@ namespace Stormpath.Owin.Middleware
             var bearerAuthenticationResult = await TryBearerAuthenticationAsync(context, client);
             if (bearerAuthenticationResult != null)
             {
+                context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.Bearer;
                 return bearerAuthenticationResult;
             }
 
             var cookieAuthenticationResult = await TryCookieAuthenticationAsync(context, client);
             if (cookieAuthenticationResult != null)
             {
+                context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.Cookie;
                 return cookieAuthenticationResult;
             }
 
             var apiAuthenticationResult = await TryApiAuthenticationAsync(context, client);
             if (apiAuthenticationResult != null)
             {
+                context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.ApiCredentials;
                 return apiAuthenticationResult;
             }
 

@@ -80,6 +80,8 @@ namespace Stormpath.Owin.CoreHarness
                 });
             });
 
+            app.UseMiddleware<StormpathAuthenticationMiddleware>();
+
             return app;
         }
 

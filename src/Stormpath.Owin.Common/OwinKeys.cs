@@ -57,6 +57,8 @@ namespace Stormpath.Owin.Common
 
         public static readonly string StormpathUser = "Stormpath.RequestUser";
 
+        public static readonly string StormpathUserScheme = "Stormpath.RequestUserScheme";
+
         public static readonly string StormpathConfiguration = "Stormpath.Configuration";
     }
 }
