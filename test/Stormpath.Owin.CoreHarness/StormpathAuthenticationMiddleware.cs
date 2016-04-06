@@ -18,7 +18,6 @@ using System;
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.WebEncoders;
 
 namespace Stormpath.Owin.CoreHarness
