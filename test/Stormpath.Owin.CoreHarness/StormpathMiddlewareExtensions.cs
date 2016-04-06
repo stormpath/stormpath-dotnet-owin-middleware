@@ -18,6 +18,7 @@ using System;
 using System.Reflection;
 using Microsoft.AspNet.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware;
 
 namespace Stormpath.Owin.CoreHarness
@@ -46,6 +47,18 @@ namespace Stormpath.Owin.CoreHarness
             services.AddScoped(provider => provider.GetRequiredService<ScopedClientAccessor>().GetItem());
             services.AddScoped(provider => provider.GetRequiredService<ScopedLazyUserAccessor>().GetItem());
             services.AddScoped(provider => provider.GetRequiredService<ScopedLazyUserAccessor>().GetItem().Value);
+
+            services.AddAuthentication();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(
+                    RequestAuthenticationScheme.Bearer, 
+                    policy => policy.AddAuthenticationSchemes(RequestAuthenticationScheme.Bearer).RequireAuthenticatedUser());
+                options.AddPolicy(RequestAuthenticationScheme.Cookie,
+                    policy => policy.AddAuthenticationSchemes(RequestAuthenticationScheme.Cookie).RequireAuthenticatedUser());
+                options.AddPolicy(RequestAuthenticationScheme.ApiCredentials,
+                    policy => policy.AddAuthenticationSchemes(RequestAuthenticationScheme.ApiCredentials).RequireAuthenticatedUser());
+            });
 
             return services;
         }

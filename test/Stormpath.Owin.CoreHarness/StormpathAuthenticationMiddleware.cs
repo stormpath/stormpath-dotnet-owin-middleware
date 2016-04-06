@@ -51,6 +51,8 @@ namespace Stormpath.Owin.CoreHarness
             {
                 throw new ArgumentNullException(nameof(options));
             }
+
+            //AuthenticationScheme = "Cookie";
         }
         protected override AuthenticationHandler<StormpathAuthenticationOptions> CreateHandler()
         {

@@ -5,7 +5,7 @@ using Microsoft.AspNet.Mvc;
 namespace Stormpath.Owin.CoreHarness.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize("Cookie")]
     public class SecretController
     {
         public string Get()
