@@ -34,13 +34,13 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
-        public static StormpathMiddleware Create(string libraryUserAgent, object configuration = null, ILogger logger = null)
+        public static StormpathMiddleware Create(StormpathMiddlewareOptions options)
         {
             // Construct the framework User-Agent
-            IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(libraryUserAgent);
+            IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(options.LibraryUserAgent);
 
             // Initialize and warm up SDK
-            var clientFactory = InitializeClient(configuration);
+            var clientFactory = InitializeClient(options.Configuration);
 
             // Scope a client for our resolution steps below
             var client = clientFactory.Create(new ScopedClientOptions()
@@ -64,7 +64,7 @@ namespace Stormpath.Owin.Middleware
 
             EnsureEnvironment(client, integrationConfiguration);
 
-            return new StormpathMiddleware(logger, userAgentBuilder, clientFactory, integrationConfiguration);
+            return new StormpathMiddleware(options.Logger, userAgentBuilder, clientFactory, integrationConfiguration);
         }
 
         private static IScopedClientFactory InitializeClient(object initialConfiguration)
