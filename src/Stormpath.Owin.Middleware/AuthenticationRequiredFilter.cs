@@ -30,12 +30,7 @@ namespace Stormpath.Owin.Middleware
     {
         private readonly ILogger logger;
 
-        public AuthenticationRequiredFilter()
-            : this(null)
-        {
-        }
-
-        public AuthenticationRequiredFilter(ILogger logger = null)
+        public AuthenticationRequiredFilter(ILogger logger)
         {
             this.logger = logger;
         }
