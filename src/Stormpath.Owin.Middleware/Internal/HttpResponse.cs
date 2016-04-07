@@ -16,22 +16,12 @@
 
 using System.Threading.Tasks;
 using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.View;
 using Stormpath.Owin.Middleware.Owin;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     public static class HttpResponse
     {
-        public static async Task<bool> Ok<T>(BaseView<T> view, T viewModel, IOwinEnvironment context)
-        {
-            context.Response.StatusCode = 200;
-            context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
-
-            await view.ExecuteAsync(viewModel, context.Response.Body);
-            return true;
-        }
-
         public static Task<bool> Redirect(IOwinEnvironment context, string uri)
         {
             context.Response.StatusCode = 302;

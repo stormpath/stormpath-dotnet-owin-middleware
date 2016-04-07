@@ -17,9 +17,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
@@ -33,12 +31,6 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class VerifyEmailRoute : AbstractRoute
     {
-        private Task<bool> RenderForm(IOwinEnvironment context, VerifyEmailViewModel viewModel, CancellationToken cancellationToken)
-        {
-            var verifyEmailView = new Common.View.VerifyEmail();
-            return HttpResponse.Ok(verifyEmailView, viewModel, context);
-        }
-
         private async Task<bool> ResendVerification(
             string email,
             IClient client,
@@ -75,9 +67,10 @@ namespace Stormpath.Owin.Middleware.Route
             if (string.IsNullOrEmpty(spToken))
             {
                 var viewModelBuilder = new VerifyEmailViewModelBuilder(_configuration.Web);
-                var forgotViewModel = viewModelBuilder.Build();
+                var verifyViewModel = viewModelBuilder.Build();
 
-                return await RenderForm(context, forgotViewModel, cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
+                return true;
             }
 
             try
@@ -89,10 +82,11 @@ namespace Stormpath.Owin.Middleware.Route
             catch (ResourceException)
             {
                 var viewModelBuilder = new VerifyEmailViewModelBuilder(_configuration.Web);
-                var forgotViewModel = viewModelBuilder.Build();
-                forgotViewModel.InvalidSpToken = true;
+                var verifyViewModel = viewModelBuilder.Build();
+                verifyViewModel.InvalidSpToken = true;
 
-                return await RenderForm(context, forgotViewModel, cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
+                return true;
             }
         }
 
@@ -105,13 +99,14 @@ namespace Stormpath.Owin.Middleware.Route
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
-            var htmlErrorHandler = new Func<ResourceException, CancellationToken, Task<bool>>((rex, ct) =>
+            var htmlErrorHandler = new Func<ResourceException, CancellationToken, Task<bool>>(async (rex, ct) =>
             {
                 var viewModelBuilder = new VerifyEmailViewModelBuilder(_configuration.Web);
                 var verifyEmailViewModel = viewModelBuilder.Build();
                 verifyEmailViewModel.Errors.Add(rex.Message);
 
-                return RenderForm(context, verifyEmailViewModel, cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyEmailViewModel, cancellationToken);
+                return true;
             });
 
             var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(ct =>

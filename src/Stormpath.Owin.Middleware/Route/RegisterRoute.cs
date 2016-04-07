@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
@@ -30,7 +28,6 @@ using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -47,12 +44,6 @@ namespace Stormpath.Owin.Middleware.Route
             "confirmPassword",
             "customData"
         };
-
-        private Task<bool> RenderForm(IOwinEnvironment context, ExtendedRegisterViewModel viewModel, CancellationToken cancellationToken)
-        {
-            var registerView = new Common.View.Register();
-            return HttpResponse.Ok(registerView, viewModel, context);
-        }
 
         private async Task<IAccount> HandleRegistration(RegisterPostModel postData, IClient client, Func<string, CancellationToken, Task> errorHandler, CancellationToken cancellationToken)
         {
@@ -137,12 +128,13 @@ namespace Stormpath.Owin.Middleware.Route
             return await application.CreateAccountAsync(newAccount, cancellationToken);
         }
 
-        protected override Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new ExtendedRegisterViewModelBuilder(_configuration.Web, null);
             var registerViewModel = viewModelBuilder.Build();
 
-            return RenderForm(context, registerViewModel, cancellationToken);
+            await RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
+            return true;
         }
 
         protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -176,7 +168,7 @@ namespace Stormpath.Owin.Middleware.Route
                 var registerViewModel = viewModelBuilder.Build();
                 registerViewModel.Errors.Add(message);
 
-                return RenderForm(context, registerViewModel, ct);
+                return RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
             });
 
             IAccount newAccount = null;
