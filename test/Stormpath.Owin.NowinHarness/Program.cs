@@ -25,6 +25,7 @@ namespace Stormpath.Owin.NowinHarness
 {
     using System.Threading;
     using Middleware;
+    using Middleware.Owin;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     static class Program
@@ -86,12 +87,10 @@ namespace Stormpath.Owin.NowinHarness
             };
         }
 
-        private async Task RenderView(string name, object model, Stream target, CancellationToken cancellationToken)
+        private Task RenderView(string name, object model, IOwinEnvironment env, CancellationToken cancellationToken)
         {
-            var dummyData = System.Text.Encoding.UTF8.GetBytes($"{name} View");
-
-            await target.WriteAsync(dummyData, 0, dummyData.Length, cancellationToken);
-            await target.FlushAsync();
+            var dummyData = $"{name} View";
+            return env.Response.WriteAsync(dummyData, System.Text.Encoding.UTF8, cancellationToken);
         }
     }
 }

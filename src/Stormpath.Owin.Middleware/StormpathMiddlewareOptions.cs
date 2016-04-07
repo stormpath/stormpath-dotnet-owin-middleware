@@ -16,11 +16,12 @@
 
 using System;
 using System.Threading.Tasks;
+using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
-    using Renderer = Func<string, object, System.IO.Stream, System.Threading.CancellationToken, Task>;
+    using Renderer = Func<string, object, IOwinEnvironment, System.Threading.CancellationToken, Task>;
 
     public sealed class StormpathMiddlewareOptions
     {

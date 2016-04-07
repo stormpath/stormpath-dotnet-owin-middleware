@@ -30,7 +30,7 @@ using Stormpath.SDK.Account;
 namespace Stormpath.Owin.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
-    using Renderer = Func<string, object, System.IO.Stream, System.Threading.CancellationToken, Task>;
+    using Renderer = Func<string, object, IOwinEnvironment, System.Threading.CancellationToken, Task>;
 
     public sealed partial class StormpathMiddleware
     {

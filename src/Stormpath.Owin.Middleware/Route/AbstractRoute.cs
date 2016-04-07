@@ -28,7 +28,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    using Renderer = Func<string, object, System.IO.Stream, System.Threading.CancellationToken, Task>;
+    using Renderer = Func<string, object, IOwinEnvironment, System.Threading.CancellationToken, Task>;
 
     public abstract class AbstractRoute
     {
@@ -142,7 +142,7 @@ namespace Stormpath.Owin.Middleware.Route
             context.Response.StatusCode = 200;
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
-            return _viewRenderer(viewName, model, context.Response.Body, cancellationToken);
+            return _viewRenderer(viewName, model, context, cancellationToken);
         }
 
         protected virtual Task<bool> Get(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
