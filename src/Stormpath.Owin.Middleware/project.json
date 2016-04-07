@@ -8,7 +8,7 @@
   "dependencies": {
     "Newtonsoft.Json": "7.0.1",
     "Stormpath.Configuration.Abstractions": "3.0.1",
-    "Stormpath.Owin.Common": "0.1.0-beta2",
+    "Stormpath.Owin.Common": "0.1.0-beta3",
     "Stormpath.SDK": "0.8.2-beta1"
   },
   "description": "Stormpath OWIN middleware for .NET.",
@@ -33,5 +33,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "0.1.0-beta4"
+  "version": "0.1.0-beta5"
 }
