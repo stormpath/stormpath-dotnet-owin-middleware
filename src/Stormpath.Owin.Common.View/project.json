@@ -4,7 +4,7 @@
     "web": "Microsoft.AspNet.Server.Kestrel"
   },
   "content": [
-    "View/Stormpath/*.cshtml"
+    "Views/Stormpath/*.cshtml"
   ],
   "dependencies": {
     "Stormpath.Owin.Common": "0.1.0-beta2"
