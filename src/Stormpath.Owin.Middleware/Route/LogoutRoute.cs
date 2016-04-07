@@ -28,16 +28,8 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class LogoutRoute : AbstractRouteMiddleware
+    public class LogoutRoute : AbstractRoute
     {
-        public LogoutRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
         protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             await HandleLogout(context, client, cancellationToken);

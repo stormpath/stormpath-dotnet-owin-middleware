@@ -32,16 +32,8 @@ using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class LoginRoute : AbstractRouteMiddleware
+    public class LoginRoute : AbstractRoute
     {
-        public LoginRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
         private Task<bool> RenderForm(IOwinEnvironment context, ExtendedLoginViewModel viewModel, CancellationToken cancellationToken)
         {
             var loginView = new Common.View.Login();

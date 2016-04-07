@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+using System.Threading.Tasks;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
@@ -25,5 +27,7 @@ namespace Stormpath.Owin.Middleware
         public ILogger Logger { get; set; }
 
         public string LibraryUserAgent { get; set; }
+
+        public Func<string, object, Task> ViewRenderer { get; set; }
     }
 }

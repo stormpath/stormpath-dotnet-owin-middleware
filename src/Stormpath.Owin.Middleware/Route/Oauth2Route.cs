@@ -30,16 +30,8 @@ using Stormpath.SDK.Error;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class Oauth2Route : AbstractRouteMiddleware
+    public sealed class Oauth2Route : AbstractRoute
     {
-        public Oauth2Route(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
         protected override Task<bool> Get(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             context.Response.StatusCode = 405;

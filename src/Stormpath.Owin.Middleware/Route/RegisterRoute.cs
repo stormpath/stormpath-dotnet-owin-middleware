@@ -34,7 +34,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class RegisterRoute : AbstractRouteMiddleware
+    public sealed class RegisterRoute : AbstractRoute
     {
         private static readonly string[] defaultFields =
         {
@@ -47,14 +47,6 @@ namespace Stormpath.Owin.Middleware.Route
             "confirmPassword",
             "customData"
         };
-
-        public RegisterRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
 
         private Task<bool> RenderForm(IOwinEnvironment context, ExtendedRegisterViewModel viewModel, CancellationToken cancellationToken)
         {

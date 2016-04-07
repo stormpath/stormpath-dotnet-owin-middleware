@@ -29,16 +29,8 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class ForgotPasswordRoute : AbstractRouteMiddleware
+    public sealed class ForgotPasswordRoute : AbstractRoute
     {
-        public ForgotPasswordRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
         private Task<bool> RenderForm(IOwinEnvironment context, ForgotPasswordViewModel viewModel, CancellationToken cancellationToken)
         {
             var forgotView = new Common.View.ForgotPassword();

@@ -33,6 +33,7 @@ namespace Stormpath.Owin.Middleware
 
     public sealed partial class StormpathMiddleware
     {
+        private readonly Func<string, object, Task> viewRenderer;
         private readonly ILogger logger = null;
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
         private readonly IScopedClientFactory clientFactory;
@@ -41,11 +42,13 @@ namespace Stormpath.Owin.Middleware
         private AppFunc next;
 
         private StormpathMiddleware(
+            Func<string, object, Task> viewRenderer,
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
             IScopedClientFactory clientFactory,
             IntegrationConfiguration configuration)
         {
+            this.viewRenderer = viewRenderer;
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;
             this.clientFactory = clientFactory;

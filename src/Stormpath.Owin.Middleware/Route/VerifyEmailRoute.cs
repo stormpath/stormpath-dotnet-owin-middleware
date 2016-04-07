@@ -31,16 +31,8 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class VerifyEmailRoute : AbstractRouteMiddleware
+    public sealed class VerifyEmailRoute : AbstractRoute
     {
-        public VerifyEmailRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
         private Task<bool> RenderForm(IOwinEnvironment context, VerifyEmailViewModel viewModel, CancellationToken cancellationToken)
         {
             var verifyEmailView = new Common.View.VerifyEmail();

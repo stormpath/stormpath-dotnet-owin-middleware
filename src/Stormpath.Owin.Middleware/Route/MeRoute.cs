@@ -26,16 +26,8 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class MeRoute : AbstractRouteMiddleware
+    public class MeRoute : AbstractRoute
     {
-        public MeRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
         protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);

@@ -27,15 +27,17 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public abstract class AbstractRouteMiddleware
+    public abstract class AbstractRoute
     {
-        private readonly IClient _client;
+        private bool _initialized;
+        protected StormpathConfiguration _configuration;
+        protected Func<string, object, Task> _viewRenderer;
+        protected ILogger _logger;
+        private IClient _client;
 
-        protected readonly ILogger _logger;
-        protected readonly StormpathConfiguration _configuration;
-
-        public AbstractRouteMiddleware(
+        public void Initialize(
             StormpathConfiguration configuration,
+            Func<string, object, Task> viewRenderer,
             ILogger logger,
             IClient client)
         {
@@ -44,18 +46,32 @@ namespace Stormpath.Owin.Middleware.Route
                 throw new ArgumentNullException(nameof(configuration));
             }
 
+            if (viewRenderer == null)
+            {
+                throw new ArgumentNullException(nameof(viewRenderer));
+            }
+
             if (client == null)
             {
                 throw new ArgumentNullException(nameof(client));
             }
 
-            _logger = logger;
+
             _configuration = configuration;
+            _viewRenderer = viewRenderer;
+            _logger = logger;
             _client = client;
+
+            _initialized = true;
         }
 
         public async Task<bool> Invoke(IOwinEnvironment owinContext)
         {
+            if (!_initialized)
+            {
+                throw new InvalidOperationException("Route has not been initialized.");
+            }
+
             var acceptHeader = owinContext.Request.Headers.GetString("Accept");
             var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, _configuration.Web.Produces);
 

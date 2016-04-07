@@ -31,16 +31,8 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class ChangePasswordRoute : AbstractRouteMiddleware
+    public sealed class ChangePasswordRoute : AbstractRoute
     {
-        public ChangePasswordRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
         private Task<bool> RenderForm(IOwinEnvironment context, ChangePasswordViewModel viewModel, CancellationToken cancellationToken)
         {
             var changePasswordView = new Common.View.ChangePassword();
