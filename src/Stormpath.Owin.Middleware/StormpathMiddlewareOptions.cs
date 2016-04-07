@@ -20,6 +20,8 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
+    using Renderer = Func<string, object, System.IO.Stream, System.Threading.CancellationToken, Task>;
+
     public sealed class StormpathMiddlewareOptions
     {
         public object Configuration { get; set; }
@@ -28,6 +30,6 @@ namespace Stormpath.Owin.Middleware
 
         public string LibraryUserAgent { get; set; }
 
-        public Func<string, object, Task> ViewRenderer { get; set; }
+        public Renderer ViewRenderer { get; set; }
     }
 }

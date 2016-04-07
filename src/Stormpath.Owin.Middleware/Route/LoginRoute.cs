@@ -16,9 +16,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
@@ -27,27 +25,21 @@ using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Route
 {
     public class LoginRoute : AbstractRoute
     {
-        private Task<bool> RenderForm(IOwinEnvironment context, ExtendedLoginViewModel viewModel, CancellationToken cancellationToken)
-        {
-            var loginView = new Common.View.Login();
-            return HttpResponse.Ok(loginView, viewModel, context);
-        }
-
-        protected override Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
             var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, null);
             var loginViewModel = viewModelBuilder.Build();
 
-            return RenderForm(context, loginViewModel, cancellationToken);
+            await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
+            return true;
         }
 
         private async Task<IOauthGrantAuthenticationResult> HandleLogin(IClient client, string login, string password, CancellationToken cancellationToken)
@@ -84,7 +76,8 @@ namespace Stormpath.Owin.Middleware.Route
                 var loginViewModel = viewModelBuilder.Build();
                 loginViewModel.Errors.Add("The login and password fields are required.");
 
-                return await RenderForm(context, loginViewModel, cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
+                return true;
             }
 
             try
@@ -99,7 +92,8 @@ namespace Stormpath.Owin.Middleware.Route
                 var loginViewModel = viewModelBuilder.Build();
                 loginViewModel.Errors.Add(rex.Message);
 
-                return await RenderForm(context, loginViewModel, cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
+                return true;
             }
 
             var nextUri = _configuration.Web.Login.NextUri;

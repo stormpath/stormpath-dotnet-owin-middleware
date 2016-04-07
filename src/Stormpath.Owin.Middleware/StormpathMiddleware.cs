@@ -30,10 +30,11 @@ using Stormpath.SDK.Account;
 namespace Stormpath.Owin.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using Renderer = Func<string, object, System.IO.Stream, System.Threading.CancellationToken, Task>;
 
     public sealed partial class StormpathMiddleware
     {
-        private readonly Func<string, object, Task> viewRenderer;
+        private readonly Renderer viewRenderer;
         private readonly ILogger logger = null;
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
         private readonly IScopedClientFactory clientFactory;
@@ -42,7 +43,7 @@ namespace Stormpath.Owin.Middleware
         private AppFunc next;
 
         private StormpathMiddleware(
-            Func<string, object, Task> viewRenderer,
+            Renderer viewRenderer,
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
             IScopedClientFactory clientFactory,
