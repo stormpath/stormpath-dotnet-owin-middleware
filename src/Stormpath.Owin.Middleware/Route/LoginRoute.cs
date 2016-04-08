@@ -84,7 +84,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 var grantResult = await HandleLogin(client, login, password, cancellationToken);
 
-                Cookies.AddToResponse(context, client, grantResult, _configuration);
+                Cookies.AddCookiesToResponse(context, client, grantResult, _configuration);
             }
             catch (ResourceException rex)
             {
@@ -131,7 +131,7 @@ namespace Stormpath.Owin.Middleware.Route
             var grantResult = await HandleLogin(client, login, password, cancellationToken);
             // Errors will be caught up in AbstractRouteMiddleware
 
-            Cookies.AddToResponse(context, client, grantResult, _configuration);
+            Cookies.AddCookiesToResponse(context, client, grantResult, _configuration);
 
             var token = await grantResult.GetAccessTokenAsync(cancellationToken);
             var account = await token.GetAccountAsync(cancellationToken);
