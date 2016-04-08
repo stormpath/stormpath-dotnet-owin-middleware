@@ -24,8 +24,8 @@ namespace Stormpath.Owin.Common.Views.Precompiled
         private static readonly Dictionary<string, Func<IView>> LookupTable = 
             new Dictionary<string, Func<IView>>(StringComparer.OrdinalIgnoreCase)
         {
-            ["change"] = () => new Change(),
-            ["forgot"] = () => new Forgot(),
+            ["change-password"] = () => new Change(),
+            ["forgot-password"] = () => new Forgot(),
             ["login"] = () => new Login(),
             ["register"] = () => new Register(),
             ["verify"] = () => new Verify(),
