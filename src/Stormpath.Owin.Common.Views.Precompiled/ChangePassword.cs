@@ -1,18 +1,18 @@
 namespace Stormpath.Owin.Common.Views.Precompiled
 {
-#line 1 "Change.cshtml"
+#line 1 "ChangePassword.cshtml"
 using System
 
 #line default
 #line hidden
     ;
-#line 2 "Change.cshtml"
+#line 2 "ChangePassword.cshtml"
 using System.Linq
 
 #line default
 #line hidden
     ;
-#line 3 "Change.cshtml"
+#line 3 "ChangePassword.cshtml"
 using Stormpath.Owin.Common
 
 #line default
@@ -458,13 +458,13 @@ p {
                         </div>
 
 ");
-#line 46 "Change.cshtml"
+#line 46 "ChangePassword.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 46 "Change.cshtml"
+#line 46 "ChangePassword.cshtml"
                          if (Model.Errors.Any())
                         {
 
@@ -472,13 +472,13 @@ p {
 #line hidden
 
             WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n");
-#line 49 "Change.cshtml"
+#line 49 "ChangePassword.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 49 "Change.cshtml"
+#line 49 "ChangePassword.cshtml"
                                  foreach (var error in Model.Errors)
                                 {
 
@@ -486,20 +486,20 @@ p {
 #line hidden
 
             WriteLiteral("                                    <p>");
-#line 51 "Change.cshtml"
+#line 51 "ChangePassword.cshtml"
                                   Write(error);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n");
-#line 52 "Change.cshtml"
+#line 52 "ChangePassword.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </div>\r\n");
-#line 54 "Change.cshtml"
+#line 54 "ChangePassword.cshtml"
                         }
 
 #line default

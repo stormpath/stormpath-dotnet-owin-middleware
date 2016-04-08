@@ -1,18 +1,18 @@
 namespace Stormpath.Owin.Common.Views.Precompiled
 {
-#line 1 "Forgot.cshtml"
+#line 1 "ForgotPassword.cshtml"
 using System
 
 #line default
 #line hidden
     ;
-#line 2 "Forgot.cshtml"
+#line 2 "ForgotPassword.cshtml"
 using System.Linq
 
 #line default
 #line hidden
     ;
-#line 3 "Forgot.cshtml"
+#line 3 "ForgotPassword.cshtml"
 using Stormpath.Owin.Common
 
 #line default
@@ -439,13 +439,13 @@ p {
      <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js'></script>
      <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/resp");
             WriteLiteral("ond.min.js\'></script>\r\n    <![endif]-->\r\n</head>\r\n<body class=\"login\">\r\n    <div class=\"container custom-container\">\r\n        <div class=\"va-wrapper\">\r\n            <div class=\"view login-view container\">\r\n");
-#line 34 "Forgot.cshtml"
+#line 34 "ForgotPassword.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 34 "Forgot.cshtml"
+#line 34 "ForgotPassword.cshtml"
                  if (Model.Status.Equals("invalid_sptoken", StringComparison.OrdinalIgnoreCase))
                 {
 
@@ -461,7 +461,7 @@ p {
                         </div>
                     </div>
 ");
-#line 44 "Forgot.cshtml"
+#line 44 "ForgotPassword.cshtml"
                 }
 
 #line default
@@ -481,13 +481,13 @@ p {
                         </div>
 
 ");
-#line 58 "Forgot.cshtml"
+#line 58 "ForgotPassword.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 58 "Forgot.cshtml"
+#line 58 "ForgotPassword.cshtml"
                          if (Model.Errors.Any())
                         {
 
@@ -495,13 +495,13 @@ p {
 #line hidden
 
             WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n");
-#line 61 "Forgot.cshtml"
+#line 61 "ForgotPassword.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 61 "Forgot.cshtml"
+#line 61 "ForgotPassword.cshtml"
                                  foreach (var error in Model.Errors)
                                 {
 
@@ -509,20 +509,20 @@ p {
 #line hidden
 
             WriteLiteral("                                    <p>");
-#line 63 "Forgot.cshtml"
+#line 63 "ForgotPassword.cshtml"
                                   Write(error);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n");
-#line 64 "Forgot.cshtml"
+#line 64 "ForgotPassword.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </div>\r\n");
-#line 66 "Forgot.cshtml"
+#line 66 "ForgotPassword.cshtml"
                         }
 
 #line default
@@ -530,7 +530,7 @@ p {
 
             WriteLiteral("\r\n                        <form method=\"post\" role=\"form\"");
             BeginWriteAttribute("action", " action=\"", 3075, "\"", 3108, 1);
-#line 68 "Forgot.cshtml"
+#line 68 "ForgotPassword.cshtml"
 WriteAttributeValue("", 3084, Model.ForgotPasswordUri, 3084, 24, false);
 
 #line default
@@ -550,13 +550,13 @@ WriteAttributeValue("", 3084, Model.ForgotPasswordUri, 3084, 24, false);
                     </div>
                 </div>
 ");
-#line 82 "Forgot.cshtml"
+#line 82 "ForgotPassword.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 82 "Forgot.cshtml"
+#line 82 "ForgotPassword.cshtml"
                  if (Model.LoginEnabled)
                 {
 
@@ -565,14 +565,14 @@ WriteAttributeValue("", 3084, Model.ForgotPasswordUri, 3084, 24, false);
 
             WriteLiteral("                    <a");
             BeginWriteAttribute("href", " href=\"", 3959, "\"", 3981, 1);
-#line 84 "Forgot.cshtml"
+#line 84 "ForgotPassword.cshtml"
 WriteAttributeValue("", 3966, Model.LoginUri, 3966, 15, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Back to Log In</a>\r\n");
-#line 85 "Forgot.cshtml"
+#line 85 "ForgotPassword.cshtml"
                 }
 
 #line default
