@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <metadata minClientVersion="3.3.0">
+    <id>Stormpath.Owin.Common.Views</id>
+    <version>0.1.0-beta1</version>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <authors>Nate Barbettini</authors>
+    <owners>Stormpath, Inc.</owners>
+    <licenseUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png</iconUrl>
+    <description>Common views for the Stormpath OWIN middleware library.</description>
+    <language>en-US</language>
+    <dependencies>
+      <group targetFramework=".NETPlatform5.1">
+        <dependency id="Stormpath.Owin.Common" version="0.1.0-beta3" />
+      </group>
+      <group targetFramework=".NETFramework4.5.1">
+        <dependency id="Stormpath.Owin.Common" version="0.1.0-beta3" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="Views\Stormpath\*.cshtml" target="Views\Stormpath" />
+  </files>
+</package>

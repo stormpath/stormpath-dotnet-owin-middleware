@@ -1,8 +1,5 @@
 {
   "authors": [ "Nate Barbettini" ],
-  "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel"
-  },
   "content": [
     "Views/Stormpath/*.cshtml"
   ],
@@ -21,9 +18,6 @@
   "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
   "repository": {
     "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
-  },
-  "tooling": {
-    "defaultNamespace": "Stormpmath.Owin.Common.View"
   },
   "version": "0.1.0-beta1"
 }
