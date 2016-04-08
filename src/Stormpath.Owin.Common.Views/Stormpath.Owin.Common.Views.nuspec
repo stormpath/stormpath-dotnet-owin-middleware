@@ -21,6 +21,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="Views\Stormpath\*.cshtml" target="Views\Stormpath" />
+    <file src="Views\Stormpath\*.cshtml" target="content\Views\Stormpath" />
   </files>
 </package>
