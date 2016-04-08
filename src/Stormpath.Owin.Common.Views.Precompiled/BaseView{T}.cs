@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Common.Views.Precompiled
 {
-    public abstract class BaseView<T>
+    public abstract class BaseView<T> : IView
     {
         protected T Model { get; private set; }
 
@@ -36,9 +36,10 @@ namespace Stormpath.Owin.Common.Views.Precompiled
         protected StreamWriter Output { get; private set; }
 
         /// <summary>
-        /// Execute an individual request
+        /// Render the view.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="model">The model to use.</param>
+        /// <param name="target">The target stream to write to.</param>
         public async Task ExecuteAsync(T model, Stream target)
         {
             Model = model;
@@ -46,6 +47,9 @@ namespace Stormpath.Owin.Common.Views.Precompiled
             await ExecuteAsync();
             Output.Dispose();
         }
+
+        public Task ExecuteAsync(object model, Stream target)
+            => ExecuteAsync((T)model, target);
 
         /// <summary>
         /// Execute an individual request
