@@ -22,12 +22,6 @@ using Stormpath.Owin.Common
 
     public class Register : BaseView<Stormpath.Owin.Common.ViewModel.ExtendedRegisterViewModel>
     {
-#line 5 "Register.cshtml"
-
-    private new Stormpath.Owin.Common.ViewModel.ExtendedRegisterViewModel Model { get; }
-
-#line default
-#line hidden
         #line hidden
         public Register()
         {
@@ -36,8 +30,8 @@ using Stormpath.Owin.Common
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            WriteLiteral("\r\n");
-            WriteLiteral(@"<!DOCTYPE html>
+            WriteLiteral(@"
+<!DOCTYPE html>
 <!--[if lt IE 7]>      <html class=""no-js lt-ie9 lt-ie8 lt-ie7""> <![endif]-->
 <!--[if IE 7]>         <html class=""no-js lt-ie9 lt-ie8""> <![endif]-->
 <!--[if IE 8]>         <html class=""no-js lt-ie9""> <![endif]-->
@@ -52,12 +46,399 @@ using Stormpath.Owin.Common
     <link href=""//fonts.googleapis.com/css?family=Open+Sans:300italic,300,400italic,400,600italic,600,700italic,700,800italic,800"" rel=""stylesheet"" type=""text/css"">
     <link href=""//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"" rel=""stylesheet"">
     <style>
-        html,\r\nbody {\r\n  height: 100%;\r\n}\r\n\r\n@media (max-width: 767px) {\r\n  html,\r\n  body {\r\n    padding: 0 4px;\r\n  }\r\n}\r\n\r\nbody {\r\n  margin-left: auto;\r\n  margin-right: auto;\r\n}\r\n\r\nbody,\r\ndiv,\r\np,\r\na,\r\nlabel {\r\n  font-family: 'Open Sans';\r\n  font-size: 14px;\r\n  font-weight: 400;\r\n  color: #484848;\r\n}\r\n\r\na {\r\n  color: #0072dd;\r\n}\r\n\r\np {\r\n  line-height: 21px;\r\n}\r\n\r\n.container {\r\n  max-width: 620px;\r\n}\r\n\r\n.logo {\r\n  margin: 34px auto 25px auto;\r\n  display: block;\r\n}\r\n\r\n.btn-sp-green {\r\n  height: 45px;\r\n  line-height: 22.5px;\r\n  padding: 0 40px;\r\n  color: #fff;\r\n  font-size: 17px;\r\n  background: -webkit-linear-gradient(#42c41a 50%, #2dbd00 50%);\r\n  background: linear-gradient(#42c41a 50%, #2dbd00 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a)';\r\n}\r\n\r\n.btn-sp-green:hover,\r\n.btn-sp-green:focus {\r\n  color: #fff;\r\n  background: -webkit-linear-gradient(#43cd1a 50%, #2ec700 50%);\r\n  background: linear-gradient(#43cd1a 50%, #2ec700 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a)';\r\n}\r\n\r\n.btn-social {\r\n  height: 37px;\r\n  line-height: 18.5px;\r\n  color: #fff;\r\n  font-size: 16px;\r\n  border-radius: 3px;\r\n}\r\n\r\n.btn-social:hover,\r\n.btn-social:focus {\r\n  color: #fff;\r\n}\r\n\r\n.btn-facebook {\r\n  background: -webkit-linear-gradient(#4c6fc5 50%, #3d63c0 50%);\r\n  background: linear-gradient(#4c6fc5 50%, #3d63c0 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5)';\r\n}\r\n\r\n.btn-facebook:hover,\r\n.btn-facebook:focus {\r\n  color: #fff;\r\n  background: -webkit-linear-gradient(#4773de 50%, #3767db 50%);\r\n  background: linear-gradient(#4773de 50%, #3767db 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3767db, endColorstr=#4773de);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3767db, endColorstr=#4773de)';\r\n}\r\n\r\n.btn-google {\r\n  background: -webkit-linear-gradient(#e05b4b 50%, #dd4b39 50%);\r\n  background: linear-gradient(#e05b4b 50%, #dd4b39 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b)';\r\n}\r\n\r\n.btn-google:hover,\r\n.btn-google:focus {\r\n  color: #fff;\r\n  background: -webkit-linear-gradient(#ea604e 50%, #e8503c 50%);\r\n  background: linear-gradient(#ea604e 50%, #e8503c 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e)';\r\n}\r\n\r\n.btn-linkedin {\r\n  background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);\r\n  background: linear-gradient(#007cbc 50%, #0077B5 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)';\r\n}\r\n\r\n.btn-linkedin:hover,\r\n.btn-linkedin:focus {\r\n  color: #fff;\r\n  background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);\r\n  background: linear-gradient(#007cbc 50%, #0077B5 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)';\r\n}\r\n\r\n.btn-github {\r\n  background: -webkit-linear-gradient(#848282 50%, #7B7979 50%);\r\n  background: linear-gradient(#848282 50%, #7B7979 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#848282, endColorstr=#7B7979);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#848282, endColorstr=#7B7979)';\r\n}\r\n\r\n.btn-github:hover,\r\n.btn-github:focus {\r\n  color: #fff;\r\n  background: -webkit-linear-gradient(#8C8888 50%, #848080 50%);\r\n  background: linear-gradient(#8C8888 50%, #848080 50%);\r\n  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#8C8888, endColorstr=#848080);\r\n  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#8C8888, endColorstr=#848080)';\r\n}\r\n\r\n.btn-register {\r\n  font-size: 16px;\r\n}\r\n\r\n.form-control {\r\n  font-size: 15px;\r\n  box-shadow: none;\r\n}\r\n\r\n.form-control::-webkit-input-placeholder {\r\n  color: #aaadb0;\r\n}\r\n\r\n.form-control::-moz-placeholder {\r\n  color: #aaadb0;\r\n}\r\n\r\n.form-control:-ms-input-placeholder {\r\n  color: #aaadb0;\r\n}\r\n\r\n.form-control::placeholder {\r\n  color: #aaadb0;\r\n}\r\n\r\n.form-control:focus {\r\n  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px rgba(0, 132, 255, 0.4);\r\n}\r\n\r\n.view .header {\r\n  padding: 34px 0;\r\n}\r\n\r\n.view .header,\r\n.view .header a {\r\n  font-weight: 300;\r\n  font-size: 21px;\r\n}\r\n\r\n.view input[type='text'],\r\n.view input[type='password'],\r\n.view input[type='email'],\r\n.view input[type='color'],\r\n.view input[type='date'],\r\n.view input[type='datetime']\r\n.view input[type='datetime-local'],\r\n.view input[type='email'],\r\n.view input[type='month'],\r\n.view input[type='number'],\r\n.view input[type='range'],\r\n.view input[type='search'],\r\n.view input[type='tel'],\r\n.view input[type='time'],\r\n.view input[type='url'],\r\n.view input[type='week']{\r\n  background-color: #f6f6f6;\r\n  height: 45px;\r\n}\r\n\r\n.view a.forgot,\r\n.view a.to-login {\r\n  float: right;\r\n  padding: 17px 0;\r\n  font-size: 13px;\r\n}\r\n\r\n.view form button {\r\n  display: block;\r\n  float: right;\r\n  margin-bottom: 25px;\r\n}\r\n\r\n.view form label {\r\n  height: 45px;\r\n  line-height: 45px;\r\n}\r\n\r\n.box {\r\n  box-shadow: 0 0px 3px 1px rgba(0, 0, 0, 0.1);\r\n  border: 1px solid #cacaca;\r\n  border-radius: 3px;\r\n  padding: 0 30px;\r\n}\r\n\r\n.sp-form .has-error,\r\n.sp-form .has-error .help-block {\r\n  color: #ec3e3e;\r\n  font-weight: 600;\r\n}\r\n\r\n.sp-form .has-error input[type='text'],\r\n.sp-form .has-error input[type='password'] {\r\n  border-color: #ec3e3e;\r\n}\r\n\r\n.sp-form .form-group {\r\n  margin-bottom: 21px;\r\n}\r\n\r\n.sp-form input[type='text'],\r\n.sp-form input[type='password'] {\r\n  position: relative;\r\n}\r\n\r\n.sp-form .help-block {\r\n  font-size: 12px;\r\n  position: absolute;\r\n  top: 43px;\r\n}\r\n\r\n.verify-view .box {\r\n  padding-bottom: 30px;\r\n}\r\n\r\n.verify-view .box .header {\r\n  padding-bottom: 20px;\r\n}\r\n\r\n.unverified-view .box {\r\n  padding-bottom: 30px;\r\n}\r\n\r\n.unverified-view .box .header {\r\n  padding-bottom: 25px;\r\n}\r\n\r\n.login-view .box {\r\n  background-color: #f6f6f6;\r\n  padding: 0;\r\n}\r\n\r\n.login-view label {\r\n  margin-bottom: 7px;\r\n}\r\n\r\n.login-view .header p {\r\n  margin-top: 2em;\r\n}\r\n\r\n.login-view .email-password-area {\r\n  background-color: white;\r\n  border-top-left-radius: 3px;\r\n  border-bottom-left-radius: 3px;\r\n}\r\n\r\n@media (min-width: 767px) {\r\n  .login-view .email-password-area {\r\n    padding: 0 30px;\r\n  }\r\n}\r\n\r\n.login-view .email-password-area label {\r\n  height: 14px;\r\n  line-height: 14px;\r\n}\r\n\r\n.login-view .email-password-area input[type='checkbox'] {\r\n  visibility: hidden;\r\n}\r\n\r\n.login-view .email-password-area input[type='checkbox'] + label {\r\n  position: relative;\r\n  padding-left: 8px;\r\n  line-height: 16px;\r\n  font-size: 13px;\r\n}\r\n\r\n.login-view .email-password-area input[type='checkbox'] + label:after {\r\n  position: absolute;\r\n  left: -16px;\r\n  width: 16px;\r\n  height: 16px;\r\n  border: 1px solid #cacaca;\r\n  background-color: #f6f6f6;\r\n  content: '';\r\n}\r\n\r\n.login-view .email-password-area input[type='checkbox']:checked + label:after {\r\n  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowRTVBQUVGMzJEODBFMjExODQ2N0NBMjk4MjdCNDBCNyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0RTY4NUM4NURGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0RTY4NUM4NERGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQxNDQ4M0NEM0JERkUyMTE4MEYwQjNBRjIwMUNENzQxIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkZDMEMxNjY2OUVCMUUyMTFBRjVDQkQ0QjE5MTNERDU2Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+3YY4qgAAALlJREFUeNpi/P//PwMlgImBQjDwBrCgCwQHB+NUfObMGT9mZuboe/fuheM0ABu4fv060/fv32cBNTNycHBE4nUBNs0/f/7cAWSeMzQ0rCA5DICaNwKj+qGRkVEFUYF47ty5GWfPns2EsjsYGRlFgM5OJzoQ//37t5eLi2sRMMDec3Jypn79+lVXX1//H9HRaGJisvr379/nuLm5lwKdP9vMzOwZyekAaEA3EF8G4hZCYcQ4mhcYAAIMAJGST/dDIpNQAAAAAElFTkSuQmCC);\r\n  background-position: -1px -1px;\r\n}\r\n\r\n@media (min-width: 767px) {\r\n  .login-view .email-password-area.small {\r\n    border-right: 1px solid #cacaca;\r\n  }\r\n\r\n  .login-view .email-password-area.small .group-email {\r\n    margin-bottom: 21px;\r\n  }\r\n}\r\n\r\n@media (max-width: 767px) {\r\n  .login-view .email-password-area.small {\r\n    border-bottom: 1px solid #cacaca;\r\n    border-bottom-left-radius: 0;\r\n    border-bottom-right-radius: 0;\r\n  }\r\n}\r\n\r\n.login-view .email-password-area.large {\r\n  border-top-right-radius: 3px;\r\n  border-bottom-right-radius: 3px;\r\n}\r\n\r\n@media (min-width: 767px) {\r\n  .login-view .email-password-area.large {\r\n    padding: 0 50px;\r\n  }\r\n\r\n  .login-view .email-password-area.large .group-login label,\r\n  .login-view .email-password-area.large .group-password label {\r\n    height: 45px;\r\n    line-height: 45px;\r\n  }\r\n}\r\n\r\n.login-view .social-area {\r\n  border-top-right-radius: 3px;\r\n  border-bottom-right-radius: 3px;\r\n  padding: 0 20px;\r\n  position: relative;\r\n  padding-bottom: 20px;\r\n  background-color: #f6f6f6;\r\n}\r\n\r\n.login-view .social-area .header {\r\n  margin-bottom: -6px;\r\n}\r\n\r\n@media (max-width: 767px) {\r\n  .login-view .social-area .header {\r\n    padding: 0px;\r\n  }\r\n}\r\n\r\n.login-view .social-area button {\r\n  display: block;\r\n  width: 100%;\r\n  margin-bottom: 15px;\r\n}\r\n\r\n.login, .register { display: table; }\r\n.va-wrapper { display: table-cell; width: 100%; vertical-align: middle; }\r\n.custom-container { display: table-row; height: 100%; }
+        html,
+body {
+  height: 100%;
+}
+
+@media (max-width: 767px) {
+  html,
+  body {
+    padding: 0 4px;
+  }
+}
+
+body {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body,
+div,
+p,
+a,
+label {
+  font-family: 'Open Sans';
+  font-size: 14px;
+  font-weight: 400;
+  color: #484848;
+}
+
+a {
+  color: #0072dd;
+}
+
+p {
+  line-height: 21px;
+}
+
+.container {
+  max-width: 620px;
+}
+
+.logo {
+  margin: 34px auto 25px auto;
+  display: block;
+}
+
+.btn-sp-green {
+  height: 45px;
+  line-height: 22.5px;
+  padding: 0 40px;
+  color: #fff;
+  font-size: 17px;
+  background: -webkit-linear-gradient(#42c41a 50%, #2dbd00 50%);
+  background: linear-gradient(#42c41a 50%, #2dbd00 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a)';
+}
+
+.btn-sp-green:hover,
+.btn-sp-green:focus {
+  color: #fff;
+  background: -webkit-linear-gradient(#43cd1a 50%, #2ec700 50%);
+  background: linear-gradient(#43cd1a 50%, #2ec700 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a)';
+}
+
+.btn-social {
+  height: 37px;
+  line-height: 18.5px;
+  color: #fff;
+  font-size: 16px;
+  border-radius: 3px;
+}
+
+.btn-social:hover,
+.btn-social:focus {
+  color: #fff;
+}
+
+.btn-facebook {
+  background: -webkit-linear-gradient(#4c6fc5 50%, #3d63c0 50%);
+  background: linear-gradient(#4c6fc5 50%, #3d63c0 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5)';
+}
+
+.btn-facebook:hover,
+.btn-facebook:focus {
+  color: #fff;
+  background: -webkit-linear-gradient(#4773de 50%, #3767db 50%);
+  background: linear-gradient(#4773de 50%, #3767db 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3767db, endColorstr=#4773de);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3767db, endColorstr=#4773de)';
+}
+
+.btn-google {
+  background: -webkit-linear-gradient(#e05b4b 50%, #dd4b39 50%);
+  background: linear-gradient(#e05b4b 50%, #dd4b39 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b)';
+}
+
+.btn-google:hover,
+.btn-google:focus {
+  color: #fff;
+  background: -webkit-linear-gradient(#ea604e 50%, #e8503c 50%);
+  background: linear-gradient(#ea604e 50%, #e8503c 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e)';
+}
+
+.btn-linkedin {
+  background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);
+  background: linear-gradient(#007cbc 50%, #0077B5 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)';
+}
+
+.btn-linkedin:hover,
+.btn-linkedin:focus {
+  color: #fff;
+  background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);
+  background: linear-gradient(#007cbc 50%, #0077B5 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)';
+}
+
+.btn-github {
+  background: -webkit-linear-gradient(#848282 50%, #7B7979 50%);
+  background: linear-gradient(#848282 50%, #7B7979 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#848282, endColorstr=#7B7979);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#848282, endColorstr=#7B7979)';
+}
+
+.btn-github:hover,
+.btn-github:focus {
+  color: #fff;
+  background: -webkit-linear-gradient(#8C8888 50%, #848080 50%);
+  background: linear-gradient(#8C8888 50%, #848080 50%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#8C8888, endColorstr=#848080);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#8C8888, endColorstr=#848080)';
+}
+
+.btn-register {
+  font-size: 16px;
+}
+
+.form-control {
+  font-size: 15px;
+  box-shadow: none;
+}
+
+.form-control::-webkit-input-placeholder {
+  color: #aaadb0;
+}
+
+.form-control::-moz-placeholder {
+  color: #aaadb0;
+}
+
+.form-control:-ms-input-placeholder {
+  color: #aaadb0;
+}
+
+.form-control::placeholder {
+  color: #aaadb0;
+}
+
+.form-control:focus {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 6px rgba(0, 132, 255, 0.4);
+}
+
+.view .header {
+  padding: 34px 0;
+}
+
+.view .header,
+.view .header a {
+  font-weight: 300;
+  font-size: 21px;
+}
+
+.view input[type='text'],
+.view input[type='password'],
+.view input[type='email'],
+.view input[type='color'],
+.view input[type='date'],
+.view input[type='datetime']
+.view input[type='datetime-local'],
+.view input[type='email'],
+.view input[type='month'],
+.view input[type='number'],
+.view input[type='range'],
+.view input[type='search'],
+.view input[type='tel'],
+.view input[type='time'],
+.view input[type='url'],
+.view input[type='week']{
+  background-color: #f6f6f6;
+  height: 45px;
+}
+
+.view a.forgot,
+.view a.to-login {
+  float: right;
+  padding: 17px 0;
+  font-size: 13px;
+}
+
+.view form button {
+  display: block;
+  float: right;
+  margin-bottom: 25px;
+}
+
+.view form label {
+  height: 45px;
+  line-height: 45px;
+}
+
+.box {
+  box-shadow: 0 0px 3px 1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #cacaca;
+  border-radius: 3px;
+  padding: 0 30px;
+}
+
+.sp-form .has-error,
+.sp-form .has-error .help-block {
+  color: #ec3e3e;
+  font-weight: 600;
+}
+
+.sp-form .has-error input[type='text'],
+.sp-form .has-error input[type='password'] {
+  border-color: #ec3e3e;
+}
+
+.sp-form .form-group {
+  margin-bottom: 21px;
+}
+
+.sp-form input[type='text'],
+.sp-form input[type='password'] {
+  position: relative;
+}
+
+.sp-form .help-block {
+  font-size: 12px;
+  position: absolute;
+  top: 43px;
+}
+
+.verify-view .box {
+  padding-bottom: 30px;
+}
+
+.verify-view .box .header {
+  padding-bottom: 20px;
+}
+
+.unverified-view .box {
+  padding-bottom: 30px;
+}
+
+.unverified-view .box .header {
+  padding-bottom: 25px;
+}
+
+.login-view .box {
+  background-color: #f6f6f6;
+  padding: 0;
+}
+
+.login-view label {
+  margin-bottom: 7px;
+}
+
+.login-view .header p {
+  margin-top: 2em;
+}
+
+.login-view .email-password-area {
+  background-color: white;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+@media (min-width: 767px) {
+  .login-view .email-password-area {
+    padding: 0 30px;
+  }
+}
+
+.login-view .email-password-area label {
+  height: 14px;
+  line-height: 14px;
+}
+
+.login-view .email-password-area input[type='checkbox'] {
+  visibility: hidden;
+}
+
+.login-view .email-password-area input[type='checkbox'] + label {
+  position: relative;
+  padding-left: 8px;
+  line-height: 16px;
+  font-size: 13px;
+}
+
+.login-view .email-password-area input[type='checkbox'] + label:after {
+  position: absolute;
+  left: -16px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #cacaca;
+  background-color: #f6f6f6;
+  content: '';
+}
+
+.login-view .email-password-area input[type='checkbox']:checked + label:after {
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowRTVBQUVGMzJEODBFMjExODQ2N0NBMjk4MjdCNDBCNyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0RTY4NUM4NURGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0RTY4NUM4NERGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQxNDQ4M0NEM0JERkUyMTE4MEYwQjNBRjIwMUNENzQxIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkZDMEMxNjY2OUVCMUUyMTFBRjVDQkQ0QjE5MTNERDU2Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+3YY4qgAAALlJREFUeNpi/P//PwMlgImBQjDwBrCgCwQHB+NUfObMGT9mZuboe/fuheM0ABu4fv060/fv32cBNTNycHBE4nUBNs0/f/7cAWSeMzQ0rCA5DICaNwKj+qGRkVEFUYF47ty5GWfPns2EsjsYGRlFgM5OJzoQ//37t5eLi2sRMMDec3Jypn79+lVXX1//H9HRaGJisvr379/nuLm5lwKdP9vMzOwZyekAaEA3EF8G4hZCYcQ4mhcYAAIMAJGST/dDIpNQAAAAAElFTkSuQmCC);
+  background-position: -1px -1px;
+}
+
+@media (min-width: 767px) {
+  .login-view .email-password-area.small {
+    border-right: 1px solid #cacaca;
+  }
+
+  .login-view .email-password-area.small .group-email {
+    margin-bottom: 21px;
+  }
+}
+
+@media (max-width: 767px) {
+  .login-view .email-password-area.small {
+    border-bottom: 1px solid #cacaca;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.login-view .email-password-area.large {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+@media (min-width: 767px) {
+  .login-view .email-password-area.large {
+    padding: 0 50px;
+  }
+
+  .login-view .email-password-area.large .group-login label,
+  .login-view .email-password-area.large .group-password label {
+    height: 45px;
+    line-height: 45px;
+  }
+}
+
+.login-view .social-area {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  padding: 0 20px;
+  position: relative;
+  padding-bottom: 20px;
+  background-color: #f6f6f6;
+}
+
+.login-view .social-area .header {
+  margin-bottom: -6px;
+}
+
+@media (max-width: 767px) {
+  .login-view .social-area .header {
+    padding: 0px;
+  }
+}
+
+.login-view .social-area button {
+  display: block;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.login, .register { display: table; }
+.va-wrapper { display: table-cell; width: 100%; vertical-align: middle; }
+.custom-container { display: table-row; height: 100%; }
     </style>
     <!--[if lt IE 9]>
      <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js'></script>
-     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></scri");
-            WriteLiteral(@"pt>
+     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></sc");
+            WriteLiteral(@"ript>
     <![endif]-->
 </head>
     <body class=""register"">
