@@ -20,10 +20,10 @@ using Stormpath.Owin.Common
     ;
     using System.Threading.Tasks;
 
-    public class Change : BaseView<Stormpath.Owin.Common.ViewModel.ChangePasswordViewModel>
+    public class ChangePassword : BaseView<Stormpath.Owin.Common.ViewModel.ChangePasswordViewModel>
     {
         #line hidden
-        public Change()
+        public ChangePassword()
         {
         }
 

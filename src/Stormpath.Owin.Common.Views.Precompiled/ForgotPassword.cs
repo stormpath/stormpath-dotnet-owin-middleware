@@ -20,10 +20,10 @@ using Stormpath.Owin.Common
     ;
     using System.Threading.Tasks;
 
-    public class Forgot : BaseView<Stormpath.Owin.Common.ViewModel.ForgotPasswordViewModel>
+    public class ForgotPassword : BaseView<Stormpath.Owin.Common.ViewModel.ForgotPasswordViewModel>
     {
         #line hidden
-        public Forgot()
+        public ForgotPassword()
         {
         }
 
