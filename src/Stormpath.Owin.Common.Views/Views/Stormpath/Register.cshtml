@@ -1,7 +1,7 @@
 ﻿@model Stormpath.Owin.Common.ViewModel.ExtendedRegisterViewModel
 @using System
 @using System.Linq
-/*ignore*/@using Stormpath.Owin.Common.View
+@using Stormpath.Owin.Common
 
 @functions {
     /*ignore*/private Stormpath.Owin.Common.ViewModel.ExtendedRegisterViewModel Model { get; }
@@ -444,7 +444,7 @@ p {
                                                    name="@field.Name"
                                                    type="@field.Type"
                                                    class="form-control"
-                                                   value="@(Model.FormData.GetOrNull(field.Name) ?? string.Empty)"
+                                                   value="@(Model.FormData.Get(field.Name) ?? string.Empty)"
                                                    @(field.Required ? "required" : string.Empty)>
                                         </div>
                                     </div>

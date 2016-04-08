@@ -1,8 +1,5 @@
 {
   "authors": [ "Nate Barbettini" ],
-  "commands": {
-    "precompile": "RazorCompiler"
-  },
   "copyright": "(c) 2016 Stormpath, Inc.",
   "dependencies": {
     "Stormpath.Owin.Common": "0.1.0-beta3"

@@ -1,7 +1,7 @@
 ﻿@model Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel
 @using System
 @using System.Linq
-/*ignore*/@using Stormpath.Owin.Common.View
+@using Stormpath.Owin.Common
 
 @functions {
     /*ignore*/private Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel Model { get; }
@@ -502,7 +502,7 @@ p {
                                         <input placeholder="@field.Placeholder"
                                                name="@field.Name"
                                                type="@field.Type"
-                                               value="@(Model.FormData.GetOrNull(field.Name) ?? string.Empty)"
+                                               value="@(Model.FormData.Get(field.Name) ?? string.Empty)"
                                                class="form-control"
                                                @(field.Required ? "required" : string.Empty)>
                                     </div>
