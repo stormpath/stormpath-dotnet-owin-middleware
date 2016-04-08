@@ -19,11 +19,14 @@ namespace PageGenerator
         {
             if (args.Length != NumArgs)
             {
-                throw new ArgumentException(string.Format("Requires {0} argument (Namespace, Base Class, Views Directory), {1} given", NumArgs, args.Length));
+                throw new ArgumentException(string.Format("Requires {0} arguments (Namespace, Base Class, Views Directory, [optional] Target Directory), {1} given", NumArgs, args.Length));
             }
             var @namespace = args[0];
             var defaultBaseClass = args[1];
             var viewDir = args[2];
+            var targetDir = args.Length == 4
+                ? args[3]
+                : viewDir;
 
             var fileCount = 0;
             Console.WriteLine();
@@ -35,20 +38,20 @@ namespace PageGenerator
                 return;
             }
 
-            Console.WriteLine("  Generating code files for views in {0}", viewDir);
+            Console.WriteLine("Generating code files for views in {0}", viewDir);
 
             var cshtmlFiles = Directory.EnumerateFiles(viewDir, "*.cshtml");
 
             if (!cshtmlFiles.Any())
             {
-                Console.WriteLine("  No .cshtml files were found.");
+                Console.WriteLine("No .cshtml files were found.");
             }
 
             foreach (var fileName in cshtmlFiles)
             {
-                Console.WriteLine("    Generating code file for view {0}...", Path.GetFileName(fileName));
-                GenerateCodeFile(fileName, @namespace, defaultBaseClass);
-                Console.WriteLine("      Done!");
+                Console.WriteLine("Generating code file for view {0}...", Path.GetFileName(fileName));
+                GenerateCodeFile(fileName, targetDir, @namespace, defaultBaseClass);
+                Console.WriteLine("Done!");
                 fileCount++;
             }
 
@@ -57,7 +60,7 @@ namespace PageGenerator
             Console.WriteLine();
         }
 
-        private static void GenerateCodeFile(string cshtmlFilePath, string rootNamespace, string defaultBaseClass)
+        private static void GenerateCodeFile(string cshtmlFilePath, string targetPath, string rootNamespace, string defaultBaseClass)
         {
             var basePath = Path.GetDirectoryName(cshtmlFilePath);
             var fileName = Path.GetFileName(cshtmlFilePath);
@@ -101,7 +104,7 @@ namespace PageGenerator
 
                 var output = code.GeneratedCode;
                 output = InlineIncludedFiles(basePath, output);
-                File.WriteAllText(Path.Combine(basePath, string.Format("{0}.cs", fileNameNoExtension)), output);
+                File.WriteAllText(Path.Combine(targetPath, string.Format("{0}.cs", fileNameNoExtension)), output);
             }
         }
 
@@ -173,7 +176,7 @@ namespace PageGenerator
                 }
                 var includeFileName = source.Substring(startIndex + startMatch.Length, endIndex - (startIndex + startMatch.Length));
                 includeFileName = SanitizeFileName(includeFileName);
-                Console.WriteLine("      Inlining file {0}", includeFileName);
+                Console.WriteLine("Inlining file {0}", includeFileName);
                 var replacement = File.ReadAllText(Path.Combine(basePath, includeFileName)).Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
                 source = source.Substring(0, startIndex) + replacement + source.Substring(endIndex + endMatch.Length);
                 startIndex = startIndex + replacement.Length;
