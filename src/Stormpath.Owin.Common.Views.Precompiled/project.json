@@ -28,8 +28,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Common.Views.Precompiled"
   },
-  "tools": {
-    "RazorPrecompiler": "1.0.0"
-  },
   "version": "0.1.0-beta1"
 }
