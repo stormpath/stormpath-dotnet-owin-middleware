@@ -64,7 +64,7 @@ namespace PageGenerator
         {
             var basePath = Path.GetDirectoryName(cshtmlFilePath);
             var fileName = Path.GetFileName(cshtmlFilePath);
-            var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName);
+            var cleanFileName = CleanFileName(Path.GetFileNameWithoutExtension(fileName));
             var codeLang = new CSharpRazorCodeLanguage();
             var host = new RazorEngineHost(codeLang);
             
@@ -98,14 +98,26 @@ namespace PageGenerator
             {
                 var code = engine.GenerateCode(
                     input: new StringReader(source),
-                    className: fileNameNoExtension,
+                    className: cleanFileName,
                     rootNamespace: rootNamespace,
                     sourceFileName: fileName);
 
                 var output = code.GeneratedCode;
                 output = InlineIncludedFiles(basePath, output);
-                File.WriteAllText(Path.Combine(targetPath, string.Format("{0}.cs", fileNameNoExtension)), output);
+                File.WriteAllText(Path.Combine(targetPath, string.Format($"{cleanFileName}.cs")), output);
             }
+        }
+
+        private static string CleanFileName(string fileName)
+        {
+            var removeCharacters = new string[] { "-" };
+
+            foreach (var c in removeCharacters)
+            {
+                fileName = fileName.Replace(c, string.Empty);
+            }
+
+            return fileName;
         }
 
         private static string GetModelType(string source)
