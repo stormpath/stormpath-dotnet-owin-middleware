@@ -20,6 +20,22 @@ namespace Stormpath.Owin.Common
 {
     public static class DictionaryExtensions
     {
+        public static TValue Get<TValue>(this IDictionary<object, object> source, string key)
+        {
+            if (source == null)
+            {
+                return default(TValue);
+            }
+
+            object raw;
+            if (!source.TryGetValue(key, out raw) || raw == null)
+            {
+                return default(TValue);
+            }
+
+            return (TValue)raw;
+        }
+
         public static TValue Get<TValue>(this IDictionary<string, TValue> source, string key)
         {
             if (source == null)
