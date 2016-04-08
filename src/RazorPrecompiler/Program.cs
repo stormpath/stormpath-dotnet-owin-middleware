@@ -129,11 +129,6 @@ namespace PageGenerator
                 "@model"
             };
 
-            var removeBlocks = new string[]
-            {
-                $"@functions {{{Environment.NewLine}}}"
-            };
-
             var builder = new StringBuilder();
 
             var removedAnnotatedLines = source
@@ -142,10 +137,7 @@ namespace PageGenerator
                 .Aggregate(builder, (b, s) => b.AppendLine(s))
                 .ToString();
 
-            var removedBlocks = removeBlocks
-                .Aggregate(removedAnnotatedLines, (working, @this) => working.Replace(@this, string.Empty));
-
-            return removedBlocks;
+            return removedAnnotatedLines;
         }
 
         private static string RemoveExtraWhitespace(string source)
