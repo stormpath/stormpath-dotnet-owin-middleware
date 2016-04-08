@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "razor-precompile": {
+      "commandName": "razor-precompile",
+      "commandLineArgs": "\"Stormpath.Owin.Common.View\" \"BaseView\" \"C:\\Users\\Nate\\Documents\\stormpath-dotnet-owin-middleware\\src\\Stormpath.Owin.Common\\View\""
+    }
+  }
+}
