@@ -24,6 +24,7 @@ using Owin;
 namespace Stormpath.Owin.NowinHarness
 {
     using System.Threading;
+    using Common.Views.Precompiled;
     using Middleware;
     using Middleware.Owin;
     using AppFunc = Func<IDictionary<string, object>, Task>;
@@ -89,8 +90,13 @@ namespace Stormpath.Owin.NowinHarness
 
         private Task RenderView(string name, object model, IOwinEnvironment env, CancellationToken cancellationToken)
         {
-            var dummyData = $"{name} View";
-            return env.Response.WriteAsync(dummyData, System.Text.Encoding.UTF8, cancellationToken);
+            var view = ViewResolver.GetView(name);
+            if (view == null)
+            {
+                throw new InvalidOperationException($"View '{name}' not found.");
+            }
+
+            return view.ExecuteAsync(model, env.Response.Body);
         }
     }
 }
