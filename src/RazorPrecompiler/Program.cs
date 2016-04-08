@@ -13,13 +13,13 @@ namespace PageGenerator
 {
     public class Program
     {
-        private const int NumArgs = 3;
+        private const int MinimumArgs = 3;
 
         public void Main(string[] args)
         {
-            if (args.Length != NumArgs)
+            if (args.Length < MinimumArgs)
             {
-                throw new ArgumentException(string.Format("Requires {0} arguments (Namespace, Base Class, Views Directory, [optional] Target Directory), {1} given", NumArgs, args.Length));
+                throw new ArgumentException(string.Format("Requires {0} arguments (Namespace, Base Class, Views Directory, [optional] Target Directory), {1} given", MinimumArgs, args.Length));
             }
             var @namespace = args[0];
             var defaultBaseClass = args[1];
