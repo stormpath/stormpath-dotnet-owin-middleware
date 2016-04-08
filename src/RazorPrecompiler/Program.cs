@@ -169,7 +169,7 @@ namespace PageGenerator
                 var includeFileName = source.Substring(startIndex + startMatch.Length, endIndex - (startIndex + startMatch.Length));
                 includeFileName = SanitizeFileName(includeFileName);
                 Console.WriteLine("Inlining file {0}", includeFileName);
-                var replacement = File.ReadAllText(Path.Combine(basePath, includeFileName)).Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
+                var replacement = File.ReadAllText(Path.Combine(basePath, includeFileName));
                 source = source.Substring(0, startIndex) + replacement + source.Substring(endIndex + endMatch.Length);
                 startIndex = startIndex + replacement.Length;
             }
