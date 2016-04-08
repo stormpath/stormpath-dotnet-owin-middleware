@@ -11,6 +11,6 @@
     "dnx451": { }
   },
   "commands": {
-    "razor-precompile": "RazorPrecompiler"
+    "run": "RazorPrecompiler"
   }
 }
