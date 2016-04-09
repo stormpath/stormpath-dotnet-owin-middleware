@@ -4,7 +4,7 @@
     "Views/Stormpath/*.cshtml"
   ],
   "dependencies": {
-    "Stormpath.Owin.Common": "0.1.0-beta3"
+    "Stormpath.Owin.Common": "0.1.0-beta4"
   },
   "description": "Common views for the Stormpath OWIN middleware library.",
   "frameworks": {
@@ -19,5 +19,5 @@
   "repository": {
     "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
   },
-  "version": "0.1.0-beta2"
+  "version": "0.1.0-beta3"
 }

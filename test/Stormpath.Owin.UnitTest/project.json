@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "FluentAssertions": "4.2.2",
-    "Stormpath.Owin.Middleware": "0.1.0-beta6",
+    "Stormpath.Owin.Middleware": "0.1.0-beta7",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },
