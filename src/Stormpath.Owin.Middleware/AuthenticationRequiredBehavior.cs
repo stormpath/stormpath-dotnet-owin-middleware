@@ -29,7 +29,7 @@ namespace Stormpath.Owin.Middleware
         private readonly WebConfiguration webConfiguration;
         private readonly Func<string> getAcceptHeader;
         private readonly Func<string> getRequestPath;
-        private readonly Action<string> deleteCookie;
+        private readonly Action<WebCookieConfiguration> deleteCookie;
         private readonly Action<int> setStatusCode;
         private readonly Action<string> redirect;
 
@@ -37,7 +37,7 @@ namespace Stormpath.Owin.Middleware
             WebConfiguration webConfiguration,
             Func<string> getAcceptHeaderFunc,
             Func<string> getRequestPathFunc,
-            Action<string> deleteCookieAction,
+            Action<WebCookieConfiguration> deleteCookieAction,
             Action<int> setStatusCodeAction,
             Action<string> redirectAction)
         {
@@ -70,8 +70,8 @@ namespace Stormpath.Owin.Middleware
 
         public void OnUnauthorized()
         {
-            deleteCookie(webConfiguration.AccessTokenCookie.Name);
-            deleteCookie(webConfiguration.RefreshTokenCookie.Name);
+            deleteCookie(webConfiguration.AccessTokenCookie);
+            deleteCookie(webConfiguration.RefreshTokenCookie);
 
             var contentNegotiationResult = ContentNegotiation.Negotiate(getAcceptHeader(), webConfiguration.Produces);
 

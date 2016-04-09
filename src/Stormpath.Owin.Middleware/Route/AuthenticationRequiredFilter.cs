@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
+using Stormpath.Configuration.Abstractions.Model;
 using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
@@ -44,9 +45,9 @@ namespace Stormpath.Owin.Middleware.Route
 
             var getAcceptHeaderFunc = new Func<string>(() => context.Request.Headers.GetString("Accept"));
             var getRequestPathFunc = new Func<string>(() => context.Request.Path);
-            var deleteCookieAction = new Action<string>((name) => Cookies.Delete(context, configuration.Web, name));
-            var setStatusCodeAction = new Action<int>((code) => context.Response.StatusCode = code);
-            var redirectAction = new Action<string>((location) => context.Response.Headers.SetString("Location", location));
+            var deleteCookieAction = new Action<WebCookieConfiguration>(cookie => Cookies.Delete(context, cookie));
+            var setStatusCodeAction = new Action<int>(code => context.Response.StatusCode = code);
+            var redirectAction = new Action<string>(location => context.Response.Headers.SetString("Location", location));
 
             var handler = new AuthenticationRequiredBehavior(
                 configuration.Web,

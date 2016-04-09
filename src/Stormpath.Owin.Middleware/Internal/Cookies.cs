@@ -52,9 +52,12 @@ namespace Stormpath.Owin.Middleware.Internal
 
         public static void DeleteTokenCookies(IOwinEnvironment context, WebConfiguration webConfiguration)
         {
-            Delete(context, webConfiguration, webConfiguration.AccessTokenCookie.Name);
-            Delete(context, webConfiguration, webConfiguration.RefreshTokenCookie.Name);
+            Delete(context, webConfiguration.AccessTokenCookie);
+            Delete(context, webConfiguration.RefreshTokenCookie);
         }
+
+        public static void Delete(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration)
+            => SetTokenCookie(context, cookieConfiguration, string.Empty, Epoch, false);
 
         private static void SetTokenCookie(
             IOwinEnvironment context,
@@ -92,25 +95,6 @@ namespace Stormpath.Owin.Middleware.Internal
             context.Response.Headers.AddString("Set-Cookie", setCookieValue);
         }
 
-        public static void Delete(IOwinEnvironment context, WebConfiguration webConfiguration, string name)
-        {
-            WebCookieConfiguration cookieConfig = null;
 
-            if (webConfiguration.AccessTokenCookie.Name.Equals(name))
-            {
-                cookieConfig = webConfiguration.AccessTokenCookie;
-            }
-            else if (webConfiguration.RefreshTokenCookie.Name.Equals(name))
-            {
-                cookieConfig = webConfiguration.RefreshTokenCookie;
-            }
-
-            if (cookieConfig == null)
-            {
-                throw new Exception($"Unknown cookie name '{name}'");
-            }
-
-            SetTokenCookie(context, cookieConfig, string.Empty, Epoch, false);
-        }
     }
 }
