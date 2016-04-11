@@ -63,7 +63,7 @@ namespace Stormpath.Owin.Middleware
             this.next = next;
         }
 
-        public async Task Invoke(IDictionary<string, object> environment)
+        public async Task InvokeAsync(IDictionary<string, object> environment)
         {
             if (this.next == null)
             {
@@ -94,7 +94,7 @@ namespace Stormpath.Owin.Middleware
                 if (routeHandler.AuthenticationRequired)
                 {
                     var filter = new AuthenticationRequiredFilter(this.logger);
-                    var isAuthenticated = await filter.Invoke(environment);
+                    var isAuthenticated = await filter.InvokeAsync(environment);
                     if (!isAuthenticated)
                     {
                         return;

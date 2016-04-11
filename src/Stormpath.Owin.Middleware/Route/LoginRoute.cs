@@ -31,7 +31,7 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public class LoginRoute : AbstractRoute
     {
-        protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
@@ -59,7 +59,7 @@ namespace Stormpath.Owin.Middleware.Route
             return grantResult;
         }
 
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
@@ -107,7 +107,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await HttpResponse.Redirect(context, nextUri);
         }
 
-        protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login);
             var loginViewModel = viewModelBuilder.Build();
@@ -115,7 +115,7 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, loginViewModel);
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var body = Serializer.Deserialize<LoginPostModel>(bodyString);

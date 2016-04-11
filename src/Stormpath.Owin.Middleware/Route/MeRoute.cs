@@ -26,7 +26,7 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public class MeRoute : AbstractRoute
     {
-        protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
             context.Response.Headers.SetString("Cache-Control", "no-cache, no-store");

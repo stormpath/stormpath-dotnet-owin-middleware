@@ -28,7 +28,7 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public class LogoutRoute : AbstractRoute
     {
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             await HandleLogout(context, client, cancellationToken);
 
@@ -36,7 +36,7 @@ namespace Stormpath.Owin.Middleware.Route
             return true;
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             await HandleLogout(context, client, cancellationToken);
 

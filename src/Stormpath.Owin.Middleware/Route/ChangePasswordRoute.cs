@@ -30,7 +30,7 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class ChangePasswordRoute : AbstractRoute
     {
-        protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
             var spToken = queryString.GetString("sptoken");
@@ -58,7 +58,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
@@ -109,7 +109,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.NextUri);
         }
 
-        protected override async Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
             var spToken = queryString.GetString("sptoken");
@@ -127,7 +127,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await JsonResponse.Ok(context);
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 

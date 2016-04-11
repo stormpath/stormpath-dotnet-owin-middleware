@@ -27,7 +27,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class AuthenticationRequiredFilter
+    public sealed class AuthenticationRequiredFilter
     {
         private readonly ILogger logger;
 
@@ -36,7 +36,7 @@ namespace Stormpath.Owin.Middleware.Route
             this.logger = logger;
         }
 
-        public Task<bool> Invoke(IDictionary<string, object> environment)
+        public Task<bool> InvokeAsync(IDictionary<string, object> environment)
         {
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
             var configuration = environment.Get<StormpathConfiguration>(OwinKeys.StormpathConfiguration);

@@ -128,7 +128,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await application.CreateAccountAsync(newAccount, cancellationToken);
         }
 
-        protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new ExtendedRegisterViewModelBuilder(_configuration.Web, null);
             var registerViewModel = viewModelBuilder.Build();
@@ -137,7 +137,7 @@ namespace Stormpath.Owin.Middleware.Route
             return true;
         }
 
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var formData = FormContentParser.Parse(bodyString);
@@ -205,7 +205,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await HttpResponse.Redirect(context, nextUri);
         }
 
-        protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new RegisterViewModelBuilder(_configuration.Web.Register);
             var registerViewModel = viewModelBuilder.Build();
@@ -213,7 +213,7 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, registerViewModel);
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var bodyDictionary = Serializer.DeserializeDictionary(bodyString);

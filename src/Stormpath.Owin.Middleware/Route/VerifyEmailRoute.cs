@@ -59,7 +59,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await successHandler(cancellationToken);
         }
 
-        protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
             var spToken = queryString.GetString("sptoken");
@@ -90,7 +90,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var postContent = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var formData = FormContentParser.Parse(postContent);
@@ -122,7 +122,7 @@ namespace Stormpath.Owin.Middleware.Route
                 cancellationToken);
         }
 
-        protected override async Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
             var spToken = queryString.GetString("sptoken");
@@ -138,7 +138,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await JsonResponse.Ok(context);
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var postData = Serializer.Deserialize<VerifyEmailPostModel>(await context.Request.GetBodyAsStringAsync(cancellationToken));
 
