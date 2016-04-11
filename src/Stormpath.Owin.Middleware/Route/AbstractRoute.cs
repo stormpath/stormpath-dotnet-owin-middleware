@@ -95,7 +95,7 @@ namespace Stormpath.Owin.Middleware.Route
                 }
                 else
                 {
-                    // todo
+                    // todo handle framework errors
                     throw;
                 }
             }
@@ -109,7 +109,7 @@ namespace Stormpath.Owin.Middleware.Route
                 }
                 else
                 {
-                    // todo
+                    // todo handle framework errors
                     throw;
                 }
             }

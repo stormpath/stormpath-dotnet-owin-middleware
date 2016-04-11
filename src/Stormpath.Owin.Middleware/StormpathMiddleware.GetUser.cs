@@ -59,7 +59,7 @@ namespace Stormpath.Owin.Middleware
 
         private Task<IAccount> TryBasicAuthenticationAsync(IOwinEnvironment context, IClient client)
         {
-            // TODO
+            // TODO Basic auth
             return Task.FromResult<IAccount>(null);
         }
 
