@@ -22,10 +22,10 @@ using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
 using Owin;
 using Stormpath.Owin.Middleware;
+using Stormpath.Owin.Common;
 
 namespace Stormpath.Owin.NowinHarness
 {
-    using Common;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     static class Program
@@ -92,7 +92,7 @@ namespace Stormpath.Owin.NowinHarness
             if (view == null)
             {
                 // Or, hook into your existing view rendering implementation
-                throw new InvalidOperationException($"View '{viewName}' not found.");
+                throw new Exception($"View '{viewName}' not found.");
             }
 
             return view.ExecuteAsync(viewModel, context.Response.Body);
