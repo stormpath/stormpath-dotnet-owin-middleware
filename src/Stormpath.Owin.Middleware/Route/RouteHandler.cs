@@ -16,7 +16,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Stormpath.Owin.Middleware.Owin;
+using Stormpath.Owin.Common;
 using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.Middleware.Route

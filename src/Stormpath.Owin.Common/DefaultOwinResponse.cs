@@ -23,9 +23,8 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Common;
 
-namespace Stormpath.Owin.Middleware.Owin
+namespace Stormpath.Owin.Common
 {
     public class DefaultOwinResponse : IOwinResponse
     {

@@ -1,4 +1,4 @@
-﻿// <copyright file="IOwinRequest.cs" company="Stormpath, Inc.">
+﻿// <copyright file="StormpathMiddleware.Initialize.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +14,12 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Middleware.Owin
+namespace Stormpath.Owin.Common
 {
-    public interface IOwinRequest
+    public interface IViewRenderer
     {
-        string Scheme { get; }
-        Stream Body { get; }
-        string Method { get; }
-        string Path { get; }
-        string PathBase { get; }
-        string QueryString { get; }
-        string OriginalUri { get; }
-        IDictionary<string, string[]> Headers { get; }
-        object this[string key] { get; set; }
-
-        Task<string> GetBodyAsStringAsync(CancellationToken cancellationToken);
+        Task RenderAsync(string viewName, object viewModel, IOwinEnvironment context, System.Threading.CancellationToken cancellationToken);
     }
 }

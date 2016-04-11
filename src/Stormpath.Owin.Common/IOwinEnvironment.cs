@@ -1,4 +1,4 @@
-﻿// <copyright file="StormpathMiddlewareOptions.cs" company="Stormpath, Inc.">
+﻿// <copyright file="IOwinEnvironment.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,14 @@
 // limitations under the License.
 // </copyright>
 
-using Stormpath.SDK.Logging;
-using Stormpath.Owin.Common;
+using System.Threading;
 
-namespace Stormpath.Owin.Middleware
+namespace Stormpath.Owin.Common
 {
-    public sealed class StormpathMiddlewareOptions
+    public interface IOwinEnvironment
     {
-        public object Configuration { get; set; }
-
-        public ILogger Logger { get; set; }
-
-        public string LibraryUserAgent { get; set; }
-
-        public IViewRenderer ViewRenderer { get; set; }
+        CancellationToken CancellationToken { get; set; }
+        IOwinRequest Request { get; }
+        IOwinResponse Response { get; }
     }
 }

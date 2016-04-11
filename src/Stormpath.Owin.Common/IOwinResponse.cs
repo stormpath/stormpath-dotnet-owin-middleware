@@ -1,4 +1,4 @@
-﻿// <copyright file="IOwinEnvironment.cs" company="Stormpath, Inc.">
+﻿// <copyright file="IOwinResponse.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,22 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Middleware.Owin
+namespace Stormpath.Owin.Common
 {
-    public interface IOwinEnvironment
+    public interface IOwinResponse
     {
-        CancellationToken CancellationToken { get; set; }
-        IOwinRequest Request { get; }
-        IOwinResponse Response { get; }
+        Stream Body { get; set; }
+        IDictionary<string, string[]> Headers { get; }
+        string ReasonPhrase { set; }
+        int StatusCode { set; }
+        object this[string key] { get; set; }
+
+        Task WriteAsync(string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

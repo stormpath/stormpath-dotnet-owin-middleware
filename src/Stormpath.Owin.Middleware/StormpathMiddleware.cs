@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Owin;
 using Stormpath.Owin.Middleware.Route;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
@@ -43,7 +42,7 @@ namespace Stormpath.Owin.Middleware
         private AppFunc next;
 
         private StormpathMiddleware(
-            Renderer viewRenderer,
+            IViewRenderer viewRenderer,
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
             IScopedClientFactory clientFactory,

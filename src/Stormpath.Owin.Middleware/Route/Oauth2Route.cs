@@ -20,7 +20,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Oauth;
 using Stormpath.Owin.Common;

@@ -25,6 +25,7 @@ using Stormpath.Owin.Middleware;
 
 namespace Stormpath.Owin.NowinHarness
 {
+    using Common;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     static class Program
@@ -53,7 +54,7 @@ namespace Stormpath.Owin.NowinHarness
             var stormpath = StormpathMiddleware.Create(new StormpathMiddlewareOptions()
             {
                 LibraryUserAgent = "nowin/0.22.2",
-                ViewRenderer = RenderView,
+                ViewRenderer = new SimpleViewRenderer(),
                 Configuration = new
                 {
                     application = new
@@ -81,17 +82,20 @@ namespace Stormpath.Owin.NowinHarness
                 await next.Invoke(env);
             })));
         }
+    }
 
-        private Task RenderView(string name, object model, Middleware.Owin.IOwinEnvironment env, CancellationToken cancellationToken)
+    public class SimpleViewRenderer : IViewRenderer
+    {
+        public Task RenderAsync(string viewName, object viewModel, IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var view = Stormpath.Owin.Common.Views.Precompiled.ViewResolver.GetView(name);
+            var view = Stormpath.Owin.Common.Views.Precompiled.ViewResolver.GetView(viewName);
             if (view == null)
             {
                 // Or, hook into your existing view rendering implementation
-                throw new InvalidOperationException($"View '{name}' not found.");
+                throw new InvalidOperationException($"View '{viewName}' not found.");
             }
 
-            return view.ExecuteAsync(model, env.Response.Body);
+            return view.ExecuteAsync(viewModel, context.Response.Body);
         }
     }
 }

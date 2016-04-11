@@ -16,9 +16,8 @@
 
 using System.Collections.Generic;
 using System.Threading;
-using Stormpath.Owin.Common;
 
-namespace Stormpath.Owin.Middleware.Owin
+namespace Stormpath.Owin.Common
 {
     public sealed class DefaultOwinEnvironment : IOwinEnvironment
     {

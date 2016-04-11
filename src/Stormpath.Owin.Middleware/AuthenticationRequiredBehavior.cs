@@ -15,7 +15,6 @@
 // </copyright>
 
 using System;
-using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Model;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;

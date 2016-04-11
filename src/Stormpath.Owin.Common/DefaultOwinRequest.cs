@@ -18,9 +18,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Common;
 
-namespace Stormpath.Owin.Middleware.Owin
+namespace Stormpath.Owin.Common
 {
     public sealed class DefaultOwinRequest : IOwinRequest
     {
