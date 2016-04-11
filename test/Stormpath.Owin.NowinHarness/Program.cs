@@ -17,16 +17,14 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
 using Owin;
+using Stormpath.Owin.Middleware;
 
 namespace Stormpath.Owin.NowinHarness
 {
-    using System.Threading;
-    using Common.Views.Precompiled;
-    using Middleware;
-    using Middleware.Owin;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     static class Program
@@ -51,6 +49,7 @@ namespace Stormpath.Owin.NowinHarness
     {
         public void Configuration(IAppBuilder app)
         {
+            // Initialize the Stormpath middleware
             var stormpath = StormpathMiddleware.Create(new StormpathMiddlewareOptions()
             {
                 LibraryUserAgent = "nowin/0.22.2",
@@ -63,36 +62,32 @@ namespace Stormpath.Owin.NowinHarness
                     }
                 }
             });
+
+            // Insert it into the OWIN pipeline
             app.Use(stormpath);
 
-            var testMiddleware = new Func<AppFunc, AppFunc>(TestMiddleware);
-            app.Use(testMiddleware);
-        }
-
-        public AppFunc TestMiddleware(AppFunc next)
-        {
-            return async (IDictionary<string, object> environment) =>
+            // Add a sample middleware that responds to GET /foo
+            app.Use(new Func<AppFunc, AppFunc>(next => (async env =>
             {
-                if (environment["owin.RequestPath"] as string == "/foo")
+                if (env["owin.RequestPath"] as string == "/foo")
                 {
-                    // Do something with the incoming request:
-                    var response = environment["owin.ResponseBody"] as Stream;
-                    using (var writer = new StreamWriter(response))
+                    using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
                     {
-                        await writer.WriteAsync("<h1>Hello from My First Middleware</h1>");
+                        await writer.WriteAsync("<h1>Hello from OWIN!</h1>");
+                        await writer.FlushAsync();
                     }
                 }
 
-                // Call the next Middleware in the chain:
-                await next.Invoke(environment);
-            };
+                await next.Invoke(env);
+            })));
         }
 
-        private Task RenderView(string name, object model, IOwinEnvironment env, CancellationToken cancellationToken)
+        private Task RenderView(string name, object model, Middleware.Owin.IOwinEnvironment env, CancellationToken cancellationToken)
         {
-            var view = ViewResolver.GetView(name);
+            var view = Stormpath.Owin.Common.Views.Precompiled.ViewResolver.GetView(name);
             if (view == null)
             {
+                // Or, hook into your existing view rendering implementation
                 throw new InvalidOperationException($"View '{name}' not found.");
             }
 
