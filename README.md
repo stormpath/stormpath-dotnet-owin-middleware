@@ -1,14 +1,14 @@
 # Stormpath OWIN Middleware for .NET
 
-This project provides middleware that plugs into any OWIN pipeline and makes it incredibly simple to add user authentication to your .NET application, with pre-built functionality for login, signup, authorization, and social login.
+This library provides middleware that plugs into any OWIN pipeline and makes it easy to add user authentication to your .NET application, with pre-built functionality for login, signup, authorization, and social login.
 
 [Stormpath](https://stormpath.com) is a User Management API that reduces development time with instant-on, scalable user infrastructure. Stormpath's intuitive API and expert support make it easy for developers to authenticate, manage and secure users and roles in any application.
 
-> :bulb: **ASP.NET Core**
+> :bulb: **ASP.NET Core? Even easier!**
 
-> If you are building an application with ASP.NET Core 1.0, head over and grab the [Stormpath ASP.NET Core integration](TODO) package instead, which includes this middleware and conveniently plugs right into the ASP.NET Core pipeline.
+> If you are building an application with ASP.NET Core 1.0, head over and grab the [Stormpath ASP.NET Core integration](TODO) package instead, which includes this library and conveniently plugs right into the ASP.NET Core pipeline.
 
-We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If you'd like to be updated when those packages are released, subscribe to the linked issues or send an email to support@stormpath.com. In the meantime, follow the guide below, which covers adding this middleware to any OWIN-compatible pipeline.
+We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If you'd like to be notified when those packages are released, subscribe to the linked issues or send an email to support@stormpath.com. In the meantime, follow the guide below, which covers adding this middleware to any OWIN-compatible pipeline.
 
 ## Getting Started
 
@@ -29,9 +29,9 @@ We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If
   setx STORMPATH_CLIENT_APIKEY_SECRET "[value-from-properties-file]"
   ```
 
-4. **Store Your Stormpath App Href in an Environment Variable**
+4. **Store Your Stormpath Application Href in an Environment Variable**
 
-  Login to the [Stormpath Console](https://api.stormpath.com/) and grab the `href` (called **REST URL** in the UI) of your Application. It should look something like this:
+  Grab the `href` (called **REST URL** in the Stormpath Console UI) of your Application. It should look something like this:
 
   `https://api.stormpath.com/v1/applications/q42unYAj6PDLxth9xKXdL`
 
@@ -117,7 +117,7 @@ We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If
     PM> install-package Stormpath.Owin.Common.Views.Precompiled
     ```
 
-7. **Use the Stormpath Middleware**
+7. **Initialize the Stormpath Middleware**
 
   At the top of your `Configuration` method, create an instance of `StormpathMiddleware`:
 
