@@ -4,15 +4,18 @@ This library provides middleware that plugs into any OWIN pipeline and makes it 
 
 [Stormpath](https://stormpath.com) is a User Management API that reduces development time with instant-on, scalable user infrastructure. Stormpath's intuitive API and expert support make it easy for developers to authenticate, manage and secure users and roles in any application.
 
-> :bulb: **ASP.NET Core? Even easier!**
+## Prebuilt Packages
 
-> If you are building an application with ASP.NET Core 1.0, head over and grab the [Stormpath ASP.NET Core integration](TODO) package instead, which includes this library and conveniently plugs right into the ASP.NET Core pipeline.
+### ASP.NET Core? Easy!
+If you are building an application with ASP.NET Core 1.0, head over and grab the [Stormpath ASP.NET Core integration](https://github.com/stormpath/stormpath-aspnetcore) package instead, which includes this library and conveniently plugs right into the ASP.NET Core pipeline.
 
-We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If you'd like to be notified when those packages are released, subscribe to the linked issues or send an email to support@stormpath.com. In the meantime, follow the guide below, which covers adding this middleware to any OWIN-compatible pipeline.
+### Other Frameworks
+
+We're working on support for [ASP.NET 4.x](https://github.com/stormpath/stormpath-dotnet-owin-middleware/issues/4) and [Nancy](https://github.com/stormpath/stormpath-dotnet-owin-middleware/issues/5) right now. If you'd like to be notified when those packages are released, subscribe to the linked issues or send an email to support@stormpath.com. In the meantime, follow the guide below, which covers adding this middleware to any OWIN-compatible pipeline.
 
 ## Getting Started
 
-> :note: This example will demonstrate how to set up a web server using [Nowin](https://github.com/Bobris/Nowin), but the concepts apply to any OWIN-compatible pipeline.
+This example will demonstrate how to set up a web server using [Nowin](https://github.com/Bobris/Nowin), but the concepts apply to any OWIN-compatible pipeline.
 
 1. **[Sign up](https://api.stormpath.com/register) for Stormpath**
 
@@ -137,6 +140,8 @@ We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If
   ```csharp
   app.Use(stormpath);
   ```
+
+8. **Set Up the View Renderer**
 
   The `Stormpath.Owin.Common.Views.Precompiled` package includes a set of pre-built views that you can use without taking a dependency on Razor. You'll need to write a small rendering class to provide these to the middleware:
 
