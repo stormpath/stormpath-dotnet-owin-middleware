@@ -1,4 +1,4 @@
-﻿// <copyright file="StormpathMiddleware.GetUser.cs" company="Stormpath, Inc.">
+﻿// <copyright file="RouteProtector.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,35 +21,47 @@ using Stormpath.SDK.Account;
 
 namespace Stormpath.Owin.Middleware
 {
-    public sealed class AuthenticationRequiredBehavior
+    /// <summary>
+    /// Represents the logic that protects routes and responds to unauthorized access.
+    /// </summary>
+    public sealed class RouteProtector
     {
         public static string AnyScheme = "*";
 
         private readonly WebConfiguration webConfiguration;
-        private readonly Func<string> getAcceptHeader;
-        private readonly Func<string> getRequestPath;
         private readonly Action<WebCookieConfiguration> deleteCookie;
         private readonly Action<int> setStatusCode;
         private readonly Action<string> redirect;
 
-        public AuthenticationRequiredBehavior(
+        /// <summary>
+        /// Creates a new instance of the <see cref="RouteProtector"/> class.
+        /// </summary>
+        /// <param name="webConfiguration">The active Stormpath <see cref="WebConfiguration">web configuration</see>.</param>
+        /// <param name="deleteCookieAction">The routine to run to delete cookies in the response.</param>
+        /// <param name="setStatusCodeAction">The routine to run to set the response status code.</param>
+        /// <param name="redirectAction">The routine to run to set the response Location header.</param>
+        public RouteProtector(
             WebConfiguration webConfiguration,
-            Func<string> getAcceptHeaderFunc,
-            Func<string> getRequestPathFunc,
             Action<WebCookieConfiguration> deleteCookieAction,
             Action<int> setStatusCodeAction,
             Action<string> redirectAction)
         {
             this.webConfiguration = webConfiguration;
 
-            this.getAcceptHeader = getAcceptHeaderFunc;
-            this.getRequestPath = getRequestPathFunc;
             this.deleteCookie = deleteCookieAction;
             this.setStatusCode = setStatusCodeAction;
             this.redirect = redirectAction;
         }
 
-        public bool IsAuthorized(string authenticationScheme, string requiredAuthenticationScheme, IAccount account)
+        /// <summary>
+        /// Checks whether a properly-authenticated user is making this request.
+        /// </summary>
+        /// <remarks><paramref name="authenticationScheme"/> and <paramref name="account"/> are available in the OWIN environment as <see cref="Common.OwinKeys.StormpathUser"/> and <see cref="Common.OwinKeys.StormpathUserScheme"/>, respectively.</remarks>
+        /// <param name="authenticationScheme">The authentication scheme used for the request.</param>
+        /// <param name="requiredAuthenticationScheme">The authentication scheme that must be used for this route, or <see cref="AnyScheme"/>.</param>
+        /// <param name="account">The </param>
+        /// <returns><see langword="true"/> if the request is authenticated; <see langword="false"/> otherwise.</returns>
+        public bool IsAuthenticated(string authenticationScheme, string requiredAuthenticationScheme, IAccount account)
         {
             if (account == null)
             {
@@ -67,18 +79,23 @@ namespace Stormpath.Owin.Middleware
             return true;
         }
 
-        public void OnUnauthorized()
+        /// <summary>
+        /// Redirects or responds to an unauthorized request.
+        /// </summary>
+        /// <remarks>Uses the Actions passed to the <see cref="RouteProtector"/> to execute this logic in a framework-agnostic way.</remarks>
+        /// <param name="acceptHeader">The HTTP <c>Accept</c> header of this request.</param>
+        /// <param name="requestPath">The OWIN request path of this request.</param>
+        public void OnUnauthorized(string acceptHeader, string requestPath)
         {
             deleteCookie(webConfiguration.AccessTokenCookie);
             deleteCookie(webConfiguration.RefreshTokenCookie);
 
-            var contentNegotiationResult = ContentNegotiation.Negotiate(getAcceptHeader(), webConfiguration.Produces);
+            var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, webConfiguration.Produces);
 
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.Preferred == ContentType.Html;
             if (isHtmlRequest)
             {
-                var originalUri = getRequestPath(); // todo ensure it's a path
-                var loginUri = $"{webConfiguration.Login.Uri}?next={Uri.EscapeUriString(originalUri)}";
+                var loginUri = $"{webConfiguration.Login.Uri}?next={Uri.EscapeUriString(requestPath)}"; // todo ensure it's a relative path
 
                 setStatusCode(302);
                 redirect(loginUri);

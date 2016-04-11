@@ -42,28 +42,24 @@ namespace Stormpath.Owin.Middleware.Route
             var authenticatedUser = environment.Get<IAccount>(OwinKeys.StormpathUser);
             var authenticationScheme = environment.Get<string>(OwinKeys.StormpathUserScheme);
 
-            var getAcceptHeaderFunc = new Func<string>(() => context.Request.Headers.GetString("Accept"));
-            var getRequestPathFunc = new Func<string>(() => context.Request.Path);
             var deleteCookieAction = new Action<WebCookieConfiguration>(cookie => Cookies.Delete(context, cookie));
             var setStatusCodeAction = new Action<int>(code => context.Response.StatusCode = code);
             var redirectAction = new Action<string>(location => context.Response.Headers.SetString("Location", location));
 
-            var handler = new AuthenticationRequiredBehavior(
+            var handler = new RouteProtector(
                 configuration.Web,
-                getAcceptHeaderFunc,
-                getRequestPathFunc,
                 deleteCookieAction,
                 setStatusCodeAction,
                 redirectAction);
 
-            if (handler.IsAuthorized(authenticationScheme, AuthenticationRequiredBehavior.AnyScheme, authenticatedUser))
+            if (handler.IsAuthenticated(authenticationScheme, RouteProtector.AnyScheme, authenticatedUser))
             {
                 return Task.FromResult(true); ; // Authentication check succeeded
             }
 
             logger.Info("User attempted to access a protected endpoint with invalid credentials.");
 
-            handler.OnUnauthorized();
+            handler.OnUnauthorized(context.Request.Headers.GetString("Accept"), context.Request.Path);
             return Task.FromResult(false); // Authentication check failed
         }
     }
