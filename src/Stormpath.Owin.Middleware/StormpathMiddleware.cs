@@ -63,7 +63,7 @@ namespace Stormpath.Owin.Middleware
             this.next = next;
         }
 
-        public async Task InvokeAsync(IDictionary<string, object> environment)
+        public async Task Invoke(IDictionary<string, object> environment)
         {
             if (this.next == null)
             {
