@@ -64,7 +64,7 @@ namespace Stormpath.Owin.Middleware.Owin
             set { environment[key] = value; }
         }
 
-        public Task WriteAsync(string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task WriteAsync(string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (text == null)
             {
@@ -77,7 +77,8 @@ namespace Stormpath.Owin.Middleware.Owin
             }
 
             byte[] data = encoding.GetBytes(text);
-            return Body.WriteAsync(data, 0, data.Length, cancellationToken);
+            await Body.WriteAsync(data, 0, data.Length, cancellationToken);
+            await Body.FlushAsync(cancellationToken);
         }
     }
 }
