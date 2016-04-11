@@ -25,11 +25,15 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
     public class ExtendedLoginViewModelBuilder
     {
         private readonly WebConfiguration webConfiguration;
-        private IDictionary<string, string[]> queryString;
-        private IDictionary<string, string[]> previousFormData;
+        private readonly bool forgotPasswordEnabled;
+        private readonly bool verifyEmailEnabled;
+        private readonly IDictionary<string, string[]> queryString;
+        private readonly IDictionary<string, string[]> previousFormData;
 
         public ExtendedLoginViewModelBuilder(
             WebConfiguration webConfiguration,
+            bool forgotPasswordEnabled,
+            bool verifyEmailEnabled,
             IDictionary<string, string[]> queryString,
             IDictionary<string, string[]> previousFormData)
         {
@@ -44,11 +48,11 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
             var result = new ExtendedLoginViewModel(baseViewModelBuilder.Build());
 
             // Copy values from configuration
-            result.ForgotPasswordEnabled = this.webConfiguration.ForgotPassword.Enabled ?? false; // TODO handle null values here
+            result.ForgotPasswordEnabled = this.forgotPasswordEnabled;
             result.ForgotPasswordUri = this.webConfiguration.ForgotPassword.Uri;
             result.RegistrationEnabled = this.webConfiguration.Register.Enabled;
             result.RegisterUri = this.webConfiguration.Register.Uri;
-            result.VerifyEmailEnabled = this.webConfiguration.VerifyEmail.Enabled ?? false; // TODO handle null values here
+            result.VerifyEmailEnabled = this.verifyEmailEnabled;
             result.VerifyEmailUri = this.webConfiguration.VerifyEmail.Uri;
 
             // status parameter from queryString

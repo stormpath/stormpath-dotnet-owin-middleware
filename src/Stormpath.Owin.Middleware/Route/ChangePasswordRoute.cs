@@ -18,6 +18,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Common;
+using Stormpath.Owin.Common.Configuration;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
@@ -29,6 +30,10 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class ChangePasswordRoute : AbstractRoute
     {
+        public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
+            => configuration.Web.ChangePassword.Enabled == true
+            || (configuration.Web.ChangePassword.Enabled == null && configuration.Tenant.PasswordResetWorkflowEnabled);
+
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);

@@ -328,10 +328,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /change
-            bool shouldEnableChangePasswordRoute =
-                this.configuration.Web.ChangePassword.Enabled == true
-                || (this.configuration.Web.ChangePassword.Enabled == null && this.configuration.Tenant.PasswordResetWorkflowEnabled);
-            if (shouldEnableChangePasswordRoute)
+            if (ChangePasswordRoute.ShouldBeEnabled(this.configuration))
             {
                 routingTable.Add(
                     this.configuration.Web.ChangePassword.Uri,
@@ -342,10 +339,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /verify
-            bool shouldEnableVerifyEmailRoute =
-                this.configuration.Web.VerifyEmail.Enabled == true
-                || (this.configuration.Web.VerifyEmail.Enabled == null && this.configuration.Tenant.EmailVerificationWorkflowEnabled);
-            if (shouldEnableVerifyEmailRoute)
+            if (VerifyEmailRoute.ShouldBeEnabled(this.configuration))
             {
                 routingTable.Add(
                     this.configuration.Web.VerifyEmail.Uri,

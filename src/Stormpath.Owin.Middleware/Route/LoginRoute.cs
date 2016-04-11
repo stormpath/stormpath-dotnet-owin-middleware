@@ -34,7 +34,12 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
-            var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, null);
+            var viewModelBuilder = new ExtendedLoginViewModelBuilder(
+                _configuration.Web,
+                ChangePasswordRoute.ShouldBeEnabled(_configuration),
+                VerifyEmailRoute.ShouldBeEnabled(_configuration),
+                queryString,
+                null);
             var loginViewModel = viewModelBuilder.Build();
 
             await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
@@ -71,7 +76,12 @@ namespace Stormpath.Owin.Middleware.Route
             bool missingLoginOrPassword = string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password);
             if (missingLoginOrPassword)
             {
-                var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, formData);
+                var viewModelBuilder = new ExtendedLoginViewModelBuilder(
+                    _configuration.Web,
+                    ChangePasswordRoute.ShouldBeEnabled(_configuration),
+                    VerifyEmailRoute.ShouldBeEnabled(_configuration),
+                    queryString,
+                    formData);
                 var loginViewModel = viewModelBuilder.Build();
                 loginViewModel.Errors.Add("The login and password fields are required.");
 
@@ -87,7 +97,12 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                var viewModelBuilder = new ExtendedLoginViewModelBuilder(_configuration.Web, queryString, formData);
+                var viewModelBuilder = new ExtendedLoginViewModelBuilder(
+                    _configuration.Web,
+                    ChangePasswordRoute.ShouldBeEnabled(_configuration),
+                    VerifyEmailRoute.ShouldBeEnabled(_configuration),
+                    queryString,
+                    formData);
                 var loginViewModel = viewModelBuilder.Build();
                 loginViewModel.Errors.Add(rex.Message);
 

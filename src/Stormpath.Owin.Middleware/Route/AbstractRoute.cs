@@ -17,8 +17,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
+using Stormpath.Owin.Common.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
@@ -29,13 +29,13 @@ namespace Stormpath.Owin.Middleware.Route
     public abstract class AbstractRoute
     {
         private bool _initialized;
-        protected StormpathConfiguration _configuration;
+        protected IntegrationConfiguration _configuration;
         private IViewRenderer _viewRenderer;
         protected ILogger _logger;
         private IClient _client;
 
         public void Initialize(
-            StormpathConfiguration configuration,
+            IntegrationConfiguration configuration,
             IViewRenderer viewRenderer,
             ILogger logger,
             IClient client)

@@ -18,6 +18,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Common;
+using Stormpath.Owin.Common.Configuration;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
@@ -30,6 +31,10 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class VerifyEmailRoute : AbstractRoute
     {
+        public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
+            => configuration.Web.VerifyEmail.Enabled == true
+            || (configuration.Web.VerifyEmail.Enabled == null && configuration.Tenant.EmailVerificationWorkflowEnabled);
+
         private async Task<bool> ResendVerification(
             string email,
             IClient client,
