@@ -30,9 +30,11 @@ using Stormpath.SDK.Account;
 namespace Stormpath.Owin.Middleware
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
+    using Renderer = Func<string, object, IOwinEnvironment, System.Threading.CancellationToken, Task>;
 
     public sealed partial class StormpathMiddleware
     {
+        private readonly Renderer viewRenderer;
         private readonly ILogger logger = null;
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
         private readonly IScopedClientFactory clientFactory;
@@ -41,11 +43,13 @@ namespace Stormpath.Owin.Middleware
         private AppFunc next;
 
         private StormpathMiddleware(
+            Renderer viewRenderer,
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
             IScopedClientFactory clientFactory,
             IntegrationConfiguration configuration)
         {
+            this.viewRenderer = viewRenderer;
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;
             this.clientFactory = clientFactory;
@@ -59,7 +63,7 @@ namespace Stormpath.Owin.Middleware
             this.next = next;
         }
 
-        public async Task Invoke(IDictionary<string, object> environment)
+        public async Task InvokeAsync(IDictionary<string, object> environment)
         {
             if (this.next == null)
             {
@@ -90,7 +94,7 @@ namespace Stormpath.Owin.Middleware
                 if (routeHandler.AuthenticationRequired)
                 {
                     var filter = new AuthenticationRequiredFilter(this.logger);
-                    var isAuthenticated = await filter.Invoke(environment);
+                    var isAuthenticated = await filter.InvokeAsync(environment);
                     if (!isAuthenticated)
                     {
                         return;

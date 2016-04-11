@@ -1,30 +1,37 @@
-namespace Stormpath.Owin.Common.View
+namespace Stormpath.Owin.Common.Views.Precompiled
 {
-#line 1 "VerifyEmail.cshtml"
+#line 1 "Verify.cshtml"
 using System
 
 #line default
 #line hidden
     ;
-#line 2 "VerifyEmail.cshtml"
+#line 2 "Verify.cshtml"
 using System.Linq
+
+#line default
+#line hidden
+    ;
+#line 3 "Verify.cshtml"
+using Stormpath.Owin.Common
 
 #line default
 #line hidden
     ;
     using System.Threading.Tasks;
 
-    public class VerifyEmail : BaseView<Stormpath.Owin.Common.ViewModel.VerifyEmailViewModel>
+    public class Verify : BaseView<Stormpath.Owin.Common.ViewModel.VerifyEmailViewModel>
     {
         #line hidden
-        public VerifyEmail()
+        public Verify()
         {
         }
 
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            WriteLiteral(@"<!DOCTYPE html>
+            WriteLiteral(@"
+<!DOCTYPE html>
 <!--[if lt IE 7]>      <html class=""no-js lt-ie9 lt-ie8 lt-ie7""> <![endif]-->
 <!--[if IE 7]>         <html class=""no-js lt-ie9 lt-ie8""> <![endif]-->
 <!--[if IE 8]>         <html class=""no-js lt-ie9""> <![endif]-->
@@ -39,7 +46,7 @@ using System.Linq
     <link href=""//fonts.googleapis.com/css?family=Open+Sans:300italic,300,400italic,400,600italic,600,700italic,700,800italic,800"" rel=""stylesheet"" type=""text/css"">
     <link href=""//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"" rel=""stylesheet"">
     <style>
-html,
+        html,
 body {
   height: 100%;
 }
@@ -58,11 +65,10 @@ body {
 
 body,
 div,
-p,");
-            WriteLiteral(@"
+p,
 a,
 label {
-  font-family: ""Open Sans"";
+  font-family: 'Open Sans';
   font-size: 14px;
   font-weight: 400;
   color: #484848;
@@ -94,7 +100,7 @@ p {
   background: -webkit-linear-gradient(#42c41a 50%, #2dbd00 50%);
   background: linear-gradient(#42c41a 50%, #2dbd00 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a)';
 }
 
 .btn-sp-green:hover,
@@ -102,9 +108,8 @@ p {
   color: #fff;
   background: -webkit-linear-gradient(#43cd1a 50%, #2ec700 50%);
   background: linear-gradient(#43cd1a 50%, #2ec700 50%);
-  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#");
-            WriteLiteral(@"2ec700, endColorstr=#43cd1a);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a)"";
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a);
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a)';
 }
 
 .btn-social {
@@ -124,7 +129,7 @@ p {
   background: -webkit-linear-gradient(#4c6fc5 50%, #3d63c0 50%);
   background: linear-gradient(#4c6fc5 50%, #3d63c0 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5)';
 }
 
 .btn-facebook:hover,
@@ -133,15 +138,14 @@ p {
   background: -webkit-linear-gradient(#4773de 50%, #3767db 50%);
   background: linear-gradient(#4773de 50%, #3767db 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3767db, endColorstr=#4773de);
- ");
-            WriteLiteral(@" -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3767db, endColorstr=#4773de)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3767db, endColorstr=#4773de)';
 }
 
 .btn-google {
   background: -webkit-linear-gradient(#e05b4b 50%, #dd4b39 50%);
   background: linear-gradient(#e05b4b 50%, #dd4b39 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b)';
 }
 
 .btn-google:hover,
@@ -150,15 +154,14 @@ p {
   background: -webkit-linear-gradient(#ea604e 50%, #e8503c 50%);
   background: linear-gradient(#ea604e 50%, #e8503c 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e)';
 }
 
 .btn-linkedin {
   background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);
-  backgroun");
-            WriteLiteral(@"d: linear-gradient(#007cbc 50%, #0077B5 50%);
+  background: linear-gradient(#007cbc 50%, #0077B5 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)';
 }
 
 .btn-linkedin:hover,
@@ -167,15 +170,14 @@ p {
   background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);
   background: linear-gradient(#007cbc 50%, #0077B5 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)';
 }
 
 .btn-github {
   background: -webkit-linear-gradient(#848282 50%, #7B7979 50%);
   background: linear-gradient(#848282 50%, #7B7979 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#848282, endColorstr=#7B7979);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradi");
-            WriteLiteral(@"ent (GradientType=0, startColorstr=#848282, endColorstr=#7B7979)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#848282, endColorstr=#7B7979)';
 }
 
 .btn-github:hover,
@@ -184,7 +186,7 @@ p {
   background: -webkit-linear-gradient(#8C8888 50%, #848080 50%);
   background: linear-gradient(#8C8888 50%, #848080 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#8C8888, endColorstr=#848080);
-  -ms-filter: ""progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#8C8888, endColorstr=#848080)"";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#8C8888, endColorstr=#848080)';
 }
 
 .btn-register {
@@ -221,28 +223,27 @@ p {
 }
 
 .view .header,
-.view .h");
-            WriteLiteral(@"eader a {
+.view .header a {
   font-weight: 300;
   font-size: 21px;
 }
 
-.view input[type=""text""],
-.view input[type=""password""],
-.view input[type=""email""],
-.view input[type=""color""],
-.view input[type=""date""],
-.view input[type=""datetime""]
-.view input[type=""datetime-local""],
-.view input[type=""email""],
-.view input[type=""month""],
-.view input[type=""number""],
-.view input[type=""range""],
-.view input[type=""search""],
-.view input[type=""tel""],
-.view input[type=""time""],
-.view input[type=""url""],
-.view input[type=""week""]{
+.view input[type='text'],
+.view input[type='password'],
+.view input[type='email'],
+.view input[type='color'],
+.view input[type='date'],
+.view input[type='datetime']
+.view input[type='datetime-local'],
+.view input[type='email'],
+.view input[type='month'],
+.view input[type='number'],
+.view input[type='range'],
+.view input[type='search'],
+.view input[type='tel'],
+.view input[type='time'],
+.view input[type='url'],
+.view input[type='week']{
   background-color: #f6f6f6;
   height: 45px;
 }
@@ -274,13 +275,12 @@ p {
 
 .sp-form .has-error,
 .sp-form .has-error .help-block {
-  color: #ec3e3e;");
-            WriteLiteral(@"
+  color: #ec3e3e;
   font-weight: 600;
 }
 
-.sp-form .has-error input[type=""text""],
-.sp-form .has-error input[type=""password""] {
+.sp-form .has-error input[type='text'],
+.sp-form .has-error input[type='password'] {
   border-color: #ec3e3e;
 }
 
@@ -288,8 +288,8 @@ p {
   margin-bottom: 21px;
 }
 
-.sp-form input[type=""text""],
-.sp-form input[type=""password""] {
+.sp-form input[type='text'],
+.sp-form input[type='password'] {
   position: relative;
 }
 
@@ -340,8 +340,7 @@ p {
   }
 }
 
-.login-view .em");
-            WriteLiteral(@"ail-password-area label {
+.login-view .email-password-area label {
   height: 14px;
   line-height: 14px;
 }
@@ -364,13 +363,11 @@ p {
   height: 16px;
   border: 1px solid #cacaca;
   background-color: #f6f6f6;
-  content: """";
+  content: '';
 }
 
 .login-view .email-password-area input[type='checkbox']:checked + label:after {
-  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpS");
-            WriteLiteral(@"REYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowRTVBQUVGMzJEODBFMjExODQ2N0NBMjk4MjdCNDBCNyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0RTY4NUM4NURGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0RTY4NUM4NERGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQxNDQ4M0NEM0JERkUyMTE4MEYwQjNBRjIwMUNENzQxIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkZDMEMxNjY2OUVCMUUyMTFBRjVDQkQ0QjE5MTNERDU2Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+3YY4qgAAALlJREFUeNpi/P//PwMlgImBQjDwBrCgCwQHB+NUfObMGT9mZuboe/fuheM0ABu4fv060/fv32cBNTNycHBE4nUBNs0/f/7cAWSeMzQ0rCA5DICa");
-            WriteLiteral(@"NwKj+qGRkVEFUYF47ty5GWfPns2EsjsYGRlFgM5OJzoQ//37t5eLi2sRMMDec3Jypn79+lVXX1//H9HRaGJisvr379/nuLm5lwKdP9vMzOwZyekAaEA3EF8G4hZCYcQ4mhcYAAIMAJGST/dDIpNQAAAAAElFTkSuQmCC);
+  background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowRTVBQUVGMzJEODBFMjExODQ2N0NBMjk4MjdCNDBCNyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0RTY4NUM4NURGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0RTY4NUM4NERGNEYxMUUyQUE5QkExOTlGODU3RkFEOCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjQxNDQ4M0NEM0JERkUyMTE4MEYwQjNBRjIwMUNENzQxIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOkZDMEMxNjY2OUVCMUUyMTFBRjVDQkQ0QjE5MTNERDU2Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+3YY4qgAAALlJREFUeNpi/P//PwMlgImBQjDwBrCgCwQHB+NUfObMGT9mZuboe/fuheM0ABu4fv060/fv32cBNTNycHBE4nUBNs0/f/7cAWSeMzQ0rCA5DICaNwKj+qGRkVEFUYF47ty5GWfPns2EsjsYGRlFgM5OJzoQ//37t5eLi2sRMMDec3Jypn79+lVXX1//H9HRaGJisvr379/nuLm5lwKdP9vMzOwZyekAaEA3EF8G4hZCYcQ4mhcYAAIMAJGST/dDIpNQAAAAAElFTkSuQmCC);
   background-position: -1px -1px;
 }
 
@@ -402,15 +399,14 @@ p {
     padding: 0 50px;
   }
 
-  .login-view .email-password-area.large .group-email label,
+  .login-view .email-password-area.large .group-login label,
   .login-view .email-password-area.large .group-password label {
     height: 45px;
     line-height: 45px;
   }
 }
 
-.login-view .");
-            WriteLiteral(@"social-area {
+.login-view .social-area {
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
   padding: 0 20px;
@@ -441,21 +437,15 @@ p {
     </style>
     <!--[if lt IE 9]>
      <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js'></script>
-     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></script>
-    <![endif]-->
-</head>
-<body class=""login"">
-    <div class=""container custom-container"">
-        <div class=""va-wrapper"">
-            <div class=""view login-view container"">
-");
-#line 416 "VerifyEmail.cshtml"
+     <script src='https://os");
+            WriteLiteral("s.maxcdn.com/libs/respond.js/1.4.2/respond.min.js\'></script>\r\n    <![endif]-->\r\n</head>\r\n<body class=\"login\">\r\n    <div class=\"container custom-container\">\r\n        <div class=\"va-wrapper\">\r\n            <div class=\"view login-view container\">\r\n");
+#line 34 "Verify.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 416 "VerifyEmail.cshtml"
+#line 34 "Verify.cshtml"
                  if (Model.InvalidSpToken)
                 {
 
@@ -471,20 +461,20 @@ p {
                         </div>
                     </div>
 ");
-#line 426 "VerifyEmail.cshtml"
+#line 44 "Verify.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                <div class=\"box row\">\r\n                    <div class=\"email-password-area col-xs-12 large col-sm-12\">\r\n");
-#line 429 "VerifyEmail.cshtml"
+#line 47 "Verify.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 429 "VerifyEmail.cshtml"
+#line 47 "Verify.cshtml"
                          if (Model.InvalidSpToken)
                         {
 
@@ -492,7 +482,7 @@ p {
 #line hidden
 
             WriteLiteral("                            <p>&nbsp;</p>\r\n");
-#line 432 "VerifyEmail.cshtml"
+#line 50 "Verify.cshtml"
                         }
                         else
                         {
@@ -501,7 +491,7 @@ p {
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Didn\'t receive your account verification email?</span>\r\n                            </div>\r\n");
-#line 438 "VerifyEmail.cshtml"
+#line 56 "Verify.cshtml"
                         }
 
 #line default
@@ -514,13 +504,13 @@ p {
                             folder.
                         </p>
 ");
-#line 445 "VerifyEmail.cshtml"
+#line 63 "Verify.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 445 "VerifyEmail.cshtml"
+#line 63 "Verify.cshtml"
                          if (Model.Errors.Any())
                         {
 
@@ -528,7 +518,7 @@ p {
 #line hidden
 
             WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n                                <p>Please enter a valid email address.</p>\r\n                            </div>\r\n");
-#line 450 "VerifyEmail.cshtml"
+#line 68 "Verify.cshtml"
                         }
 
 #line default
@@ -549,13 +539,13 @@ p {
                     </div>
                 </div>
 ");
-#line 466 "VerifyEmail.cshtml"
+#line 84 "Verify.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 466 "VerifyEmail.cshtml"
+#line 84 "Verify.cshtml"
                  if (Model.LoginEnabled)
                 {
 
@@ -563,15 +553,15 @@ p {
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 14933, "\"", 14955, 1);
-#line 468 "VerifyEmail.cshtml"
-WriteAttributeValue("", 14940, Model.LoginUri, 14940, 15, false);
+            BeginWriteAttribute("href", " href=\"", 4047, "\"", 4069, 1);
+#line 86 "Verify.cshtml"
+WriteAttributeValue("", 4054, Model.LoginUri, 4054, 15, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Back to Log In</a>\r\n");
-#line 469 "VerifyEmail.cshtml"
+#line 87 "Verify.cshtml"
                 }
 
 #line default

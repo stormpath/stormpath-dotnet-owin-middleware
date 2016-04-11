@@ -1,5 +1,6 @@
-﻿// <copyright file="LoginViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="IView.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
+// Contains code Copyright (c) .NET Foundation. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,17 +15,18 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Common.View
+namespace Stormpath.Owin.Common.Views.Precompiled
 {
-    public static class DictionaryExtensions
+    public interface IView
     {
-        public static string GetOrNull(this IDictionary<string, string> source, string key)
-        {
-            string value = null;
-            source.TryGetValue(key, out value);
-            return value;
-        }
+        /// <summary>
+        /// Render the view.
+        /// </summary>
+        /// <param name="model">The model to use.</param>
+        /// <param name="target">The target stream to write to.</param>
+        Task ExecuteAsync(object model, Stream target);
     }
 }

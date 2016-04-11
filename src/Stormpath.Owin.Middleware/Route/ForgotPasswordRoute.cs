@@ -17,9 +17,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
@@ -29,33 +27,20 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class ForgotPasswordRoute : AbstractRouteMiddleware
+    public sealed class ForgotPasswordRoute : AbstractRoute
     {
-        public ForgotPasswordRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
-        private Task<bool> RenderForm(IOwinEnvironment context, ForgotPasswordViewModel viewModel, CancellationToken cancellationToken)
-        {
-            var forgotView = new Common.View.ForgotPassword();
-            return HttpResponse.Ok(forgotView, viewModel, context);
-        }
-
-        protected override Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
             var viewModelBuilder = new ForgotPasswordViewModelBuilder(_configuration.Web, queryString);
             var forgotViewModel = viewModelBuilder.Build();
 
-            return RenderForm(context, forgotViewModel, cancellationToken);
+            await RenderViewAsync(context, _configuration.Web.ForgotPassword.View, forgotViewModel, cancellationToken);
+            return true;
         }
 
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
@@ -75,7 +60,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await HttpResponse.Redirect(context, _configuration.Web.ForgotPassword.NextUri);
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 

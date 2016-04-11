@@ -23,7 +23,10 @@ using Owin;
 
 namespace Stormpath.Owin.NowinHarness
 {
+    using System.Threading;
+    using Common.Views.Precompiled;
     using Middleware;
+    using Middleware.Owin;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     static class Program
@@ -48,13 +51,16 @@ namespace Stormpath.Owin.NowinHarness
     {
         public void Configuration(IAppBuilder app)
         {
-            var stormpath = StormpathMiddleware.Create(
-                libraryUserAgent: "nowin/0.22.2",
-                configuration: new
+            var stormpath = StormpathMiddleware.Create(new StormpathMiddlewareOptions()
             {
-                application = new
+                LibraryUserAgent = "nowin/0.22.2",
+                ViewRenderer = RenderView,
+                Configuration = new
                 {
-                    name = "My Application"
+                    application = new
+                    {
+                        name = "My Application"
+                    }
                 }
             });
             app.Use(stormpath);
@@ -80,6 +86,17 @@ namespace Stormpath.Owin.NowinHarness
                 // Call the next Middleware in the chain:
                 await next.Invoke(environment);
             };
+        }
+
+        private Task RenderView(string name, object model, IOwinEnvironment env, CancellationToken cancellationToken)
+        {
+            var view = ViewResolver.GetView(name);
+            if (view == null)
+            {
+                throw new InvalidOperationException($"View '{name}' not found.");
+            }
+
+            return view.ExecuteAsync(model, env.Response.Body);
         }
     }
 }

@@ -1,21 +1,32 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// <copyright file="BaseView.cs" company="Stormpath, Inc.">
+// Copyright (c) 2016 Stormpath, Inc.
+// Contains code Copyright (c) .NET Foundation. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net;
-using System.Globalization;
 
-namespace Stormpath.Owin.Common.View
+namespace Stormpath.Owin.Common.Views.Precompiled
 {
-    /// <summary>
-    /// Infrastructure
-    /// </summary>
-    public abstract class BaseView<T>
+    public abstract class BaseView<T> : IView
     {
         protected T Model { get; private set; }
 
@@ -25,9 +36,10 @@ namespace Stormpath.Owin.Common.View
         protected StreamWriter Output { get; private set; }
 
         /// <summary>
-        /// Execute an individual request
+        /// Render the view.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="model">The model to use.</param>
+        /// <param name="target">The target stream to write to.</param>
         public async Task ExecuteAsync(T model, Stream target)
         {
             Model = model;
@@ -35,6 +47,9 @@ namespace Stormpath.Owin.Common.View
             await ExecuteAsync();
             Output.Dispose();
         }
+
+        public Task ExecuteAsync(object model, Stream target)
+            => ExecuteAsync((T)model, target);
 
         /// <summary>
         /// Execute an individual request
@@ -201,10 +216,10 @@ namespace Stormpath.Owin.Common.View
         }
 
         /// <summary>
-        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked
+        /// <see cref="DeferredWrite.WriteTo(TextWriter)"/> is invoked
         /// </summary>
-        /// <param name="result">The <see cref="HelperResult"/> to invoke</param>
-        protected void Write(HelperResult result)
+        /// <param name="result">The <see cref="DeferredWrite"/> to invoke</param>
+        protected void Write(DeferredWrite result)
         {
             WriteTo(Output, result);
         }
@@ -223,7 +238,7 @@ namespace Stormpath.Owin.Common.View
         {
             if (value != null)
             {
-                var helperResult = value as HelperResult;
+                var helperResult = value as DeferredWrite;
                 if (helperResult != null)
                 {
                     helperResult.WriteTo(writer);

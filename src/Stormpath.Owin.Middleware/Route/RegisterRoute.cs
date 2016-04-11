@@ -19,9 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
@@ -30,11 +28,10 @@ using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class RegisterRoute : AbstractRouteMiddleware
+    public sealed class RegisterRoute : AbstractRoute
     {
         private static readonly string[] defaultFields =
         {
@@ -47,20 +44,6 @@ namespace Stormpath.Owin.Middleware.Route
             "confirmPassword",
             "customData"
         };
-
-        public RegisterRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
-        private Task<bool> RenderForm(IOwinEnvironment context, ExtendedRegisterViewModel viewModel, CancellationToken cancellationToken)
-        {
-            var registerView = new Common.View.Register();
-            return HttpResponse.Ok(registerView, viewModel, context);
-        }
 
         private async Task<IAccount> HandleRegistration(RegisterPostModel postData, IClient client, Func<string, CancellationToken, Task> errorHandler, CancellationToken cancellationToken)
         {
@@ -145,15 +128,16 @@ namespace Stormpath.Owin.Middleware.Route
             return await application.CreateAccountAsync(newAccount, cancellationToken);
         }
 
-        protected override Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new ExtendedRegisterViewModelBuilder(_configuration.Web, null);
             var registerViewModel = viewModelBuilder.Build();
 
-            return RenderForm(context, registerViewModel, cancellationToken);
+            await RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
+            return true;
         }
 
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var formData = FormContentParser.Parse(bodyString);
@@ -184,7 +168,7 @@ namespace Stormpath.Owin.Middleware.Route
                 var registerViewModel = viewModelBuilder.Build();
                 registerViewModel.Errors.Add(message);
 
-                return RenderForm(context, registerViewModel, ct);
+                return RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
             });
 
             IAccount newAccount = null;
@@ -221,7 +205,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await HttpResponse.Redirect(context, nextUri);
         }
 
-        protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new RegisterViewModelBuilder(_configuration.Web.Register);
             var registerViewModel = viewModelBuilder.Build();
@@ -229,7 +213,7 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, registerViewModel);
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var bodyDictionary = Serializer.DeserializeDictionary(bodyString);

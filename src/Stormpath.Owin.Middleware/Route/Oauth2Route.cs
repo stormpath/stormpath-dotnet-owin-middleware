@@ -21,32 +21,22 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 using Stormpath.Owin.Common;
 using Stormpath.SDK.Error;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class Oauth2Route : AbstractRouteMiddleware
+    public sealed class Oauth2Route : AbstractRoute
     {
-        public Oauth2Route(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
-        protected override Task<bool> Get(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        protected override Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             context.Response.StatusCode = 405;
             return Task.FromResult(true);
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             if (!context.Request.Headers.GetString("Content-Type").StartsWith("application/x-www-form-urlencoded"))
             {

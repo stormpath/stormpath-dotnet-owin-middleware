@@ -17,28 +17,18 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Jwt;
-using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class LogoutRoute : AbstractRouteMiddleware
+    public class LogoutRoute : AbstractRoute
     {
-        public LogoutRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             await HandleLogout(context, client, cancellationToken);
 
@@ -46,7 +36,7 @@ namespace Stormpath.Owin.Middleware.Route
             return true;
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             await HandleLogout(context, client, cancellationToken);
 

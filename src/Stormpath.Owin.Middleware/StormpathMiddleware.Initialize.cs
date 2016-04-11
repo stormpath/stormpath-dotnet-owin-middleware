@@ -26,7 +26,6 @@ using Stormpath.SDK;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Directory;
 using Stormpath.SDK.Http;
-using Stormpath.SDK.Logging;
 using Stormpath.SDK.Serialization;
 using Stormpath.SDK.Sync;
 
@@ -36,6 +35,16 @@ namespace Stormpath.Owin.Middleware
     {
         public static StormpathMiddleware Create(StormpathMiddlewareOptions options)
         {
+            if (string.IsNullOrEmpty(options.LibraryUserAgent))
+            {
+                throw new ArgumentNullException(nameof(options.LibraryUserAgent));
+            }
+
+            if (options.ViewRenderer == null)
+            {
+                throw new ArgumentNullException(nameof(options.ViewRenderer));
+            }
+
             // Construct the framework User-Agent
             IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(options.LibraryUserAgent);
 
@@ -64,7 +73,7 @@ namespace Stormpath.Owin.Middleware
 
             EnsureEnvironment(client, integrationConfiguration);
 
-            return new StormpathMiddleware(options.Logger, userAgentBuilder, clientFactory, integrationConfiguration);
+            return new StormpathMiddleware(options.ViewRenderer, options.Logger, userAgentBuilder, clientFactory, integrationConfiguration);
         }
 
         private static IScopedClientFactory InitializeClient(object initialConfiguration)
@@ -231,6 +240,20 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
+        private AbstractRoute InitializeRoute<T>(IClient client)
+            where T : AbstractRoute, new()
+        {
+            var route = new T();
+
+            route.Initialize(
+                this.configuration,
+                this.viewRenderer,
+                this.logger,
+                client);
+
+            return route;
+        }
+
         private IReadOnlyDictionary<string, RouteHandler> BuildRoutingTable()
         {
             var routingTable = new Dictionary<string, RouteHandler>();
@@ -242,7 +265,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.Oauth2.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
-                        handler: client => new Oauth2Route(this.configuration, this.logger, client).Invoke)
+                        handler: client => InitializeRoute<Oauth2Route>(client).InvokeAsync)
                     );
             }
 
@@ -253,7 +276,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.Register.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
-                        handler: client => new RegisterRoute(this.configuration, this.logger, client).Invoke)
+                        handler: client => InitializeRoute<RegisterRoute>(client).InvokeAsync)
                     );
             }
 
@@ -264,7 +287,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.Login.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
-                        handler: client => new LoginRoute(this.configuration, this.logger, client).Invoke)
+                        handler: client => InitializeRoute<LoginRoute>(client).InvokeAsync)
                     );
             }
 
@@ -275,7 +298,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.Me.Uri,
                     new RouteHandler(
                         authenticationRequired: true,
-                        handler: client => new MeRoute(this.configuration, this.logger, client).Invoke)
+                        handler: client => InitializeRoute<MeRoute>(client).InvokeAsync)
                     );
             }
 
@@ -286,7 +309,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.Logout.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
-                        handler: client => new LogoutRoute(this.configuration, this.logger, client).Invoke)
+                        handler: client => InitializeRoute<LogoutRoute>(client).InvokeAsync)
                     );
             }
 
@@ -300,7 +323,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.ForgotPassword.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
-                        handler: client => new ForgotPasswordRoute(this.configuration, this.logger, client).Invoke)
+                        handler: client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync)
                     );
             }
 
@@ -314,7 +337,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.ChangePassword.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
-                        handler: client => new ChangePasswordRoute(this.configuration, this.logger, client).Invoke)
+                        handler: client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync)
                     );
             }
 
@@ -328,7 +351,7 @@ namespace Stormpath.Owin.Middleware
                     this.configuration.Web.VerifyEmail.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
-                        handler: client => new VerifyEmailRoute(this.configuration, this.logger, client).Invoke)
+                        handler: client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync)
                     );
             }
 

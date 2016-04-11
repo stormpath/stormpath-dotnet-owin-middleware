@@ -17,9 +17,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Common.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
@@ -27,27 +25,12 @@ using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public sealed class ChangePasswordRoute : AbstractRouteMiddleware
+    public sealed class ChangePasswordRoute : AbstractRoute
     {
-        public ChangePasswordRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
-        private Task<bool> RenderForm(IOwinEnvironment context, ChangePasswordViewModel viewModel, CancellationToken cancellationToken)
-        {
-            var changePasswordView = new Common.View.ChangePassword();
-            return HttpResponse.Ok(changePasswordView, viewModel, context);
-        }
-
-        protected override async Task<bool> GetHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
             var spToken = queryString.GetString("sptoken");
@@ -66,7 +49,8 @@ namespace Stormpath.Owin.Middleware.Route
                 var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
                 var changePasswordViewModel = viewModelBuilder.Build();
 
-                return await RenderForm(context, changePasswordViewModel, cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+                return true;
             }
             catch (ResourceException)
             {
@@ -74,7 +58,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        protected override async Task<bool> PostHtml(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
@@ -89,7 +73,8 @@ namespace Stormpath.Owin.Middleware.Route
                 var changePasswordViewModel = viewModelBuilder.Build();
                 changePasswordViewModel.Errors.Add("Passwords do not match.");
 
-                return await RenderForm(context, changePasswordViewModel, cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+                return true;
             }
 
             var spToken = queryString.GetString("sptoken");
@@ -115,7 +100,8 @@ namespace Stormpath.Owin.Middleware.Route
                 var changePasswordViewModel = viewModelBuilder.Build();
                 changePasswordViewModel.Errors.Add(rex.Message);
 
-                return await RenderForm(context, changePasswordViewModel, cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+                return true;
             }
 
             // TODO autologin
@@ -123,7 +109,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.NextUri);
         }
 
-        protected override async Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
             var spToken = queryString.GetString("sptoken");
@@ -141,7 +127,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await JsonResponse.Ok(context);
         }
 
-        protected override async Task<bool> PostJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 

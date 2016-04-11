@@ -1,33 +1,57 @@
-﻿@model Stormpath.Owin.Common.ViewModel.ExtendedRegisterViewModel
-@using System
-@using System.Linq
-/*ignore*/@using Stormpath.Owin.Common.View
+namespace Stormpath.Owin.Common.Views.Precompiled
+{
+#line 1 "Register.cshtml"
+using System
 
-@functions {
-    /*ignore*/private Stormpath.Owin.Common.ViewModel.ExtendedRegisterViewModel Model { get; }
-}
+#line default
+#line hidden
+    ;
+#line 2 "Register.cshtml"
+using System.Linq
 
+#line default
+#line hidden
+    ;
+#line 3 "Register.cshtml"
+using Stormpath.Owin.Common
+
+#line default
+#line hidden
+    ;
+    using System.Threading.Tasks;
+
+    public class Register : BaseView<Stormpath.Owin.Common.ViewModel.ExtendedRegisterViewModel>
+    {
+        #line hidden
+        public Register()
+        {
+        }
+
+        #pragma warning disable 1998
+        public override async Task ExecuteAsync()
+        {
+            WriteLiteral(@"
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if lt IE 7]>      <html class=""no-js lt-ie9 lt-ie8 lt-ie7""> <![endif]-->
+<!--[if IE 7]>         <html class=""no-js lt-ie9 lt-ie8""> <![endif]-->
+<!--[if IE 8]>         <html class=""no-js lt-ie9""> <![endif]-->
 <!--[if gt IE 8]><!-->
-<html lang="en" class="no-js">
+<html lang=""en"" class=""no-js"">
 <!--<![endif]-->
 <head>
-    <meta charset="utf-8">
+    <meta charset=""utf-8"">
     <title>Create an Account</title>
-    <meta content="Create a new account." name="description">
-    <meta content="width=device-width" name="viewport">
-    <link href="//fonts.googleapis.com/css?family=Open+Sans:300italic,300,400italic,400,600italic,600,700italic,700,800italic,800" rel="stylesheet" type="text/css">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <meta content=""Create a new account."" name=""description"">
+    <meta content=""width=device-width"" name=""viewport"">
+    <link href=""//fonts.googleapis.com/css?family=Open+Sans:300italic,300,400italic,400,600italic,600,700italic,700,800italic,800"" rel=""stylesheet"" type=""text/css"">
+    <link href=""//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"" rel=""stylesheet"">
     <style>
-html,
+        html,
 body {
   height: 100%;
 }
 
-@@media (max-width: 767px) {
+@media (max-width: 767px) {
   html,
   body {
     padding: 0 4px;
@@ -44,7 +68,7 @@ div,
 p,
 a,
 label {
-  font-family: "Open Sans";
+  font-family: 'Open Sans';
   font-size: 14px;
   font-weight: 400;
   color: #484848;
@@ -76,7 +100,7 @@ p {
   background: -webkit-linear-gradient(#42c41a 50%, #2dbd00 50%);
   background: linear-gradient(#42c41a 50%, #2dbd00 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2dbd00, endColorstr=#42c41a)';
 }
 
 .btn-sp-green:hover,
@@ -85,7 +109,7 @@ p {
   background: -webkit-linear-gradient(#43cd1a 50%, #2ec700 50%);
   background: linear-gradient(#43cd1a 50%, #2ec700 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#2ec700, endColorstr=#43cd1a)';
 }
 
 .btn-social {
@@ -105,7 +129,7 @@ p {
   background: -webkit-linear-gradient(#4c6fc5 50%, #3d63c0 50%);
   background: linear-gradient(#4c6fc5 50%, #3d63c0 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3d63c0, endColorstr=#4c6fc5)';
 }
 
 .btn-facebook:hover,
@@ -114,14 +138,14 @@ p {
   background: -webkit-linear-gradient(#4773de 50%, #3767db 50%);
   background: linear-gradient(#4773de 50%, #3767db 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#3767db, endColorstr=#4773de);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3767db, endColorstr=#4773de)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#3767db, endColorstr=#4773de)';
 }
 
 .btn-google {
   background: -webkit-linear-gradient(#e05b4b 50%, #dd4b39 50%);
   background: linear-gradient(#e05b4b 50%, #dd4b39 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#dd4b39, endColorstr=#e05b4b)';
 }
 
 .btn-google:hover,
@@ -130,14 +154,14 @@ p {
   background: -webkit-linear-gradient(#ea604e 50%, #e8503c 50%);
   background: linear-gradient(#ea604e 50%, #e8503c 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#e8503c, endColorstr=#ea604e)';
 }
 
 .btn-linkedin {
   background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);
   background: linear-gradient(#007cbc 50%, #0077B5 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)';
 }
 
 .btn-linkedin:hover,
@@ -146,14 +170,14 @@ p {
   background: -webkit-linear-gradient(#007cbc 50%, #0077B5 50%);
   background: linear-gradient(#007cbc 50%, #0077B5 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#007cbc, endColorstr=#0077B5)';
 }
 
 .btn-github {
   background: -webkit-linear-gradient(#848282 50%, #7B7979 50%);
   background: linear-gradient(#848282 50%, #7B7979 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#848282, endColorstr=#7B7979);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#848282, endColorstr=#7B7979)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#848282, endColorstr=#7B7979)';
 }
 
 .btn-github:hover,
@@ -162,7 +186,7 @@ p {
   background: -webkit-linear-gradient(#8C8888 50%, #848080 50%);
   background: linear-gradient(#8C8888 50%, #848080 50%);
   filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr=#8C8888, endColorstr=#848080);
-  -ms-filter: "progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#8C8888, endColorstr=#848080)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.gradient (GradientType=0, startColorstr=#8C8888, endColorstr=#848080)';
 }
 
 .btn-register {
@@ -204,22 +228,22 @@ p {
   font-size: 21px;
 }
 
-.view input[type="text"],
-.view input[type="password"],
-.view input[type="email"],
-.view input[type="color"],
-.view input[type="date"],
-.view input[type="datetime"]
-.view input[type="datetime-local"],
-.view input[type="email"],
-.view input[type="month"],
-.view input[type="number"],
-.view input[type="range"],
-.view input[type="search"],
-.view input[type="tel"],
-.view input[type="time"],
-.view input[type="url"],
-.view input[type="week"]{
+.view input[type='text'],
+.view input[type='password'],
+.view input[type='email'],
+.view input[type='color'],
+.view input[type='date'],
+.view input[type='datetime']
+.view input[type='datetime-local'],
+.view input[type='email'],
+.view input[type='month'],
+.view input[type='number'],
+.view input[type='range'],
+.view input[type='search'],
+.view input[type='tel'],
+.view input[type='time'],
+.view input[type='url'],
+.view input[type='week']{
   background-color: #f6f6f6;
   height: 45px;
 }
@@ -255,8 +279,8 @@ p {
   font-weight: 600;
 }
 
-.sp-form .has-error input[type="text"],
-.sp-form .has-error input[type="password"] {
+.sp-form .has-error input[type='text'],
+.sp-form .has-error input[type='password'] {
   border-color: #ec3e3e;
 }
 
@@ -264,8 +288,8 @@ p {
   margin-bottom: 21px;
 }
 
-.sp-form input[type="text"],
-.sp-form input[type="password"] {
+.sp-form input[type='text'],
+.sp-form input[type='password'] {
   position: relative;
 }
 
@@ -310,7 +334,7 @@ p {
   border-bottom-left-radius: 3px;
 }
 
-@@media (min-width: 767px) {
+@media (min-width: 767px) {
   .login-view .email-password-area {
     padding: 0 30px;
   }
@@ -339,7 +363,7 @@ p {
   height: 16px;
   border: 1px solid #cacaca;
   background-color: #f6f6f6;
-  content: "";
+  content: '';
 }
 
 .login-view .email-password-area input[type='checkbox']:checked + label:after {
@@ -347,7 +371,7 @@ p {
   background-position: -1px -1px;
 }
 
-@@media (min-width: 767px) {
+@media (min-width: 767px) {
   .login-view .email-password-area.small {
     border-right: 1px solid #cacaca;
   }
@@ -357,7 +381,7 @@ p {
   }
 }
 
-@@media (max-width: 767px) {
+@media (max-width: 767px) {
   .login-view .email-password-area.small {
     border-bottom: 1px solid #cacaca;
     border-bottom-left-radius: 0;
@@ -370,12 +394,12 @@ p {
   border-bottom-right-radius: 3px;
 }
 
-@@media (min-width: 767px) {
+@media (min-width: 767px) {
   .login-view .email-password-area.large {
     padding: 0 50px;
   }
 
-  .login-view .email-password-area.large .group-email label,
+  .login-view .email-password-area.large .group-login label,
   .login-view .email-password-area.large .group-password label {
     height: 45px;
     line-height: 45px;
@@ -395,7 +419,7 @@ p {
   margin-bottom: -6px;
 }
 
-@@media (max-width: 767px) {
+@media (max-width: 767px) {
   .login-view .social-area .header {
     padding: 0px;
   }
@@ -413,52 +437,157 @@ p {
     </style>
     <!--[if lt IE 9]>
      <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js'></script>
-     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></script>
+     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></sc");
+            WriteLiteral(@"ript>
     <![endif]-->
 </head>
-    <body class="register">
-        <div class="container custom-container">
-            <div class="va-wrapper">
-                <div class="view registration-view container">
-                    <div class="box row">
-                        <div class="col-sm-12">
-                            <div class="header">
+    <body class=""register"">
+        <div class=""container custom-container"">
+            <div class=""va-wrapper"">
+                <div class=""view registration-view container"">
+                    <div class=""box row"">
+                        <div class=""col-sm-12"">
+                            <div class=""header"">
                                 <span>Create Account</span>
                             </div>
-                            @if (Model.Errors.Any())
+");
+#line 39 "Register.cshtml"
+                            
+
+#line default
+#line hidden
+
+#line 39 "Register.cshtml"
+                             if (Model.Errors.Any())
                             {
-                                <div class="alert alert-danger">
-                                    @foreach (var error in Model.Errors)
+
+#line default
+#line hidden
+
+            WriteLiteral("                                <div class=\"alert alert-danger\">\r\n");
+#line 42 "Register.cshtml"
+                                    
+
+#line default
+#line hidden
+
+#line 42 "Register.cshtml"
+                                     foreach (var error in Model.Errors)
                                     {
-                                        <p>@error</p>
+
+#line default
+#line hidden
+
+            WriteLiteral("                                        <p>");
+#line 44 "Register.cshtml"
+                                      Write(error);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n");
+#line 45 "Register.cshtml"
                                     }
-                                </div>
+
+#line default
+#line hidden
+
+            WriteLiteral("                                </div>\r\n");
+#line 47 "Register.cshtml"
                             }
-                            <form method="post" role="form" class="registration-form form-horizontal sp-form">
-                                @foreach (var field in Model.Form.Fields)
+
+#line default
+#line hidden
+
+            WriteLiteral("                            <form method=\"post\" role=\"form\" class=\"registration-form form-horizontal sp-form\">\r\n");
+#line 49 "Register.cshtml"
+                                
+
+#line default
+#line hidden
+
+#line 49 "Register.cshtml"
+                                 foreach (var field in Model.Form.Fields)
                                 {
-                                    <div form-group="true" class="form-group @($"group-{field.Name}")">
-                                        <label class="col-sm-4">@field.Label</label>
-                                        <div class="col-sm-8">
-                                            <input placeholder="@field.Placeholder"
-                                                   name="@field.Name"
-                                                   type="@field.Type"
-                                                   class="form-control"
-                                                   value="@(Model.FormData.GetOrNull(field.Name) ?? string.Empty)"
-                                                   @(field.Required ? "required" : string.Empty)>
-                                        </div>
-                                    </div>
+
+#line default
+#line hidden
+
+            WriteLiteral("                                    <div form-group=\"true\"");
+            BeginWriteAttribute("class", " class=\"", 2359, "\"", 2402, 2);
+            WriteAttributeValue("", 2367, "form-group", 2367, 10, true);
+#line 51 "Register.cshtml"
+WriteAttributeValue(" ", 2377, $"group-{field.Name}", 2378, 25, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(">\r\n                                        <label class=\"col-sm-4\">");
+#line 52 "Register.cshtml"
+                                                           Write(field.Label);
+
+#line default
+#line hidden
+            WriteLiteral("</label>\r\n                                        <div class=\"col-sm-8\">\r\n                                            <input");
+            BeginWriteAttribute("placeholder", " placeholder=\"", 2606, "\"", 2638, 1);
+#line 54 "Register.cshtml"
+WriteAttributeValue("", 2620, field.Placeholder, 2620, 18, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            BeginWriteAttribute("name", "\r\n                                                   name=\"", 2639, "\"", 2709, 1);
+#line 55 "Register.cshtml"
+WriteAttributeValue("", 2698, field.Name, 2698, 11, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            BeginWriteAttribute("type", "\r\n                                                   type=\"", 2710, "\"", 2780, 1);
+#line 56 "Register.cshtml"
+WriteAttributeValue("", 2769, field.Type, 2769, 11, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral("\r\n                                                   class=\"form-control\"");
+            BeginWriteAttribute("value", "\r\n                                                   value=\"", 2854, "\"", 2963, 1);
+#line 58 "Register.cshtml"
+WriteAttributeValue("", 2914, Model.FormData.Get(field.Name) ?? string.Empty, 2914, 49, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral("\r\n                                                   ");
+#line 59 "Register.cshtml"
+                                               Write(field.Required ? "required" : string.Empty);
+
+#line default
+#line hidden
+            WriteLiteral(">\r\n                                        </div>\r\n                                    </div>\r\n");
+#line 62 "Register.cshtml"
 
                                 }
-                                <button type="submit" class="btn btn-register btn-sp-green">Create Account</button>
-                            </form>
-                        </div>
-                    </div>
-                    <a href="@Model.LoginUri" class="to-login">Back to Log In</a>
+
+#line default
+#line hidden
+
+            WriteLiteral("                                <button type=\"submit\" class=\"btn btn-register btn-sp-green\">Create Account</button>\r\n                            </form>\r\n                        </div>\r\n                    </div>\r\n                    <a");
+            BeginWriteAttribute("href", " href=\"", 3430, "\"", 3452, 1);
+#line 68 "Register.cshtml"
+WriteAttributeValue("", 3437, Model.LoginUri, 3437, 15, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(@" class=""to-login"">Back to Log In</a>
                 </div>
             </div>
         </div>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src=""https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js""></script>
+        <script src=""//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js""></script>
     </body>
-</html>
+</html>");
+        }
+        #pragma warning restore 1998
+    }
+}

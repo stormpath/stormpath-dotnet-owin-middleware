@@ -16,27 +16,17 @@
 
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Common;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class MeRoute : AbstractRouteMiddleware
+    public class MeRoute : AbstractRoute
     {
-        public MeRoute(
-            StormpathConfiguration configuration,
-            ILogger logger,
-            IClient client)
-            : base(configuration, logger, client)
-        {
-        }
-
-        protected override Task<bool> GetJson(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
             context.Response.Headers.SetString("Cache-Control", "no-cache, no-store");

@@ -14,10 +14,15 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+using System.Threading.Tasks;
+using Stormpath.Owin.Middleware.Owin;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
+    using Renderer = Func<string, object, IOwinEnvironment, System.Threading.CancellationToken, Task>;
+
     public sealed class StormpathMiddlewareOptions
     {
         public object Configuration { get; set; }
@@ -25,5 +30,7 @@ namespace Stormpath.Owin.Middleware
         public ILogger Logger { get; set; }
 
         public string LibraryUserAgent { get; set; }
+
+        public Renderer ViewRenderer { get; set; }
     }
 }

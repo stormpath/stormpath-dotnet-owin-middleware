@@ -212,7 +212,7 @@ namespace Stormpath.Owin.Middleware
                 return null;
             }
 
-            Cookies.AddToResponse(context, client, grantResult, this.configuration);
+            Cookies.AddCookiesToResponse(context, client, grantResult, this.configuration);
 
             return account;
         }
