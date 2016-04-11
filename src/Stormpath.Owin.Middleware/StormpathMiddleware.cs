@@ -139,8 +139,6 @@ namespace Stormpath.Owin.Middleware
             if (currentUser != null)
             {
                 environment[OwinKeys.StormpathUser] = currentUser;
-
-                // TODO deal with groups/scopes
             }
         }
 

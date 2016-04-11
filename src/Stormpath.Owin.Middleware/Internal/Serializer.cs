@@ -33,7 +33,7 @@ namespace Stormpath.Owin.Middleware.Internal
         public static string Serialize(object @obj)
         {
             var serialized = JsonConvert.SerializeObject(@obj, Formatting.Indented, settings);
-            return serialized; // todo one line
+            return serialized;
         }
 
         public static T Deserialize<T>(string json)

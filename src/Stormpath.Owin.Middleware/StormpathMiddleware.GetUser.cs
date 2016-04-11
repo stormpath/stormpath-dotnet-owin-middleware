@@ -47,7 +47,7 @@ namespace Stormpath.Owin.Middleware
                 return cookieAuthenticationResult;
             }
 
-            var apiAuthenticationResult = await TryApiAuthenticationAsync(context, client);
+            var apiAuthenticationResult = await TryBasicAuthenticationAsync(context, client);
             if (apiAuthenticationResult != null)
             {
                 context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.ApiCredentials;
@@ -57,7 +57,7 @@ namespace Stormpath.Owin.Middleware
             return null;
         }
 
-        private Task<IAccount> TryApiAuthenticationAsync(IOwinEnvironment context, IClient client)
+        private Task<IAccount> TryBasicAuthenticationAsync(IOwinEnvironment context, IClient client)
         {
             // TODO
             return Task.FromResult<IAccount>(null);
@@ -156,7 +156,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (ResourceException)
             {
-                logger.Info($"Failed to get account {account.Href}", "GetUserAsync"); // TODO result.AccountHref
+                logger.Info($"Failed to get account {result.AccountHref}", "GetUserAsync");
             }
 
             return account;
