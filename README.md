@@ -62,6 +62,8 @@ We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If
   using System.Threading.Tasks;
   using Microsoft.Owin.Hosting;
   using Owin;
+  using Stormpath.Owin.Middleware;
+  using Stormpath.Owin.Common;
 
   namespace Stormpath.Owin.NowinHarness
   {
@@ -119,14 +121,14 @@ We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If
 
 7. **Initialize the Stormpath Middleware**
 
-  At the top of your `Configuration` method, create an instance of `StormpathMiddleware`:
+  At the **top** of your `Configuration` method, create an instance of `StormpathMiddleware`:
 
   ```csharp
   // Initialize the Stormpath middleware
   var stormpath = StormpathMiddleware.Create(new StormpathMiddlewareOptions()
   {
       LibraryUserAgent = "nowin/0.22",
-      ViewRenderer = RenderView
+      ViewRenderer = new SimpleViewRenderer()
   });
   ```
 
@@ -136,19 +138,22 @@ We're working on support for [ASP.NET 4.x](TODO) and [Nancy](TODO) right now. If
   app.Use(stormpath);
   ```
 
-  The `Stormpath.Owin.Common.Views.Precompiled` package includes a set of pre-built views that you can use without taking a dependency on Razor. You'll need to write a small rendering function to provide these to the middleware:
+  The `Stormpath.Owin.Common.Views.Precompiled` package includes a set of pre-built views that you can use without taking a dependency on Razor. You'll need to write a small rendering class to provide these to the middleware:
 
   ```csharp
-  private Task RenderView(string name, object model, Middleware.Owin.IOwinEnvironment env, CancellationToken cancellationToken)
+  public class SimpleViewRenderer : IViewRenderer
   {
-      var view = Stormpath.Owin.Common.Views.Precompiled.ViewResolver.GetView(name);
-      if (view == null)
+      public Task RenderAsync(string viewName, object viewModel, IOwinEnvironment context, CancellationToken cancellationToken)
       {
-          // Or, hook into your existing view rendering implementation
-          throw new InvalidOperationException($"View '{name}' not found.");
-      }
+          var view = Stormpath.Owin.Common.Views.Precompiled.ViewResolver.GetView(viewName);
+          if (view == null)
+          {
+              // Or, hook into your existing view rendering implementation
+              throw new Exception($"View '{viewName}' not found.");
+          }
 
-      return view.ExecuteAsync(model, env.Response.Body);
+          return view.ExecuteAsync(viewModel, context.Response.Body);
+      }
   }
   ```
 
