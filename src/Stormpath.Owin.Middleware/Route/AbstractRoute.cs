@@ -26,19 +26,17 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    using Renderer = Func<string, object, IOwinEnvironment, System.Threading.CancellationToken, Task>;
-
     public abstract class AbstractRoute
     {
         private bool _initialized;
         protected StormpathConfiguration _configuration;
-        private Renderer _viewRenderer;
+        private IViewRenderer _viewRenderer;
         protected ILogger _logger;
         private IClient _client;
 
         public void Initialize(
             StormpathConfiguration configuration,
-            Renderer viewRenderer,
+            IViewRenderer viewRenderer,
             ILogger logger,
             IClient client)
         {
@@ -140,7 +138,7 @@ namespace Stormpath.Owin.Middleware.Route
             context.Response.StatusCode = 200;
             context.Response.Headers.SetString("Content-Type", Constants.HtmlContentType);
 
-            return _viewRenderer(viewName, model, context, cancellationToken);
+            return _viewRenderer.RenderAsync(viewName, model, context, cancellationToken);
         }
 
         protected virtual Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
