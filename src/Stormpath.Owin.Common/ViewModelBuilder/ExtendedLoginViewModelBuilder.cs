@@ -38,6 +38,8 @@ namespace Stormpath.Owin.Common.ViewModelBuilder
             IDictionary<string, string[]> previousFormData)
         {
             this.webConfiguration = webConfiguration;
+            this.forgotPasswordEnabled = forgotPasswordEnabled;
+            this.verifyEmailEnabled = verifyEmailEnabled;
             this.queryString = queryString;
             this.previousFormData = previousFormData;
         }
