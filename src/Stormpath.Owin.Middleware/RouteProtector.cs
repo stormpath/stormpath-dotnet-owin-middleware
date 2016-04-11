@@ -95,7 +95,7 @@ namespace Stormpath.Owin.Middleware
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.Preferred == ContentType.Html;
             if (isHtmlRequest)
             {
-                var loginUri = $"{webConfiguration.Login.Uri}?next={Uri.EscapeUriString(requestPath)}"; // todo ensure it's a relative path
+                var loginUri = $"{webConfiguration.Login.Uri}?next={Uri.EscapeUriString(requestPath)}";
 
                 setStatusCode(302);
                 redirect(loginUri);

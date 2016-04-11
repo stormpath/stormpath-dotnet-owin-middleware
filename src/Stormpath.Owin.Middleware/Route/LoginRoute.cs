@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Common;
@@ -110,15 +111,18 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var nextUri = _configuration.Web.Login.NextUri;
-
             var nextUriFromQueryString = queryString.GetString("next");
-            if (!string.IsNullOrEmpty(nextUriFromQueryString))
-            {
-                nextUri = nextUriFromQueryString;
-            }
 
-            return await HttpResponse.Redirect(context, nextUri);
+            var parsedNextUri = string.IsNullOrEmpty(nextUriFromQueryString)
+                ? new Uri(_configuration.Web.Login.NextUri, UriKind.Relative)
+                : new Uri(nextUriFromQueryString, UriKind.RelativeOrAbsolute);
+
+            // Ensure this is a relative URI
+            var nextLocation = parsedNextUri.IsAbsoluteUri
+                ? parsedNextUri.PathAndQuery
+                : parsedNextUri.OriginalString;
+            
+            return await HttpResponse.Redirect(context, nextLocation);
         }
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
