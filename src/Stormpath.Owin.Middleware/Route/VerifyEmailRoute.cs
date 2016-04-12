@@ -19,7 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Common;
 using Stormpath.Owin.Common.Configuration;
-using Stormpath.Owin.Common.ViewModelBuilder;
+using Stormpath.Owin.Common.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;

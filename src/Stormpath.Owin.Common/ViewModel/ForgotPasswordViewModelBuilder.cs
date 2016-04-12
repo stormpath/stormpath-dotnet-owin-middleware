@@ -16,9 +16,8 @@
 
 using System.Collections.Generic;
 using Stormpath.Configuration.Abstractions.Model;
-using Stormpath.Owin.Common.ViewModel;
 
-namespace Stormpath.Owin.Common.ViewModelBuilder
+namespace Stormpath.Owin.Common.ViewModel
 {
     public class ForgotPasswordViewModelBuilder
     {

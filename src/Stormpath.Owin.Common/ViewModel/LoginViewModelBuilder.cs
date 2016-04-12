@@ -1,4 +1,4 @@
-﻿// <copyright file="ChangePasswordViewModelBuilder.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LoginViewModelBuilder.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,26 +15,24 @@
 // </copyright>
 
 using Stormpath.Configuration.Abstractions.Model;
-using Stormpath.Owin.Common.ViewModel;
 
-namespace Stormpath.Owin.Common.ViewModelBuilder
+namespace Stormpath.Owin.Common.ViewModel
 {
-    public class ChangePasswordViewModelBuilder
+    public sealed class LoginViewModelBuilder
     {
-        private readonly WebConfiguration webConfiguration;
+        private readonly WebLoginRouteConfiguration loginRouteConfiguration;
 
-        public ChangePasswordViewModelBuilder(
-            WebConfiguration webConfiguration)
+        public LoginViewModelBuilder(WebLoginRouteConfiguration loginRouteConfiguration)
         {
-            this.webConfiguration = webConfiguration;
+            this.loginRouteConfiguration = loginRouteConfiguration;
         }
 
-        public ChangePasswordViewModel Build()
+        public LoginViewModel Build()
         {
-            var result = new ChangePasswordViewModel();
+            var result = new LoginViewModel();
 
-            // Copy values from configuration
-            result.ChangePasswordUri = this.webConfiguration.ChangePassword.Uri;
+            var fieldViewModelBuilder = new FormFieldViewModelBuilder(loginRouteConfiguration.Form.FieldOrder, loginRouteConfiguration.Form.Fields);
+            result.Form.Fields = fieldViewModelBuilder.Build();
 
             return result;
         }

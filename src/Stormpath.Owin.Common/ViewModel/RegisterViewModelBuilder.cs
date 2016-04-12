@@ -15,9 +15,8 @@
 // </copyright>
 
 using Stormpath.Configuration.Abstractions.Model;
-using Stormpath.Owin.Common.ViewModel;
 
-namespace Stormpath.Owin.Common.ViewModelBuilder
+namespace Stormpath.Owin.Common.ViewModel
 {
     public sealed class RegisterViewModelBuilder
     {

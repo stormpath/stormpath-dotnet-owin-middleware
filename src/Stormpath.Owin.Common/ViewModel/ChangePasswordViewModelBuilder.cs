@@ -1,4 +1,4 @@
-﻿// <copyright file="VerifyEmailViewModelBuilder.cs" company="Stormpath, Inc.">
+﻿// <copyright file="ChangePasswordViewModelBuilder.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,27 +15,25 @@
 // </copyright>
 
 using Stormpath.Configuration.Abstractions.Model;
-using Stormpath.Owin.Common.ViewModel;
 
-namespace Stormpath.Owin.Common.ViewModelBuilder
+namespace Stormpath.Owin.Common.ViewModel
 {
-    public class VerifyEmailViewModelBuilder
+    public class ChangePasswordViewModelBuilder
     {
         private readonly WebConfiguration webConfiguration;
 
-        public VerifyEmailViewModelBuilder(
+        public ChangePasswordViewModelBuilder(
             WebConfiguration webConfiguration)
         {
             this.webConfiguration = webConfiguration;
         }
 
-        public VerifyEmailViewModel Build()
+        public ChangePasswordViewModel Build()
         {
-            var result = new VerifyEmailViewModel();
+            var result = new ChangePasswordViewModel();
 
             // Copy values from configuration
-            result.LoginEnabled = this.webConfiguration.Login.Enabled;
-            result.LoginUri = this.webConfiguration.Login.Uri;
+            result.ChangePasswordUri = this.webConfiguration.ChangePassword.Uri;
 
             return result;
         }

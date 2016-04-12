@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginViewModelBuilder.cs" company="Stormpath, Inc.">
+﻿// <copyright file="VerifyEmailViewModelBuilder.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,25 +15,26 @@
 // </copyright>
 
 using Stormpath.Configuration.Abstractions.Model;
-using Stormpath.Owin.Common.ViewModel;
 
-namespace Stormpath.Owin.Common.ViewModelBuilder
+namespace Stormpath.Owin.Common.ViewModel
 {
-    public sealed class LoginViewModelBuilder
+    public class VerifyEmailViewModelBuilder
     {
-        private readonly WebLoginRouteConfiguration loginRouteConfiguration;
+        private readonly WebConfiguration webConfiguration;
 
-        public LoginViewModelBuilder(WebLoginRouteConfiguration loginRouteConfiguration)
+        public VerifyEmailViewModelBuilder(
+            WebConfiguration webConfiguration)
         {
-            this.loginRouteConfiguration = loginRouteConfiguration;
+            this.webConfiguration = webConfiguration;
         }
 
-        public LoginViewModel Build()
+        public VerifyEmailViewModel Build()
         {
-            var result = new LoginViewModel();
+            var result = new VerifyEmailViewModel();
 
-            var fieldViewModelBuilder = new FormFieldViewModelBuilder(loginRouteConfiguration.Form.FieldOrder, loginRouteConfiguration.Form.Fields);
-            result.Form.Fields = fieldViewModelBuilder.Build();
+            // Copy values from configuration
+            result.LoginEnabled = this.webConfiguration.Login.Enabled;
+            result.LoginUri = this.webConfiguration.Login.Uri;
 
             return result;
         }
