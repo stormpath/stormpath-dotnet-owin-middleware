@@ -125,7 +125,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
 
     ```
     PM> install-package Stormpath.Owin.Middleware
-    PM> install-package Stormpath.Owin.Common.Views.Precompiled
+    PM> install-package Stormpath.Owin.Views.Precompiled
     ```
 
 7. **Initialize the Stormpath Middleware**
@@ -156,7 +156,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
   {
       public Task RenderAsync(string viewName, object viewModel, IOwinEnvironment context, CancellationToken cancellationToken)
       {
-          var view = Stormpath.Owin.Common.Views.Precompiled.ViewResolver.GetView(viewName);
+          var view = Stormpath.Owin.Views.Precompiled.ViewResolver.GetView(viewName);
           if (view == null)
           {
               // Or, hook into your existing view rendering implementation
