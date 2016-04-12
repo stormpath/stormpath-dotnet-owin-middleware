@@ -25,5 +25,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Common.Views.Precompiled"
   },
-  "version": "0.1.0-beta5"
+  "version": "0.1.0-beta6"
 }

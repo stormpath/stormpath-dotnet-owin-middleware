@@ -736,7 +736,7 @@ WriteAttributeValue("", 7042, Model.VerifyEmailUri, 7042, 21, false);
 #line default
 #line hidden
             EndWriteAttribute();
-            WriteLiteral(" class=\"forgot\">Forgot Password?</a>\r\n");
+            WriteLiteral(" class=\"forgot\">Resend Verification Email?</a>\r\n");
 #line 132 "Login.cshtml"
                 }
 
@@ -758,9 +758,9 @@ WriteAttributeValue("", 7042, Model.VerifyEmailUri, 7042, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 7235, "\"", 7266, 1);
+            BeginWriteAttribute("href", " href=\"", 7245, "\"", 7276, 1);
 #line 136 "Login.cshtml"
-WriteAttributeValue("", 7242, Model.ForgotPasswordUri, 7242, 24, false);
+WriteAttributeValue("", 7252, Model.ForgotPasswordUri, 7252, 24, false);
 
 #line default
 #line hidden

@@ -81,7 +81,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 await client.VerifyAccountEmailAsync(spToken, cancellationToken);
 
-                return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=unverified");
+                return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=verified");
             }
             catch (ResourceException)
             {
