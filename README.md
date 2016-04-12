@@ -4,6 +4,12 @@ This library provides middleware that plugs into any OWIN pipeline and makes it 
 
 [Stormpath](https://stormpath.com) is a User Management API that reduces development time with instant-on, scalable user infrastructure. Stormpath's intuitive API and expert support make it easy for developers to authenticate, manage and secure users and roles in any application.
 
+## Supported Platforms
+
+* .NET Framework 4.5.1 and newer
+* DNX Full CLR 4.5.1 (`dnx451`) and newer
+* DNX Core CLR (`dotnet5.4`/`netstandard1.3`)
+
 ## Prebuilt Packages
 
 ### ASP.NET Core? Easy!
@@ -68,7 +74,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
   using Stormpath.Owin.Middleware;
   using Stormpath.Owin.Common;
 
-  namespace Stormpath.Owin.NowinHarness
+  namespace MyServer
   {
       using AppFunc = Func<IDictionary<string, object>, Task>;
 
