@@ -16,8 +16,7 @@
 
 using System;
 using System.Globalization;
-using Stormpath.Configuration.Abstractions;
-using Stormpath.Configuration.Abstractions.Model;
+using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Common;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Oauth;

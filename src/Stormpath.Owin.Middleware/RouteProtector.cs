@@ -15,7 +15,7 @@
 // </copyright>
 
 using System;
-using Stormpath.Configuration.Abstractions.Model;
+using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
 

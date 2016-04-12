@@ -1,7 +1,7 @@
 {
   "authors": [ "Nate Barbettini" ],
   "dependencies": {
-    "Stormpath.Configuration.Abstractions": "3.0.1"
+    "Stormpath.Configuration.Abstractions": "4.0.0"
   },
   "description": "Common components (views, view models) for the Stormpath OWIN middleware library.",
   "frameworks": {
@@ -25,6 +25,6 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Common"
   },
-  "version": "0.1.0-beta5",
+  "version": "0.1.0",
   "xmlDoc": true
 }

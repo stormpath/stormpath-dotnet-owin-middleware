@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-using Stormpath.Configuration.Abstractions;
+using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Common.Configuration
 {
