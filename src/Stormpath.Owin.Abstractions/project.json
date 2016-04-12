@@ -23,7 +23,7 @@
     "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
   },
   "tooling": {
-    "defaultNamespace": "Stormpath.Owin.Common"
+    "defaultNamespace": "Stormpath.Owin.Abstractions"
   },
   "version": "0.1.0",
   "xmlDoc": true
