@@ -121,7 +121,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
 
 6. **Install the Middleware Packages**
 
-    Using the Package Explorer or the Package Manager Console, install the `Stormpath.Owin.Middleware` and `Stormpath.Owin.Common.Views.Precompiled` packages:
+    Using the Package Explorer or the Package Manager Console, install the `Stormpath.Owin.Middleware` and `Stormpath.Owin.Views.Precompiled` packages:
 
     ```
     PM> install-package Stormpath.Owin.Middleware
@@ -149,7 +149,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
 
 8. **Set Up the View Renderer**
 
-  The `Stormpath.Owin.Common.Views.Precompiled` package includes a set of pre-built views that you can use without taking a dependency on Razor. You'll need to write a small rendering class to provide these to the middleware:
+  The `Stormpath.Owin.Views.Precompiled` package includes a set of pre-built views that you can use without taking a dependency on Razor. You'll need to write a small rendering class to provide these to the middleware:
 
   ```csharp
   public class SimpleViewRenderer : IViewRenderer
