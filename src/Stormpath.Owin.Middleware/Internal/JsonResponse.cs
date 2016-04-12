@@ -16,7 +16,7 @@
 
 using System.Text;
 using System.Threading.Tasks;
-using Stormpath.Owin.Common;
+using Stormpath.Owin.Abstractions;
 
 namespace Stormpath.Owin.Middleware.Internal
 {

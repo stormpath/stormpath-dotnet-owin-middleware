@@ -24,7 +24,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Common.Views.Precompiled
+namespace Stormpath.Owin.Views.Precompiled
 {
     public abstract class BaseView<T> : IView
     {

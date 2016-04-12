@@ -17,8 +17,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.Configuration;
+using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;

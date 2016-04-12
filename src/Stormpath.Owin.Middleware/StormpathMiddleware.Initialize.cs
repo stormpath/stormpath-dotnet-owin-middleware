@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.Owin.Common.Configuration;
+using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
 using Stormpath.SDK;

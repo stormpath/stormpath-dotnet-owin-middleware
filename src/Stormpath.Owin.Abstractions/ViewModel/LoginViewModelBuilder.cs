@@ -16,7 +16,7 @@
 
 using Stormpath.Configuration.Abstractions.Immutable;
 
-namespace Stormpath.Owin.Common.ViewModel
+namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public sealed class LoginViewModelBuilder
     {

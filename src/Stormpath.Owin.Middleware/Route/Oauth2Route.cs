@@ -22,7 +22,7 @@ using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Oauth;
-using Stormpath.Owin.Common;
+using Stormpath.Owin.Abstractions;
 using Stormpath.SDK.Error;
 
 namespace Stormpath.Owin.Middleware.Route

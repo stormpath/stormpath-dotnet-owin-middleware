@@ -1,18 +1,15 @@
 {
   "authors": [ "Nate Barbettini" ],
-  "copyright": "(c) 2016 Stormpath, Inc.",
+  "content": [
+    "Views/Stormpath/*.cshtml"
+  ],
   "dependencies": {
-    "Stormpath.Owin.Common": "0.1.0-beta5"
+    "Stormpath.Owin.Abstractions": "0.1.0"
   },
-  "description": "Precompiled views for the Stormpath OWIN middleware library.",
+  "description": "Common views for the Stormpath OWIN middleware library.",
   "frameworks": {
-    "dnx451":  { },
-    "dotnet5.1": {
-      "dependencies": {
-        "Microsoft.CSharp": "4.0.1-beta-23516"
-      }
-    },
-    "net451": { }
+    "dnx451": { },
+    "dotnet5.1": { }
   },
   "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
   "language": "en-US",
@@ -22,8 +19,5 @@
   "repository": {
     "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
   },
-  "tooling": {
-    "defaultNamespace": "Stormpath.Owin.Common.Views.Precompiled"
-  },
-  "version": "0.1.0-beta6"
+  "version": "0.1.0"
 }

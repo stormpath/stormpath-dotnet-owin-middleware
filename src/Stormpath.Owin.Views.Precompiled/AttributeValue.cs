@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Stormpath.Owin.Common.Views.Precompiled
+namespace Stormpath.Owin.Views.Precompiled
 {
     public class AttributeValue
     {

@@ -1,4 +1,4 @@
-namespace Stormpath.Owin.Common.Views.Precompiled
+namespace Stormpath.Owin.Views.Precompiled
 {
 #line 1 "ChangePassword.cshtml"
 using System
@@ -13,14 +13,14 @@ using System.Linq
 #line hidden
     ;
 #line 3 "ChangePassword.cshtml"
-using Stormpath.Owin.Common
+using Stormpath.Owin.Abstractions
 
 #line default
 #line hidden
     ;
     using System.Threading.Tasks;
 
-    public class ChangePassword : BaseView<Stormpath.Owin.Common.ViewModel.ChangePasswordViewModel>
+    public class ChangePassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ChangePasswordViewModel>
     {
         #line hidden
         public ChangePassword()

@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stormpath.Owin.Common.Views.Precompiled
+namespace Stormpath.Owin.Views.Precompiled
 {
     public static class ViewResolver
     {

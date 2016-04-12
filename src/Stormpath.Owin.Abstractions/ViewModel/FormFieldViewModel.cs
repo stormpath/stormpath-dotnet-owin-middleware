@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Common.ViewModel
+namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class FormFieldViewModel
     {

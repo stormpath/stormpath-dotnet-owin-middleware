@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <metadata minClientVersion="3.3.0">
-    <id>Stormpath.Owin.Common.Views</id>
+    <id>Stormpath.Owin.Views</id>
     <version>0.1.0-beta1</version>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <authors>Nate Barbettini</authors>
@@ -13,10 +13,10 @@
     <language>en-US</language>
     <dependencies>
       <group targetFramework=".NETPlatform5.1">
-        <dependency id="Stormpath.Owin.Common" version="0.1.0-beta3" />
+        <dependency id="Stormpath.Owin.Abstractions" version="0.1.0-beta3" />
       </group>
       <group targetFramework=".NETFramework4.5.1">
-        <dependency id="Stormpath.Owin.Common" version="0.1.0-beta3" />
+        <dependency id="Stormpath.Owin.Abstractions" version="0.1.0-beta3" />
       </group>
     </dependencies>
   </metadata>

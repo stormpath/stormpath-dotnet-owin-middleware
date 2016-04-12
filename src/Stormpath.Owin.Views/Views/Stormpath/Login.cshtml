@@ -1,10 +1,10 @@
-﻿@model Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel
+﻿@model Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel
 @using System
 @using System.Linq
-@using Stormpath.Owin.Common
+@using Stormpath.Owin.Abstractions
 
 @*@functions {
-    private Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel Model { get; }
+    private Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel Model { get; }
 }*@
 
 <!DOCTYPE html>
@@ -33,7 +33,7 @@
     <div class="container custom-container">
         <div class="va-wrapper">
             <div class="view login-view container">
-                @if (Stormpath.Owin.Common.ViewModel.ExtendedLoginViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
+                @if (Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
                     <div class="box row">
                         <div class="email-password-area col-xs-12 large col-sm-12">
                             <div class="header">

@@ -1,29 +1,29 @@
-namespace Stormpath.Owin.Common.Views.Precompiled
+namespace Stormpath.Owin.Views.Precompiled
 {
-#line 1 "Register.cshtml"
+#line 1 "ForgotPassword.cshtml"
 using System
 
 #line default
 #line hidden
     ;
-#line 2 "Register.cshtml"
+#line 2 "ForgotPassword.cshtml"
 using System.Linq
 
 #line default
 #line hidden
     ;
-#line 3 "Register.cshtml"
-using Stormpath.Owin.Common
+#line 3 "ForgotPassword.cshtml"
+using Stormpath.Owin.Abstractions
 
 #line default
 #line hidden
     ;
     using System.Threading.Tasks;
 
-    public class Register : BaseView<Stormpath.Owin.Common.ViewModel.ExtendedRegisterViewModel>
+    public class ForgotPassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ForgotPasswordViewModel>
     {
         #line hidden
-        public Register()
+        public ForgotPassword()
         {
         }
 
@@ -40,8 +40,8 @@ using Stormpath.Owin.Common
 <!--<![endif]-->
 <head>
     <meta charset=""utf-8"">
-    <title>Create an Account</title>
-    <meta content=""Create a new account."" name=""description"">
+    <title>Forgot Your Password?</title>
+    <meta content=""Forgot your password? No worries!"" name=""description"">
     <meta content=""width=device-width"" name=""viewport"">
     <link href=""//fonts.googleapis.com/css?family=Open+Sans:300italic,300,400italic,400,600italic,600,700italic,700,800italic,800"" rel=""stylesheet"" type=""text/css"">
     <link href=""//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"" rel=""stylesheet"">
@@ -437,156 +437,148 @@ p {
     </style>
     <!--[if lt IE 9]>
      <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js'></script>
-     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></sc");
-            WriteLiteral(@"ript>
-    <![endif]-->
-</head>
-    <body class=""register"">
-        <div class=""container custom-container"">
-            <div class=""va-wrapper"">
-                <div class=""view registration-view container"">
-                    <div class=""box row"">
-                        <div class=""col-sm-12"">
-                            <div class=""header"">
-                                <span>Create Account</span>
-                            </div>
+     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/resp");
+            WriteLiteral("ond.min.js\'></script>\r\n    <![endif]-->\r\n</head>\r\n<body class=\"login\">\r\n    <div class=\"container custom-container\">\r\n        <div class=\"va-wrapper\">\r\n            <div class=\"view login-view container\">\r\n");
+#line 34 "ForgotPassword.cshtml"
+                
+
+#line default
+#line hidden
+
+#line 34 "ForgotPassword.cshtml"
+                 if (Model.Status.Equals("invalid_sptoken", StringComparison.OrdinalIgnoreCase))
+                {
+
+#line default
+#line hidden
+
+            WriteLiteral(@"                    <div class=""row"">
+                        <div class=""alert alert-warning invalid-sp-token-warning"">
+                            <p>
+                                The password reset link you tried to use is no longer valid.
+                                Please request a new link from the form below.
+                            </p>
+                        </div>
+                    </div>
 ");
-#line 39 "Register.cshtml"
-                            
+#line 44 "ForgotPassword.cshtml"
+                }
 
 #line default
 #line hidden
 
-#line 39 "Register.cshtml"
-                             if (Model.Errors.Any())
-                            {
+            WriteLiteral(@"                <div class=""box row"">
+                    <div class=""email-password-area col-xs-12 large col-sm-12"">
+                        <div class=""header"">
+                            <span>
+                                Forgot your password?
+                            </span>
+                            <p>
+                                Enter your email address below to reset your password. You will
+                                be sent an email which you will need to open to continue. You may
+                                need to check your spam folder.
+                            </p>
+                        </div>
+
+");
+#line 58 "ForgotPassword.cshtml"
+                        
 
 #line default
 #line hidden
 
-            WriteLiteral("                                <div class=\"alert alert-danger\">\r\n");
-#line 42 "Register.cshtml"
-                                    
+#line 58 "ForgotPassword.cshtml"
+                         if (Model.Errors.Any())
+                        {
 
 #line default
 #line hidden
 
-#line 42 "Register.cshtml"
-                                     foreach (var error in Model.Errors)
-                                    {
-
-#line default
-#line hidden
-
-            WriteLiteral("                                        <p>");
-#line 44 "Register.cshtml"
-                                      Write(error);
-
-#line default
-#line hidden
-            WriteLiteral("</p>\r\n");
-#line 45 "Register.cshtml"
-                                    }
-
-#line default
-#line hidden
-
-            WriteLiteral("                                </div>\r\n");
-#line 47 "Register.cshtml"
-                            }
-
-#line default
-#line hidden
-
-            WriteLiteral("                            <form method=\"post\" role=\"form\" class=\"registration-form form-horizontal sp-form\">\r\n");
-#line 49 "Register.cshtml"
+            WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n");
+#line 61 "ForgotPassword.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 49 "Register.cshtml"
-                                 foreach (var field in Model.Form.Fields)
+#line 61 "ForgotPassword.cshtml"
+                                 foreach (var error in Model.Errors)
                                 {
 
 #line default
 #line hidden
 
-            WriteLiteral("                                    <div form-group=\"true\"");
-            BeginWriteAttribute("class", " class=\"", 2359, "\"", 2402, 2);
-            WriteAttributeValue("", 2367, "form-group", 2367, 10, true);
-#line 51 "Register.cshtml"
-WriteAttributeValue(" ", 2377, $"group-{field.Name}", 2378, 25, false);
+            WriteLiteral("                                    <p>");
+#line 63 "ForgotPassword.cshtml"
+                                  Write(error);
 
 #line default
 #line hidden
-            EndWriteAttribute();
-            WriteLiteral(">\r\n                                        <label class=\"col-sm-4\">");
-#line 52 "Register.cshtml"
-                                                           Write(field.Label);
-
-#line default
-#line hidden
-            WriteLiteral("</label>\r\n                                        <div class=\"col-sm-8\">\r\n                                            <input");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 2606, "\"", 2638, 1);
-#line 54 "Register.cshtml"
-WriteAttributeValue("", 2620, field.Placeholder, 2620, 18, false);
-
-#line default
-#line hidden
-            EndWriteAttribute();
-            BeginWriteAttribute("name", "\r\n                                                   name=\"", 2639, "\"", 2709, 1);
-#line 55 "Register.cshtml"
-WriteAttributeValue("", 2698, field.Name, 2698, 11, false);
-
-#line default
-#line hidden
-            EndWriteAttribute();
-            BeginWriteAttribute("type", "\r\n                                                   type=\"", 2710, "\"", 2780, 1);
-#line 56 "Register.cshtml"
-WriteAttributeValue("", 2769, field.Type, 2769, 11, false);
-
-#line default
-#line hidden
-            EndWriteAttribute();
-            WriteLiteral("\r\n                                                   class=\"form-control\"");
-            BeginWriteAttribute("value", "\r\n                                                   value=\"", 2854, "\"", 2963, 1);
-#line 58 "Register.cshtml"
-WriteAttributeValue("", 2914, Model.FormData.Get(field.Name) ?? string.Empty, 2914, 49, false);
-
-#line default
-#line hidden
-            EndWriteAttribute();
-            WriteLiteral("\r\n                                                   ");
-#line 59 "Register.cshtml"
-                                               Write(field.Required ? "required" : string.Empty);
-
-#line default
-#line hidden
-            WriteLiteral(">\r\n                                        </div>\r\n                                    </div>\r\n");
-#line 62 "Register.cshtml"
-
+            WriteLiteral("</p>\r\n");
+#line 64 "ForgotPassword.cshtml"
                                 }
 
 #line default
 #line hidden
 
-            WriteLiteral("                                <button type=\"submit\" class=\"btn btn-register btn-sp-green\">Create Account</button>\r\n                            </form>\r\n                        </div>\r\n                    </div>\r\n                    <a");
-            BeginWriteAttribute("href", " href=\"", 3430, "\"", 3452, 1);
-#line 68 "Register.cshtml"
-WriteAttributeValue("", 3437, Model.LoginUri, 3437, 15, false);
+            WriteLiteral("                            </div>\r\n");
+#line 66 "ForgotPassword.cshtml"
+                        }
+
+#line default
+#line hidden
+
+            WriteLiteral("\r\n                        <form method=\"post\" role=\"form\"");
+            BeginWriteAttribute("action", " action=\"", 3075, "\"", 3108, 1);
+#line 68 "ForgotPassword.cshtml"
+WriteAttributeValue("", 3084, Model.ForgotPasswordUri, 3084, 24, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            WriteLiteral(@" class=""to-login"">Back to Log In</a>
+            WriteLiteral(@" class=""login-form form-horizontal"">
+                            <div class=""form-group group-email"">
+                                <label class=""col-sm-4"">Email</label>
+                                <div class=""col-sm-8"">
+                                    <input placeholder=""Email"" required name=""email"" type=""text"" class=""form-control"">
+                                </div>
+                            </div>
+                            <div>
+                                <button type=""submit"" class=""login btn btn-login btn-sp-green"">Send Email</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        </div>
-        <script src=""https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js""></script>
-        <script src=""//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js""></script>
-    </body>
-</html>");
+");
+#line 82 "ForgotPassword.cshtml"
+                
+
+#line default
+#line hidden
+
+#line 82 "ForgotPassword.cshtml"
+                 if (Model.LoginEnabled)
+                {
+
+#line default
+#line hidden
+
+            WriteLiteral("                    <a");
+            BeginWriteAttribute("href", " href=\"", 3959, "\"", 3981, 1);
+#line 84 "ForgotPassword.cshtml"
+WriteAttributeValue("", 3966, Model.LoginUri, 3966, 15, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(" class=\"forgot\">Back to Log In</a>\r\n");
+#line 85 "ForgotPassword.cshtml"
+                }
+
+#line default
+#line hidden
+
+            WriteLiteral("            </div>\r\n        </div>\r\n    </div>\r\n    <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js\"></script>\r\n    <script src=\"//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js\"></script>\r\n</body>\r\n</html>");
         }
         #pragma warning restore 1998
     }

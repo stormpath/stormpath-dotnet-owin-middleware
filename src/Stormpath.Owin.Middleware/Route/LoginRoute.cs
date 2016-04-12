@@ -17,8 +17,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Common;
-using Stormpath.Owin.Common.ViewModel;
+using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;

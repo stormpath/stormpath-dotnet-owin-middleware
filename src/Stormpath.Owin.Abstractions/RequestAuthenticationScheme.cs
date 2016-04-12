@@ -15,7 +15,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Common
+namespace Stormpath.Owin.Abstractions
 {
     public static class RequestAuthenticationScheme
     {

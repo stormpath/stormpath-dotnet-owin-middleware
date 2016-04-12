@@ -19,7 +19,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Common
+namespace Stormpath.Owin.Abstractions
 {
     public interface IOwinRequest
     {

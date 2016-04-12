@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
 using Owin;
 using Stormpath.Owin.Middleware;
-using Stormpath.Owin.Common;
+using Stormpath.Owin.Abstractions;
 
 namespace Stormpath.Owin.NowinHarness
 {
@@ -88,7 +88,7 @@ namespace Stormpath.Owin.NowinHarness
     {
         public Task RenderAsync(string viewName, object viewModel, IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var view = Stormpath.Owin.Common.Views.Precompiled.ViewResolver.GetView(viewName);
+            var view = Stormpath.Owin.Views.Precompiled.ViewResolver.GetView(viewName);
             if (view == null)
             {
                 // Or, hook into your existing view rendering implementation

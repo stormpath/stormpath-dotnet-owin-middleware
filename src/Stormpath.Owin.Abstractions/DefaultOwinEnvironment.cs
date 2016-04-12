@@ -17,7 +17,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Stormpath.Owin.Common
+namespace Stormpath.Owin.Abstractions
 {
     public sealed class DefaultOwinEnvironment : IOwinEnvironment
     {

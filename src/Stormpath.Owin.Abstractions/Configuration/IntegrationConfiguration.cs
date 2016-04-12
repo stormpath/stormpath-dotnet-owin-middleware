@@ -16,7 +16,7 @@
 
 using Stormpath.Configuration.Abstractions.Immutable;
 
-namespace Stormpath.Owin.Common.Configuration
+namespace Stormpath.Owin.Abstractions.Configuration
 {
     public sealed class IntegrationConfiguration : StormpathConfiguration
     {

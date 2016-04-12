@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Common
+namespace Stormpath.Owin.Abstractions
 {
     /// <summary>
     /// OWIN keys, as defined in <see href="http://owin.org/html/spec/owin-1.0.html"/>.

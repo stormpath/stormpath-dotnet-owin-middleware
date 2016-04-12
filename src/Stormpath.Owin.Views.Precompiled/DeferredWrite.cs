@@ -19,7 +19,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Common.Views.Precompiled
+namespace Stormpath.Owin.Views.Precompiled
 {
     /// <summary>
     /// Represents a deferred write operation in a <see cref="BaseView"/>.

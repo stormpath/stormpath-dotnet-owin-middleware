@@ -24,7 +24,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Common
+namespace Stormpath.Owin.Abstractions
 {
     public class DefaultOwinResponse : IOwinResponse
     {

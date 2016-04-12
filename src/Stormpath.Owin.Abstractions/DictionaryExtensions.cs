@@ -16,7 +16,7 @@
 
 using System.Collections.Generic;
 
-namespace Stormpath.Owin.Common
+namespace Stormpath.Owin.Abstractions
 {
     public static class DictionaryExtensions
     {

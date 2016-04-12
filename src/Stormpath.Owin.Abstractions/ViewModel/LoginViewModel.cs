@@ -16,7 +16,7 @@
 
 using System.Collections.Generic;
 
-namespace Stormpath.Owin.Common.ViewModel
+namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class LoginViewModel
     {

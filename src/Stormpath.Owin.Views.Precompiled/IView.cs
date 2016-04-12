@@ -18,7 +18,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Common.Views.Precompiled
+namespace Stormpath.Owin.Views.Precompiled
 {
     public interface IView
     {

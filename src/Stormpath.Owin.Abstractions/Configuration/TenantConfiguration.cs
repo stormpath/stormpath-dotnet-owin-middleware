@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Common.Configuration
+namespace Stormpath.Owin.Abstractions.Configuration
 {
     public sealed class TenantConfiguration
     {

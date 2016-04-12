@@ -19,7 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.Owin.Common;
+using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;

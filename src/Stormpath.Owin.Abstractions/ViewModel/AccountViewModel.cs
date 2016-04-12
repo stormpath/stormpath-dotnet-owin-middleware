@@ -16,7 +16,7 @@
 
 using System;
 
-namespace Stormpath.Owin.Common.ViewModel
+namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class AccountViewModel
     {
