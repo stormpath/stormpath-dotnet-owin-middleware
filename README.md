@@ -19,7 +19,7 @@ If you are building an application with ASP.NET Core 1.0, head over and grab the
 
 We're working on support for [ASP.NET 4.x](https://github.com/stormpath/stormpath-dotnet-owin-middleware/issues/4) and [Nancy](https://github.com/stormpath/stormpath-dotnet-owin-middleware/issues/5) right now. If you'd like to be notified when those packages are released, subscribe to the linked issues or send an email to support@stormpath.com. In the meantime, follow the guide below, which covers adding this middleware to any OWIN-compatible pipeline.
 
-## Getting Started
+## Quickstart
 
 This example will demonstrate how to set up a web server using [Nowin](https://github.com/Bobris/Nowin), but the concepts apply to any OWIN-compatible pipeline.
 
