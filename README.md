@@ -19,17 +19,17 @@ If you are building an application with ASP.NET Core 1.0, head over and grab the
 
 We're working on support for [ASP.NET 4.x](https://github.com/stormpath/stormpath-dotnet-owin-middleware/issues/4) and [Nancy](https://github.com/stormpath/stormpath-dotnet-owin-middleware/issues/5) right now. If you'd like to be notified when those packages are released, subscribe to the linked issues or send an email to support@stormpath.com. In the meantime, follow the guide below, which covers adding this middleware to any OWIN-compatible pipeline.
 
-## Getting Started
+## Quickstart
 
 This example will demonstrate how to set up a web server using [Nowin](https://github.com/Bobris/Nowin), but the concepts apply to any OWIN-compatible pipeline.
 
 1. **[Sign up](https://api.stormpath.com/register) for Stormpath**
 
-2. **Get Your Key File**
+2. **Get your key file**
 
   [Download your key file](https://support.stormpath.com/hc/en-us/articles/203697276-Where-do-I-find-my-API-key-) from the Stormpath Console.
 
-3. **Store Your Key as Environment Variables**
+3. **Store your key as environment variables**
 
   Open your key file and grab the **API Key ID** and **API Key Secret**, then run these commands in PowerShell (or the Windows Command Prompt) to save them as environment variables:
 
@@ -38,7 +38,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
   setx STORMPATH_CLIENT_APIKEY_SECRET "[value-from-properties-file]"
   ```
 
-4. **Store Your Stormpath Application Href in an Environment Variable**
+4. **Store your Stormpath Application href in an environment variable**
 
   Grab the `href` (called **REST URL** in the Stormpath Console UI) of your Application. It should look something like this:
 
@@ -50,9 +50,9 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
   setx STORMPATH_APPLICATION_HREF "[your Application href]"
   ```
 
-5. **Set Up a Server**
+5. **Set up a server**
 
-  Skip this step if you are adding Stormpath to an existing application.
+  Skip this step if you are adding Stormpath to an existing project.
 
   If you don't have an OWIN server set up already, install these packages to get started with a simple [Nowin](https://github.com/Bobris/Nowin) server:
 
@@ -119,7 +119,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
   }
   ```
 
-6. **Install the Middleware Packages**
+6. **Install the middleware packages**
 
     Using the Package Explorer or the Package Manager Console, install the `Stormpath.Owin.Middleware` and `Stormpath.Owin.Views.Precompiled` packages:
 
@@ -128,7 +128,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
     PM> install-package Stormpath.Owin.Views.Precompiled
     ```
 
-7. **Initialize the Stormpath Middleware**
+7. **Initialize the Stormpath middleware**
 
   At the **top** of your `Configuration` method, create an instance of `StormpathMiddleware`:
 
@@ -147,7 +147,7 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
   app.Use(stormpath);
   ```
 
-8. **Set Up the View Renderer**
+8. **Set up the view renderer**
 
   The `Stormpath.Owin.Views.Precompiled` package includes a set of pre-built views that you can use without taking a dependency on Razor. You'll need to write a small rendering class to provide these to the middleware:
 
@@ -168,8 +168,10 @@ This example will demonstrate how to set up a web server using [Nowin](https://g
   }
   ```
 
-8. **That's It!**
+8. **That's it!**
 
   Compile and run your project, and use a browser to access `http://localhost:8080/login`. You should see a login view.
+
+## Getting Help
 
 More documentation is coming soon, including details on how you can protect your own routes. If you need help using this package, feel free to reach out to support@stormpath.com anytime.
