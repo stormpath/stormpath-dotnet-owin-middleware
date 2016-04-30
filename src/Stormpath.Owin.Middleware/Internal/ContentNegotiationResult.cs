@@ -18,13 +18,13 @@ namespace Stormpath.Owin.Middleware.Internal
 {
     public struct ContentNegotiationResult
     {
-        public ContentNegotiationResult(bool success, ContentType prefers)
+        public ContentNegotiationResult(bool success, ContentType contentType)
         {
-            this.Preferred = prefers;
+            this.ContentType = contentType;
             this.Success = success;
         }
 
-        public ContentType Preferred { get; private set; }
+        public ContentType ContentType { get; private set; }
 
         public bool Success { get; private set; }
     }

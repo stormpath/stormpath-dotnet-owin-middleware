@@ -90,9 +90,9 @@ namespace Stormpath.Owin.Middleware
             deleteCookie(webConfiguration.AccessTokenCookie);
             deleteCookie(webConfiguration.RefreshTokenCookie);
 
-            var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, webConfiguration.Produces);
+            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, webConfiguration.Produces);
 
-            bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.Preferred == ContentType.Html;
+            bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)
             {
                 var loginUri = $"{webConfiguration.Login.Uri}?next={Uri.EscapeUriString(requestPath)}";

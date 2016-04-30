@@ -25,34 +25,35 @@ namespace Stormpath.Owin.UnitTest
     {
         private static readonly string ApplicationJson = "application/json";
         private static readonly string TextHtml = "text/html";
+        private static readonly string FormUrlEncoded = "application/x-www-form-urlencoded";
 
         private static readonly string[] DefaultProduces = new string[] { ApplicationJson, TextHtml };
 
         [Fact]
         public void Null_accept_header_serves_first_produces()
         {
-            var result = ContentNegotiation.Negotiate(null, DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader(null, DefaultProduces);
 
             result.Success.Should().BeTrue();
-            result.Preferred.ToString().Should().Be(DefaultProduces.First());
+            result.ContentType.ToString().Should().Be(DefaultProduces.First());
         }
 
         [Fact]
         public void StarStar_header_serves_first_produces()
         {
-            var result = ContentNegotiation.Negotiate(null, DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader(null, DefaultProduces);
 
             result.Success.Should().BeTrue();
-            result.Preferred.ToString().Should().Be(DefaultProduces.First());
+            result.ContentType.ToString().Should().Be(DefaultProduces.First());
         }
 
         [Fact]
         public void Html_preferred_and_in_produces()
         {
-            var result = ContentNegotiation.Negotiate(TextHtml, DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader(TextHtml, DefaultProduces);
 
             result.Success.Should().BeTrue();
-            result.Preferred.ToString().Should().Be(TextHtml);
+            result.ContentType.ToString().Should().Be(TextHtml);
         }
 
         [Fact]
@@ -60,7 +61,7 @@ namespace Stormpath.Owin.UnitTest
         {
             var producesOnlyJson = new string[] { ApplicationJson };
 
-            var result = ContentNegotiation.Negotiate("text/html", producesOnlyJson);
+            var result = ContentNegotiation.NegotiateAcceptHeader("text/html", producesOnlyJson);
 
             result.Success.Should().BeFalse();
         }
@@ -70,10 +71,10 @@ namespace Stormpath.Owin.UnitTest
         {
             var headerValue = "application/json; q=0.8, text/html";
 
-            var result = ContentNegotiation.Negotiate(headerValue, DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces);
 
             result.Success.Should().BeTrue();
-            result.Preferred.ToString().Should().Be(TextHtml);
+            result.ContentType.ToString().Should().Be(TextHtml);
         }
 
         [Fact]
@@ -81,19 +82,19 @@ namespace Stormpath.Owin.UnitTest
         {
             var headerValue = "application/json; q=0.8, text/html;q=0.9";
 
-            var result = ContentNegotiation.Negotiate(headerValue, DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces);
 
             result.Success.Should().BeTrue();
-            result.Preferred.ToString().Should().Be(TextHtml);
+            result.ContentType.ToString().Should().Be(TextHtml);
         }
 
         [Fact]
         public void Json_preferred_and_in_produces()
         {
-            var result = ContentNegotiation.Negotiate(ApplicationJson, DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader(ApplicationJson, DefaultProduces);
 
             result.Success.Should().BeTrue();
-            result.Preferred.ToString().Should().Be(ApplicationJson);
+            result.ContentType.ToString().Should().Be(ApplicationJson);
         }
 
         [Fact]
@@ -101,7 +102,7 @@ namespace Stormpath.Owin.UnitTest
         {
             var producesOnlyHtml = new string[] { TextHtml };
 
-            var result = ContentNegotiation.Negotiate(ApplicationJson, producesOnlyHtml);
+            var result = ContentNegotiation.NegotiateAcceptHeader(ApplicationJson, producesOnlyHtml);
 
             result.Success.Should().BeFalse();
         }
@@ -111,10 +112,10 @@ namespace Stormpath.Owin.UnitTest
         {
             var headerValue = "text/html; q=0.8, application/json";
 
-            var result = ContentNegotiation.Negotiate(headerValue, DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces);
 
             result.Success.Should().BeTrue();
-            result.Preferred.ToString().Should().Be(ApplicationJson);
+            result.ContentType.ToString().Should().Be(ApplicationJson);
         }
 
         [Fact]
@@ -122,16 +123,50 @@ namespace Stormpath.Owin.UnitTest
         {
             var headerValue = "text/html; q=0.8, application/json;q=0.9";
 
-            var result = ContentNegotiation.Negotiate(headerValue, DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces);
 
             result.Success.Should().BeTrue();
-            result.Preferred.ToString().Should().Be(ApplicationJson);
+            result.ContentType.ToString().Should().Be(ApplicationJson);
         }
 
         [Fact]
         public void Unsupported_header_fails()
         {
-            var result = ContentNegotiation.Negotiate("foo/bar", DefaultProduces);
+            var result = ContentNegotiation.NegotiateAcceptHeader("foo/bar", DefaultProduces);
+
+            result.Success.Should().BeFalse();
+        }
+
+        [Fact]
+        public void Form_urlencoded_is_valid_post_body_type()
+        {
+            var result = ContentNegotiation.DetectBodyType(FormUrlEncoded);
+
+            result.Success.Should().BeTrue();
+            result.ContentType.ToString().Should().Be(FormUrlEncoded);
+        }
+
+        [Fact]
+        public void Json_is_valid_post_body_type()
+        {
+            var result = ContentNegotiation.DetectBodyType(ApplicationJson);
+
+            result.Success.Should().BeTrue();
+            result.ContentType.ToString().Should().Be(ApplicationJson);
+        }
+
+        [Fact]
+        public void TextPlain_is_valid_post_body_type()
+        {
+            var result = ContentNegotiation.DetectBodyType("text/plain");
+
+            result.Success.Should().BeFalse();
+        }
+
+        [Fact]
+        public void TextHtml_is_valid_post_body_type()
+        {
+            var result = ContentNegotiation.DetectBodyType(TextHtml);
 
             result.Success.Should().BeFalse();
         }

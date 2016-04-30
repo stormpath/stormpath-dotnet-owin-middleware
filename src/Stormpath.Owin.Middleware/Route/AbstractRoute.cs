@@ -72,7 +72,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var acceptHeader = owinContext.Request.Headers.GetString("Accept");
-            var contentNegotiationResult = ContentNegotiation.Negotiate(acceptHeader, _configuration.Web.Produces);
+            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, _configuration.Web.Produces);
 
             if (!contentNegotiationResult.Success)
             {
@@ -87,7 +87,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                if (contentNegotiationResult.Preferred == ContentType.Json)
+                if (contentNegotiationResult.ContentType == ContentType.Json)
                 {
                     // Sanitize Stormpath API errors
                     await Error.CreateFromApiError(owinContext, rex, owinContext.CancellationToken);
@@ -101,7 +101,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (Exception ex)
             {
-                if (contentNegotiationResult.Preferred == ContentType.Json)
+                if (contentNegotiationResult.ContentType == ContentType.Json)
                 {
                     // Sanitize framework-level errors
                     await Error.Create(owinContext, 400, ex.Message, owinContext.CancellationToken);
@@ -126,7 +126,15 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (method.Equals("POST", StringComparison.OrdinalIgnoreCase))
             {
-                return PostAsync(context, scopedClient, contentNegotiationResult, cancellationToken);
+                var rawBodyContentType = context.Request.Headers.GetString("Content-Type");
+                var bodyContentTypeDetectionResult = ContentNegotiation.DetectBodyType(rawBodyContentType);
+
+                if (!bodyContentTypeDetectionResult.Success)
+                {
+                    throw new Exception($"The Content-Type '{rawBodyContentType}' is invalid.");
+                }
+
+                return PostAsync(context, scopedClient, contentNegotiationResult, bodyContentTypeDetectionResult.ContentType, cancellationToken);
             }
 
             // Do nothing and pass on to next middleware.
@@ -143,12 +151,12 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected virtual Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
-            if (contentNegotiationResult.Preferred == ContentType.Json)
+            if (contentNegotiationResult.ContentType == ContentType.Json)
             {
                 return GetJsonAsync(context, client, cancellationToken);
             }
 
-            if (contentNegotiationResult.Preferred == ContentType.Html)
+            if (contentNegotiationResult.ContentType == ContentType.Html)
             {
                 return GetHtmlAsync(context, client, cancellationToken);
             }
@@ -157,16 +165,16 @@ namespace Stormpath.Owin.Middleware.Route
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            if (contentNegotiationResult.Preferred == ContentType.Json)
+            if (contentNegotiationResult.ContentType == ContentType.Json)
             {
-                return PostJsonAsync(context, client, cancellationToken);
+                return PostJsonAsync(context, client, /*bodyContentType,*/ cancellationToken);
             }
 
-            if (contentNegotiationResult.Preferred == ContentType.Html)
+            if (contentNegotiationResult.ContentType == ContentType.Html)
             {
-                return PostHtmlAsync(context, client, cancellationToken);
+                return PostHtmlAsync(context, client, /*bodyContentType,*/ cancellationToken);
             }
 
             // Do nothing and pass on to next middleware.
@@ -185,13 +193,13 @@ namespace Stormpath.Owin.Middleware.Route
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, /*ContentType bodyContentType,*/ CancellationToken cancellationToken)
         {
             // Do nothing and pass on to next middleware by default.
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, /*ContentType bodyContentType,*/ CancellationToken cancellationToken)
         {
             // Do nothing and pass on to next middleware by default.
             return Task.FromResult(false);
