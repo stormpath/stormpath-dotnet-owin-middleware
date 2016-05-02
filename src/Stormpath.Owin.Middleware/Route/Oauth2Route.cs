@@ -35,9 +35,9 @@ namespace Stormpath.Owin.Middleware.Route
             return Task.FromResult(true);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            if (!context.Request.Headers.GetString("Content-Type").StartsWith("application/x-www-form-urlencoded"))
+            if (!context.Request.Headers.GetString("Content-Type").Equals(ContentType.FormUrlEncoded, StringComparison.Ordinal))
             {
                 await Error.Create<OauthInvalidRequest>(context, cancellationToken);
                 return true;

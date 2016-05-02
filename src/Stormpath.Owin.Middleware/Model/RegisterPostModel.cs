@@ -33,9 +33,5 @@ namespace Stormpath.Owin.Middleware.Model
         public string Surname { get; set; }
 
         public string Username { get; set; }
-
-        public List<string> AllNonEmptyFieldNames { get; set; }
-
-        public Dictionary<string, object> CustomFields { get; set; }
     }
 }
