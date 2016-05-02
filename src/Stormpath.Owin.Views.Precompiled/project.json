@@ -2,7 +2,7 @@
   "authors": [ "Nate Barbettini" ],
   "copyright": "(c) 2016 Stormpath, Inc.",
   "dependencies": {
-    "Stormpath.Owin.Abstractions": "0.1.0"
+    "Stormpath.Owin.Abstractions": "0.1.2"
   },
   "description": "Precompiled views for the Stormpath OWIN middleware library.",
   "frameworks": {
@@ -25,5 +25,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Views.Precompiled"
   },
-  "version": "0.1.0"
+  "version": "0.1.2"
 }
