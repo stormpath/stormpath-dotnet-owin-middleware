@@ -553,9 +553,9 @@ p {
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 4047, "\"", 4069, 1);
+            BeginWriteAttribute("href", " href=\"", 4059, "\"", 4081, 1);
 #line 86 "Verify.cshtml"
-WriteAttributeValue("", 4054, Model.LoginUri, 4054, 15, false);
+WriteAttributeValue("", 4066, Model.LoginUri, 4066, 15, false);
 
 #line default
 #line hidden

@@ -472,9 +472,9 @@ p {
                                         account by clicking the link we sent to your inbox.
                                     </p>
                                     <p>Didn't get the email? <a");
-            BeginWriteAttribute("href", " href=\"", 2303, "\"", 2331, 1);
+            BeginWriteAttribute("href", " href=\"", 2321, "\"", 2349, 1);
 #line 45 "Login.cshtml"
-WriteAttributeValue("", 2310, Model.VerifyEmailUri, 2310, 21, false);
+WriteAttributeValue("", 2328, Model.VerifyEmailUri, 2328, 21, false);
 
 #line default
 #line hidden
@@ -572,9 +572,9 @@ WriteAttributeValue("", 2310, Model.VerifyEmailUri, 2310, 21, false);
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Log In or <a");
-            BeginWriteAttribute("href", " href=\"", 4615, "\"", 4640, 1);
+            BeginWriteAttribute("href", " href=\"", 4633, "\"", 4658, 1);
 #line 86 "Login.cshtml"
-WriteAttributeValue("", 4622, Model.RegisterUri, 4622, 18, false);
+WriteAttributeValue("", 4640, Model.RegisterUri, 4640, 18, false);
 
 #line default
 #line hidden
@@ -652,10 +652,10 @@ WriteAttributeValue("", 4622, Model.RegisterUri, 4622, 18, false);
 #line hidden
 
             WriteLiteral("                                <div");
-            BeginWriteAttribute("class", " class=\"", 5661, "\"", 5704, 2);
-            WriteAttributeValue("", 5669, "form-group", 5669, 10, true);
+            BeginWriteAttribute("class", " class=\"", 5679, "\"", 5722, 2);
+            WriteAttributeValue("", 5687, "form-group", 5687, 10, true);
 #line 109 "Login.cshtml"
-WriteAttributeValue(" ", 5679, $"group-{field.Name}", 5680, 25, false);
+WriteAttributeValue(" ", 5697, $"group-{field.Name}", 5698, 25, false);
 
 #line default
 #line hidden
@@ -667,30 +667,30 @@ WriteAttributeValue(" ", 5679, $"group-{field.Name}", 5680, 25, false);
 #line default
 #line hidden
             WriteLiteral("</label> \r\n                                    <div class=\"col-sm-8\">\r\n                                        <input");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 6053, "\"", 6085, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 6071, "\"", 6103, 1);
 #line 113 "Login.cshtml"
-WriteAttributeValue("", 6067, field.Placeholder, 6067, 18, false);
+WriteAttributeValue("", 6085, field.Placeholder, 6085, 18, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("name", "\r\n                                               name=\"", 6086, "\"", 6152, 1);
+            BeginWriteAttribute("name", "\r\n                                               name=\"", 6104, "\"", 6170, 1);
 #line 114 "Login.cshtml"
-WriteAttributeValue("", 6141, field.Name, 6141, 11, false);
+WriteAttributeValue("", 6159, field.Name, 6159, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("type", "\r\n                                               type=\"", 6153, "\"", 6219, 1);
+            BeginWriteAttribute("type", "\r\n                                               type=\"", 6171, "\"", 6237, 1);
 #line 115 "Login.cshtml"
-WriteAttributeValue("", 6208, field.Type, 6208, 11, false);
+WriteAttributeValue("", 6226, field.Type, 6226, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("value", "\r\n                                               value=\"", 6220, "\"", 6325, 1);
+            BeginWriteAttribute("value", "\r\n                                               value=\"", 6238, "\"", 6343, 1);
 #line 116 "Login.cshtml"
-WriteAttributeValue("", 6276, Model.FormData.Get(field.Name) ?? string.Empty, 6276, 49, false);
+WriteAttributeValue("", 6294, Model.FormData.Get(field.Name) ?? string.Empty, 6294, 49, false);
 
 #line default
 #line hidden
@@ -729,9 +729,9 @@ WriteAttributeValue("", 6276, Model.FormData.Get(field.Name) ?? string.Empty, 62
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 7035, "\"", 7063, 1);
+            BeginWriteAttribute("href", " href=\"", 7053, "\"", 7081, 1);
 #line 131 "Login.cshtml"
-WriteAttributeValue("", 7042, Model.VerifyEmailUri, 7042, 21, false);
+WriteAttributeValue("", 7060, Model.VerifyEmailUri, 7060, 21, false);
 
 #line default
 #line hidden
@@ -758,9 +758,9 @@ WriteAttributeValue("", 7042, Model.VerifyEmailUri, 7042, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 7245, "\"", 7276, 1);
+            BeginWriteAttribute("href", " href=\"", 7263, "\"", 7294, 1);
 #line 136 "Login.cshtml"
-WriteAttributeValue("", 7252, Model.ForgotPasswordUri, 7252, 24, false);
+WriteAttributeValue("", 7270, Model.ForgotPasswordUri, 7270, 24, false);
 
 #line default
 #line hidden

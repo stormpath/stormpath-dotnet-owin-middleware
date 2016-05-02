@@ -513,10 +513,10 @@ p {
 #line hidden
 
             WriteLiteral("                                    <div form-group=\"true\"");
-            BeginWriteAttribute("class", " class=\"", 2359, "\"", 2402, 2);
-            WriteAttributeValue("", 2367, "form-group", 2367, 10, true);
+            BeginWriteAttribute("class", " class=\"", 2371, "\"", 2414, 2);
+            WriteAttributeValue("", 2379, "form-group", 2379, 10, true);
 #line 51 "Register.cshtml"
-WriteAttributeValue(" ", 2377, $"group-{field.Name}", 2378, 25, false);
+WriteAttributeValue(" ", 2389, $"group-{field.Name}", 2390, 25, false);
 
 #line default
 #line hidden
@@ -528,31 +528,31 @@ WriteAttributeValue(" ", 2377, $"group-{field.Name}", 2378, 25, false);
 #line default
 #line hidden
             WriteLiteral("</label>\r\n                                        <div class=\"col-sm-8\">\r\n                                            <input");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 2606, "\"", 2638, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 2618, "\"", 2650, 1);
 #line 54 "Register.cshtml"
-WriteAttributeValue("", 2620, field.Placeholder, 2620, 18, false);
+WriteAttributeValue("", 2632, field.Placeholder, 2632, 18, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("name", "\r\n                                                   name=\"", 2639, "\"", 2709, 1);
+            BeginWriteAttribute("name", "\r\n                                                   name=\"", 2651, "\"", 2721, 1);
 #line 55 "Register.cshtml"
-WriteAttributeValue("", 2698, field.Name, 2698, 11, false);
+WriteAttributeValue("", 2710, field.Name, 2710, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("type", "\r\n                                                   type=\"", 2710, "\"", 2780, 1);
+            BeginWriteAttribute("type", "\r\n                                                   type=\"", 2722, "\"", 2792, 1);
 #line 56 "Register.cshtml"
-WriteAttributeValue("", 2769, field.Type, 2769, 11, false);
+WriteAttributeValue("", 2781, field.Type, 2781, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral("\r\n                                                   class=\"form-control\"");
-            BeginWriteAttribute("value", "\r\n                                                   value=\"", 2854, "\"", 2963, 1);
+            BeginWriteAttribute("value", "\r\n                                                   value=\"", 2866, "\"", 2975, 1);
 #line 58 "Register.cshtml"
-WriteAttributeValue("", 2914, Model.FormData.Get(field.Name) ?? string.Empty, 2914, 49, false);
+WriteAttributeValue("", 2926, Model.FormData.Get(field.Name) ?? string.Empty, 2926, 49, false);
 
 #line default
 #line hidden
@@ -572,9 +572,9 @@ WriteAttributeValue("", 2914, Model.FormData.Get(field.Name) ?? string.Empty, 29
 #line hidden
 
             WriteLiteral("                                <button type=\"submit\" class=\"btn btn-register btn-sp-green\">Create Account</button>\r\n                            </form>\r\n                        </div>\r\n                    </div>\r\n                    <a");
-            BeginWriteAttribute("href", " href=\"", 3430, "\"", 3452, 1);
+            BeginWriteAttribute("href", " href=\"", 3442, "\"", 3464, 1);
 #line 68 "Register.cshtml"
-WriteAttributeValue("", 3437, Model.LoginUri, 3437, 15, false);
+WriteAttributeValue("", 3449, Model.LoginUri, 3449, 15, false);
 
 #line default
 #line hidden

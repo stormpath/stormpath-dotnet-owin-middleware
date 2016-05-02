@@ -22,6 +22,6 @@ namespace Stormpath.Owin.Middleware.Model
 
         public string Password { get; set; }
 
-        public string PasswordAgain { get; set; }
+        public string ConfirmPassword { get; set; }
     }
 }

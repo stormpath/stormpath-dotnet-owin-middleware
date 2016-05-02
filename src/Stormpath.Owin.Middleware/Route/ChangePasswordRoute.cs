@@ -68,7 +68,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, cancellationToken);
 
-            if (!model.Password.Equals(model.PasswordAgain, StringComparison.Ordinal))
+            if (!model.Password.Equals(model.ConfirmPassword, StringComparison.Ordinal))
             {
                 var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
                 var changePasswordViewModel = viewModelBuilder.Build();
