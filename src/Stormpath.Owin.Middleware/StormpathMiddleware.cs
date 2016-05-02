@@ -123,7 +123,7 @@ namespace Stormpath.Owin.Middleware
         private RouteHandler GetRouteHandler(string requestPath)
         {
             RouteHandler handler = null;
-            routingTable.TryGetValue(requestPath, out handler);
+            this.routingTable.TryGetValue(requestPath, out handler);
             return handler;
         }
 
