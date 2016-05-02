@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -28,6 +29,8 @@ namespace Stormpath.Owin.Abstractions
         IDictionary<string, string[]> Headers { get; }
         string ReasonPhrase { set; }
         int StatusCode { set; }
+        Action<Action<object>, object> OnSendingHeaders { get; }
+
         object this[string key] { get; set; }
 
         Task WriteAsync(string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken));

@@ -57,6 +57,11 @@ namespace Stormpath.Owin.Abstractions
             set { environment.SetOrRemove(OwinKeys.ResponseReasonPhrase, value); }
         }
 
+        public Action<Action<object>, object> OnSendingHeaders
+        {
+            get { return environment.Get<Action<Action<object>, object>>(OwinKeys.OnSendingHeaders); }
+        }
+
         public object this[string key]
         {
             get { return environment.Get(key); }

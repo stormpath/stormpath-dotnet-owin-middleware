@@ -27,9 +27,7 @@ namespace Stormpath.Owin.Middleware.Route
     {
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
-            context.Response.Headers.SetString("Cache-Control", "no-cache, no-store");
-            context.Response.Headers.SetString("Pragma", "no-cache");
+            Caching.AddDoNotCacheHeaders(context);
 
             var stormpathAccount = context.Request[OwinKeys.StormpathUser] as IAccount;
 

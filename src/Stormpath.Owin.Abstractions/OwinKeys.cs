@@ -53,6 +53,8 @@ namespace Stormpath.Owin.Abstractions
 
         public static readonly string CallCancelled = "owin.CallCancelled";
 
+        public static readonly string OnSendingHeaders = "server.OnSendingHeaders";
+
         public static readonly string StormpathClient = "Stormpath.RequestClient";
 
         public static readonly string StormpathUser = "Stormpath.RequestUser";
