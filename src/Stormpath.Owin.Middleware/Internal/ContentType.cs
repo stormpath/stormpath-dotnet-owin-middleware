@@ -35,6 +35,8 @@ namespace Stormpath.Owin.Middleware.Internal
 
         public static ContentType Parse(string contentType)
         {
+            contentType = contentType.Split(';')?[0];
+
             if (contentType.Equals(Any))
             {
                 return Any;
