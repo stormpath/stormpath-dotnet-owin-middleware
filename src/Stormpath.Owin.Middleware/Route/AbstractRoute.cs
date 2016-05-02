@@ -126,15 +126,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (method.Equals("POST", StringComparison.OrdinalIgnoreCase))
             {
-                var rawBodyContentType = context.Request.Headers.GetString("Content-Type");
-                var bodyContentTypeDetectionResult = ContentNegotiation.DetectBodyType(rawBodyContentType);
-
-                if (!bodyContentTypeDetectionResult.Success)
-                {
-                    throw new Exception($"The Content-Type '{rawBodyContentType}' is invalid.");
-                }
-
-                return PostAsync(context, scopedClient, contentNegotiationResult, bodyContentTypeDetectionResult.ContentType, cancellationToken);
+                return PostAsync(context, scopedClient, contentNegotiationResult, cancellationToken);
             }
 
             // Do nothing and pass on to next middleware.
@@ -165,16 +157,24 @@ namespace Stormpath.Owin.Middleware.Route
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
+            var rawBodyContentType = context.Request.Headers.GetString("Content-Type");
+            var bodyContentTypeDetectionResult = ContentNegotiation.DetectBodyType(rawBodyContentType);
+
+            if (!bodyContentTypeDetectionResult.Success)
+            {
+                throw new Exception($"The Content-Type '{rawBodyContentType}' is invalid.");
+            }
+
             if (contentNegotiationResult.ContentType == ContentType.Json)
             {
-                return PostJsonAsync(context, client, bodyContentType, cancellationToken);
+                return PostJsonAsync(context, client, bodyContentTypeDetectionResult.ContentType, cancellationToken);
             }
 
             if (contentNegotiationResult.ContentType == ContentType.Html)
             {
-                return PostHtmlAsync(context, client, bodyContentType, cancellationToken);
+                return PostHtmlAsync(context, client, bodyContentTypeDetectionResult.ContentType, cancellationToken);
             }
 
             // Do nothing and pass on to next middleware.
