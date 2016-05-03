@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -45,7 +46,7 @@ namespace Stormpath.Owin.Middleware.Internal
                 temporaryDictionary[key].Add(value);
             }
 
-            return temporaryDictionary.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray());
+            return temporaryDictionary.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray(), StringComparer.OrdinalIgnoreCase);
         }
     }
 }

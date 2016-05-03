@@ -94,12 +94,9 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var postContent = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var formData = FormContentParser.Parse(postContent);
-
-            var email = formData.GetString("email");
+            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, cancellationToken);
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
@@ -119,7 +116,7 @@ namespace Stormpath.Owin.Middleware.Route
             });
 
             return await ResendVerification(
-                email,
+                model.Email,
                 client,
                 htmlErrorHandler,
                 htmlSuccessHandler,
@@ -142,9 +139,9 @@ namespace Stormpath.Owin.Middleware.Route
             return await JsonResponse.Ok(context);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var postData = Serializer.Deserialize<VerifyEmailPostModel>(await context.Request.GetBodyAsStringAsync(cancellationToken));
+            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, cancellationToken);
 
             var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct =>
             {
@@ -152,7 +149,7 @@ namespace Stormpath.Owin.Middleware.Route
             });
 
             return await ResendVerification(
-                email: postData?.Email,
+                email: model.Email,
                 client: client,
                 errorHandler: null, // Errors are caught in AbstractRouteMiddleware
                 successHandler: jsonSuccessHandler,

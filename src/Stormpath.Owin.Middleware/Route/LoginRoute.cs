@@ -64,17 +64,15 @@ namespace Stormpath.Owin.Middleware.Route
             return grantResult;
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
-            var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var formData = FormContentParser.Parse(requestBody);
+            var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var model = PostBodyParser.ToModel<LoginPostModel>(body, bodyContentType);
+            var formData = FormContentParser.Parse(body);
 
-            var login = formData.GetString("login");
-            var password = formData.GetString("password");
-
-            bool missingLoginOrPassword = string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password);
+            bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
             {
                 var viewModelBuilder = new ExtendedLoginViewModelBuilder(
@@ -92,7 +90,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var grantResult = await HandleLogin(client, login, password, cancellationToken);
+                var grantResult = await HandleLogin(client, model.Login, model.Password, cancellationToken);
 
                 Cookies.AddCookiesToResponse(context, client, grantResult, _configuration);
             }
@@ -133,20 +131,17 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, loginViewModel);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var body = Serializer.Deserialize<LoginPostModel>(bodyString);
-            var login = body?.Login;
-            var password = body?.Password;
+            var model = await PostBodyParser.ToModel<LoginPostModel>(context, bodyContentType, cancellationToken);
 
-            bool missingLoginOrPassword = string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password);
+            bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
             {
                 return await Error.Create(context, new BadRequest("Missing login or password."), cancellationToken);
             }
 
-            var grantResult = await HandleLogin(client, login, password, cancellationToken);
+            var grantResult = await HandleLogin(client, model.Login, model.Password, cancellationToken);
             // Errors will be caught up in AbstractRouteMiddleware
 
             Cookies.AddCookiesToResponse(context, client, grantResult, _configuration);

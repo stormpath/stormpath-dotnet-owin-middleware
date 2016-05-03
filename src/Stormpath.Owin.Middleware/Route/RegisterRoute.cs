@@ -44,7 +44,13 @@ namespace Stormpath.Owin.Middleware.Route
             "customData"
         };
 
-        private async Task<IAccount> HandleRegistration(RegisterPostModel postData, IClient client, Func<string, CancellationToken, Task> errorHandler, CancellationToken cancellationToken)
+        private async Task<IAccount> HandleRegistration(
+            RegisterPostModel postData,
+            IEnumerable<string> fieldNames,
+            Dictionary<string, object> customFields,
+            IClient client,
+            Func<string, CancellationToken, Task> errorHandler,
+            CancellationToken cancellationToken)
         {
             bool missingEmailOrPassword = string.IsNullOrEmpty(postData.Email) || string.IsNullOrEmpty(postData.Password);
             if (missingEmailOrPassword)
@@ -65,7 +71,7 @@ namespace Stormpath.Owin.Middleware.Route
             var registerViewModel = new RegisterViewModelBuilder(_configuration.Web.Register).Build();
             foreach (var field in registerViewModel.Form.Fields)
             {
-                if (field.Required && !postData.AllNonEmptyFieldNames.Contains(field.Name, StringComparer.Ordinal))
+                if (field.Required && !fieldNames.Contains(field.Name, StringComparer.Ordinal))
                 {
                     await errorHandler($"{field.Label} is missing.", cancellationToken);
                     return null;
@@ -93,10 +99,10 @@ namespace Stormpath.Owin.Middleware.Route
                 .Where(f => !defaultFields.Contains(f.Name))
                 .Select(f => f.Name);
 
-            bool containsUndefinedCustomFields = postData.CustomFields.Select(x => x.Key).Except(definedCustomFields).Any();
+            bool containsUndefinedCustomFields = customFields.Select(x => x.Key).Except(definedCustomFields).Any();
             if (containsUndefinedCustomFields)
             {
-                await errorHandler($"Unknown field '{postData.CustomFields.Select(x => x.Key).Except(definedCustomFields).First()}'.", cancellationToken);
+                await errorHandler($"Unknown field '{customFields.Select(x => x.Key).Except(definedCustomFields).First()}'.", cancellationToken);
                 return null;
             }
 
@@ -116,8 +122,7 @@ namespace Stormpath.Owin.Middleware.Route
                 newAccount.SetMiddleName(postData.MiddleName);
             }
 
-
-            foreach (var item in postData.CustomFields)
+            foreach (var item in customFields)
             {
                 newAccount.CustomData.Put(item.Key, item.Value);
             }
@@ -136,30 +141,19 @@ namespace Stormpath.Owin.Middleware.Route
             return true;
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var formData = FormContentParser.Parse(bodyString);
+            var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType);
+            var formData = FormContentParser.Parse(body);
 
-            var registerPostModel = new RegisterPostModel()
-            {
-                Email = formData.GetString("email"),
-                Password = formData.GetString("password"),
-                ConfirmPassword = formData.GetString("confirmPassword"),
-                GivenName = formData.GetString("givenName"),
-                Surname = formData.GetString("surname"),
-                MiddleName = formData.GetString("middleName"),
-                Username = formData.GetString("username"),
-                AllNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value))).Select(f => f.Key).ToList(),
-            };
+            var allNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value))).Select(f => f.Key).ToList();
 
             var providedCustomFields = new Dictionary<string, object>();
             foreach (var item in formData.Where(f => !defaultFields.Contains(f.Key)))
             {
                 providedCustomFields.Add(item.Key, string.Join(",", item.Value));
             }
-
-            registerPostModel.CustomFields = providedCustomFields;
 
             var htmlErrorHandler = new Func<string, CancellationToken, Task>((message, ct) =>
             {
@@ -173,7 +167,7 @@ namespace Stormpath.Owin.Middleware.Route
             IAccount newAccount = null;
             try
             {
-                newAccount = await this.HandleRegistration(registerPostModel, client, htmlErrorHandler, cancellationToken);
+                newAccount = await this.HandleRegistration(model, allNonEmptyFieldNames, providedCustomFields, client, htmlErrorHandler, cancellationToken);
                 if (newAccount == null)
                 {
                     return true; // Some error occurred and the handler was invoked
@@ -212,26 +206,21 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, registerViewModel);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var bodyDictionary = Serializer.DeserializeDictionary(bodyString);
+            var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType);
+            var formData = Serializer.DeserializeDictionary(body);
 
-            var registerPostModel = new RegisterPostModel()
-            {
-                Email = bodyDictionary.Get<string>("email"),
-                Password = bodyDictionary.Get<string>("password"),
-                ConfirmPassword = bodyDictionary.Get<string>("confirmPassword"),
-                GivenName = bodyDictionary.Get<string>("givenName"),
-                Surname = bodyDictionary.Get<string>("surname"),
-                MiddleName = bodyDictionary.Get<string>("middleName"),
-                Username = bodyDictionary.Get<string>("username"),
-                AllNonEmptyFieldNames = bodyDictionary.Where(f => !string.IsNullOrEmpty(f.Value.ToString())).Select(f => f.Key).ToList(),
-            };
+            var allNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(f.Value.ToString())).Select(f => f.Key).ToList();
 
             var providedCustomFields = new Dictionary<string, object>();
+            foreach (var item in formData.Where(x => !defaultFields.Contains(x.Key)))
+            {
+                providedCustomFields.Add(item.Key, item.Value);
+            }
 
-            var customDataObject = bodyDictionary.Get<IDictionary<string, object>>("customData");
+            var customDataObject = formData.Get<IDictionary<string, object>>("customData");
             if (customDataObject != null && customDataObject.Any())
             {
                 foreach (var item in customDataObject)
@@ -240,19 +229,12 @@ namespace Stormpath.Owin.Middleware.Route
                 }
             }
 
-            foreach (var item in bodyDictionary.Where(x => !defaultFields.Contains(x.Key)))
-            {
-                providedCustomFields.Add(item.Key, item.Value);
-            }
-
-            registerPostModel.CustomFields = providedCustomFields;
-
             var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct) =>
             {
                 return Error.Create(context, new BadRequest(message), ct);
             });
 
-            var newAccount = await this.HandleRegistration(registerPostModel, client, jsonErrorHandler, cancellationToken);
+            var newAccount = await this.HandleRegistration(model, allNonEmptyFieldNames, providedCustomFields, client, jsonErrorHandler, cancellationToken);
             if (newAccount == null)
             {
                 return true; // Some error occurred and the handler was invoked

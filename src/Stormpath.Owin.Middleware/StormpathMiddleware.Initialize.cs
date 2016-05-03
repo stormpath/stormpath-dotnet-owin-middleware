@@ -255,7 +255,7 @@ namespace Stormpath.Owin.Middleware
 
         private IReadOnlyDictionary<string, RouteHandler> BuildRoutingTable()
         {
-            var routingTable = new Dictionary<string, RouteHandler>();
+            var routingTable = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
 
             // /oauth/token
             if (this.configuration.Web.Oauth2.Enabled == true)

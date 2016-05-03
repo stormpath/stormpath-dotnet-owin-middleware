@@ -39,17 +39,15 @@ namespace Stormpath.Owin.Middleware.Route
             return true;
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             try
             {
-                var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
-                var formData = FormContentParser.Parse(requestBody);
-                var email = formData.GetString("email");
+                var model = await PostBodyParser.ToModel<ForgotPasswordPostModel>(context, bodyContentType, cancellationToken);
 
-                await application.SendPasswordResetEmailAsync(email, cancellationToken);
+                await application.SendPasswordResetEmailAsync(model.Email, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -59,17 +57,15 @@ namespace Stormpath.Owin.Middleware.Route
             return await HttpResponse.Redirect(context, _configuration.Web.ForgotPassword.NextUri);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             try
             {
-                var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
-                var body = Serializer.Deserialize<ForgotPasswordPostModel>(bodyString);
-                var email = body?.Email;
+                var model = await PostBodyParser.ToModel<ForgotPasswordPostModel>(context, bodyContentType, cancellationToken);
 
-                await application.SendPasswordResetEmailAsync(email, cancellationToken);
+                await application.SendPasswordResetEmailAsync(model.Email, cancellationToken);
             }
             catch(Exception ex)
             {

@@ -529,9 +529,9 @@ p {
 #line hidden
 
             WriteLiteral("\r\n                        <form method=\"post\" role=\"form\"");
-            BeginWriteAttribute("action", " action=\"", 3075, "\"", 3108, 1);
+            BeginWriteAttribute("action", " action=\"", 3087, "\"", 3120, 1);
 #line 68 "ForgotPassword.cshtml"
-WriteAttributeValue("", 3084, Model.ForgotPasswordUri, 3084, 24, false);
+WriteAttributeValue("", 3096, Model.ForgotPasswordUri, 3096, 24, false);
 
 #line default
 #line hidden
@@ -564,9 +564,9 @@ WriteAttributeValue("", 3084, Model.ForgotPasswordUri, 3084, 24, false);
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 3959, "\"", 3981, 1);
+            BeginWriteAttribute("href", " href=\"", 3971, "\"", 3993, 1);
 #line 84 "ForgotPassword.cshtml"
-WriteAttributeValue("", 3966, Model.LoginUri, 3966, 15, false);
+WriteAttributeValue("", 3978, Model.LoginUri, 3978, 15, false);
 
 #line default
 #line hidden

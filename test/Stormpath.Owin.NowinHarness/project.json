@@ -10,8 +10,8 @@
   "dependencies": {
     "Microsoft.Owin.Hosting": "3.0.1",
     "Nowin": "0.22.2",
-    "Stormpath.Owin.Views.Precompiled": "0.1.0",
-    "Stormpath.Owin.Middleware": "0.1.0"
+    "Stormpath.Owin.Views.Precompiled": "0.1.2",
+    "Stormpath.Owin.Middleware": "0.1.2"
   },
   "description": "Nowin test harness for Stormpath.Owin.Middleware",
   "frameworks": {
@@ -27,5 +27,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.NowinHarness"
   },
-  "version": "0.1.0"
+  "version": "0.1.2"
 }

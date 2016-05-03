@@ -26,6 +26,8 @@ namespace Stormpath.Owin.Middleware.Internal
 
         public static readonly ContentType Html = new ContentType("text/html");
 
+        public static readonly ContentType FormUrlEncoded = new ContentType("application/x-www-form-urlencoded");
+
         private ContentType(string contentType)
         {
             this.value = contentType;
@@ -33,19 +35,26 @@ namespace Stormpath.Owin.Middleware.Internal
 
         public static ContentType Parse(string contentType)
         {
+            contentType = contentType.Split(';')?[0];
+
             if (contentType.Equals(Any))
             {
                 return Any;
             }
 
-            if (contentType.Equals(Json, StringComparison.OrdinalIgnoreCase))
+            if (contentType.Equals(Json, StringComparison.Ordinal))
             {
                 return Json;
             }
 
-            if (contentType.Equals(Html, StringComparison.OrdinalIgnoreCase))
+            if (contentType.Equals(Html, StringComparison.Ordinal))
             {
                 return Html;
+            }
+
+            if (contentType.Equals(FormUrlEncoded, StringComparison.Ordinal))
+            {
+                return FormUrlEncoded;
             }
 
             return new ContentType(contentType);

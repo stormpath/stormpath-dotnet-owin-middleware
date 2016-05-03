@@ -22,7 +22,7 @@ namespace Stormpath.Owin.Middleware.Internal
 {
     public static class ContentNegotiation
     {
-        public static ContentNegotiationResult Negotiate(string acceptHeader, IEnumerable<string> producesList)
+        public static ContentNegotiationResult NegotiateAcceptHeader(string acceptHeader, IEnumerable<string> producesList)
         {
             if (string.IsNullOrEmpty(acceptHeader))
             {
@@ -37,21 +37,29 @@ namespace Stormpath.Owin.Middleware.Internal
                 {
                     return new ContentNegotiationResult(
                         success: true,
-                        prefers: ContentType.Parse(producesList.First()));
+                        contentType: ContentType.Parse(producesList.First()));
                 }
 
                 if (producesList.Contains(potentialContentType))
                 {
                     return new ContentNegotiationResult(
                         success: true,
-                        prefers: ContentType.Parse(potentialContentType));
+                        contentType: ContentType.Parse(potentialContentType));
                 }
             }
 
             // Negotiation failed
             return new ContentNegotiationResult(
                 success: false,
-                prefers: ContentType.Parse(sortedAccept.First()));
+                contentType: ContentType.Parse(sortedAccept.First()));
+        }
+
+        public static ContentNegotiationResult DetectBodyType(string bodyContentType)
+        {
+            var parsed = ContentType.Parse(bodyContentType);
+            var isValid = parsed == ContentType.FormUrlEncoded || parsed == ContentType.Json;
+
+            return new ContentNegotiationResult(isValid, parsed);
         }
 
         private static string[] ParseAndSortHeader(string acceptHeader)

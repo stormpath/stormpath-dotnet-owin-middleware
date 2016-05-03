@@ -62,16 +62,13 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
 
-            var postContent = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var formData = FormContentParser.Parse(postContent);
+            var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, cancellationToken);
 
-            var password = formData.GetString("password");
-            var passwordAgain = formData.GetString("passwordAgain");
-            if (!password.Equals(passwordAgain, StringComparison.Ordinal))
+            if (!model.Password.Equals(model.ConfirmPassword, StringComparison.Ordinal))
             {
                 var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
                 var changePasswordViewModel = viewModelBuilder.Build();
@@ -96,7 +93,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                await application.ResetPasswordAsync(spToken, password, cancellationToken);
+                await application.ResetPasswordAsync(spToken, model.Password, cancellationToken);
             }
             catch (ResourceException rex)
             {
@@ -131,22 +128,16 @@ namespace Stormpath.Owin.Middleware.Route
             return await JsonResponse.Ok(context);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString);
-
-            var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var body = Serializer.Deserialize<ChangePasswordPostModel>(bodyString);
-
-            var password = body?.Password;
-            var spToken = body?.SpToken;
-
+            var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, cancellationToken);
             var application = await client.GetApplicationAsync(_configuration.Application.Href);
 
-            await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+            await application.VerifyPasswordResetTokenAsync(model.SpToken, cancellationToken);
             // Errors are caught in AbstractRouteMiddleware
 
-            await application.ResetPasswordAsync(spToken, password, cancellationToken);
+            await application.ResetPasswordAsync(model.SpToken, model.Password, cancellationToken);
 
             // TODO autologin
 

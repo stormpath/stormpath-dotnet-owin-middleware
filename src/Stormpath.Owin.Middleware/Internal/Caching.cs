@@ -1,4 +1,4 @@
-﻿// <copyright file="RegisterPostModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="Caching.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,24 +14,19 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
+using Stormpath.Owin.Abstractions;
 
-namespace Stormpath.Owin.Middleware.Model
+namespace Stormpath.Owin.Middleware.Internal
 {
-    public class RegisterPostModel
+    public static class Caching
     {
-        public string Email { get; set; }
-
-        public string Password { get; set; }
-
-        public string ConfirmPassword { get; set; }
-
-        public string GivenName { get; set; }
-
-        public string MiddleName { get; set; }
-
-        public string Surname { get; set; }
-
-        public string Username { get; set; }
+        public static void AddDoNotCacheHeaders(IOwinEnvironment context)
+        {
+            context.Response.OnSendingHeaders(state =>
+            {
+                context.Response.Headers.SetString("Cache-Control", "no-cache, no-store");
+                context.Response.Headers.SetString("Pragma", "no-cache");
+            }, null);
+        }
     }
 }

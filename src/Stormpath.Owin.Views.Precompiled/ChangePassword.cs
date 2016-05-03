@@ -516,12 +516,12 @@ p {
                             <div class=""form-group group-password"">
                                 <label class=""col-sm-4"">Password (again)</label>
                                 <div class=""col-sm-8"">
-                                    <input placeholder=""Password (again)"" required name=""passwordAgain"" type=""password"" class=""form-control"">
+                                    <input placeholder=""Password (again)"" required name=""confirmPassword"" type=""password"" class=""form-control"">
                                 </div>
                             </div>
                             <div>
-                                <button type=""submit"" class=""lo");
-            WriteLiteral(@"gin btn btn-login btn-sp-green"">Submit</button>
+                                <button type=""submit"" class=""");
+            WriteLiteral(@"login btn btn-login btn-sp-green"">Submit</button>
                             </div>
                         </form>
                     </div>
