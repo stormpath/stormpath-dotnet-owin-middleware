@@ -79,7 +79,7 @@ namespace Stormpath.Owin.Middleware
         {
             // Construct base client
             var baseClient = Clients.Builder()
-#if NET451
+#if NET45
                 .SetHttpClient(HttpClients.Create().RestSharpClient())
 #else
                 .SetHttpClient(HttpClients.Create().SystemNetHttpClient())
