@@ -55,12 +55,12 @@ namespace Stormpath.Owin.Abstractions
 
         public static readonly string OnSendingHeaders = "server.OnSendingHeaders";
 
-        public static readonly string StormpathClient = "Stormpath.RequestClient";
+        public static readonly string StormpathClient = "stormpath.RequestClient";
 
-        public static readonly string StormpathUser = "Stormpath.RequestUser";
+        public static readonly string StormpathUser = "stormpath.RequestUser";
 
-        public static readonly string StormpathUserScheme = "Stormpath.RequestUserScheme";
+        public static readonly string StormpathUserScheme = "stormpath.RequestUserScheme";
 
-        public static readonly string StormpathConfiguration = "Stormpath.Configuration";
+        public static readonly string StormpathConfiguration = "stormpath.Configuration";
     }
 }
