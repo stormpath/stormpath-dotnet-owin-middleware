@@ -43,7 +43,8 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                     throw new Exception($"Invalid field '{fieldName}' in fieldOrder list.");
                 }
 
-                if (!field.Enabled)
+                bool enabledAndVisible = field.Enabled && field.Visible;
+                if (!enabledAndVisible)
                 {
                     continue;
                 }
