@@ -69,12 +69,22 @@ namespace Stormpath.Owin.Middleware.Internal
                     {
                         ++scanIndex;
                     }
-                    var name = text.Substring(scanIndex, equalIndex - scanIndex);
-                    var value = text.Substring(equalIndex + 1, delimiterIndex - equalIndex - 1);
-                    callback(
-                        Uri.UnescapeDataString(name),
-                        Uri.UnescapeDataString(value),
-                        state);
+
+                    try
+                    {
+                        var name = text.Substring(scanIndex, equalIndex - scanIndex);
+                        var value = text.Substring(equalIndex + 1, delimiterIndex - equalIndex - 1);
+                        callback(
+                            Uri.UnescapeDataString(name),
+                            Uri.UnescapeDataString(value),
+                            state);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        // bad cookie data
+                        // todo log
+                    }
+
                     equalIndex = text.IndexOf('=', equalIndex + 1);
                     if (equalIndex == -1)
                     {
