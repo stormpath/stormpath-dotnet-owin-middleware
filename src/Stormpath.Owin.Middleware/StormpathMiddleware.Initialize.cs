@@ -232,11 +232,6 @@ namespace Stormpath.Owin.Middleware
 
         private static void EnsureEnvironment(IClient client, IntegrationConfiguration integrationConfiguration)
         {
-            // register.autoLogin and email verification workflow should not both be enabled
-            if (integrationConfiguration.Web.Register.AutoLogin && integrationConfiguration.Tenant.EmailVerificationWorkflowEnabled)
-            {
-                throw new InitializationException("Invalid configuration: stormpath.web.register.autoLogin is true, but the default account store of the specified application has the email verification workflow enabled. Auto login is only possible if email verification is disabled. Please disable this workflow on this application's default account store.");
-            }
         }
 
         private AbstractRoute InitializeRoute<T>(IClient client)
