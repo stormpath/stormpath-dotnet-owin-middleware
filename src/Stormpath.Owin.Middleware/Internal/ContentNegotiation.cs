@@ -77,9 +77,10 @@ namespace Stormpath.Owin.Middleware.Internal
                 var qualityFactor = 1.0;
                 var qualityFactorToken = tokens.Where(t => t.StartsWith("q=")).SingleOrDefault();
 
-                if (!string.IsNullOrEmpty(qualityFactorToken))
+                bool qualityFactorTokenContainsValue = qualityFactorToken?.IndexOf("q=") + 2 > qualityFactorToken?.Length;
+                if (qualityFactorTokenContainsValue)
                 {
-                    qualityFactor = double.Parse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=") + 2));
+                    double.TryParse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=") + 2), out qualityFactor);
                 }
 
                 results.Add(tokens.ElementAt(0), qualityFactor);
