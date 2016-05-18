@@ -27,6 +27,7 @@ using Stormpath.SDK.Directory;
 using Stormpath.SDK.Http;
 using Stormpath.SDK.Serialization;
 using Stormpath.SDK.Sync;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -60,17 +61,16 @@ namespace Stormpath.Owin.Middleware
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
             var updatedConfiguration = ResolveApplication(client);
 
-            // Check the tenant environment for 
+            // Pull some configuration from the tenant environment
             var integrationConfiguration = GetIntegrationConfiguration(client, updatedConfiguration);
 
             // Ensure that the application exists
             EnsureApplication(client, integrationConfiguration);
+            options.Logger.Info($"Using Stormpath application {integrationConfiguration.Application.Href}");
 
             // Validate Account Store configuration
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
             EnsureAccountStores(client, integrationConfiguration);
-
-            EnsureEnvironment(client, integrationConfiguration);
 
             return new StormpathMiddleware(options.ViewRenderer, options.Logger, userAgentBuilder, clientFactory, integrationConfiguration);
         }
@@ -230,10 +230,6 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
-        private static void EnsureEnvironment(IClient client, IntegrationConfiguration integrationConfiguration)
-        {
-        }
-
         private AbstractRoute InitializeRoute<T>(IClient client)
             where T : AbstractRoute, new()
         {
@@ -253,8 +249,10 @@ namespace Stormpath.Owin.Middleware
             var routingTable = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
 
             // /oauth/token
-            if (this.configuration.Web.Oauth2.Enabled == true)
+            if (this.configuration.Web.Oauth2.Enabled)
             {
+                this.logger.Info($"Oauth2 route enabled on {this.configuration.Web.Oauth2.Uri}");
+
                 routingTable.Add(
                     this.configuration.Web.Oauth2.Uri,
                     new RouteHandler(
@@ -264,8 +262,10 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /register
-            if (this.configuration.Web.Register.Enabled == true)
+            if (this.configuration.Web.Register.Enabled)
             {
+                this.logger.Info($"Register route enabled on {this.configuration.Web.Register.Uri}");
+
                 routingTable.Add(
                     this.configuration.Web.Register.Uri,
                     new RouteHandler(
@@ -275,8 +275,10 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /login
-            if (this.configuration.Web.Login.Enabled == true)
+            if (this.configuration.Web.Login.Enabled)
             {
+                this.logger.Info($"Login route enabled on {this.configuration.Web.Login.Uri}");
+
                 routingTable.Add(
                     this.configuration.Web.Login.Uri,
                     new RouteHandler(
@@ -286,8 +288,10 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /me
-            if (this.configuration.Web.Me.Enabled == true)
+            if (this.configuration.Web.Me.Enabled)
             {
+                this.logger.Info($"Me route enabled on {this.configuration.Web.Me.Uri}");
+
                 routingTable.Add(
                     this.configuration.Web.Me.Uri,
                     new RouteHandler(
@@ -297,8 +301,10 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /logout
-            if (this.configuration.Web.Logout.Enabled == true)
+            if (this.configuration.Web.Logout.Enabled)
             {
+                this.logger.Info($"Logout route enabled on {this.configuration.Web.Logout.Uri}");
+
                 routingTable.Add(
                     this.configuration.Web.Logout.Uri,
                     new RouteHandler(
@@ -307,12 +313,11 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
-            // /forgot
-            bool shouldEnableForgotPasswordRoute =
-                this.configuration.Web.ForgotPassword.Enabled == true
-                || (this.configuration.Web.ForgotPassword.Enabled == null && this.configuration.Tenant.PasswordResetWorkflowEnabled);
-            if (shouldEnableForgotPasswordRoute)
+            // /forgot   
+            if (ForgotPasswordRoute.ShouldBeEnabled(this.configuration))
             {
+                this.logger.Info($"ForgotPassword route enabled on {this.configuration.Web.ForgotPassword.Uri}");
+
                 routingTable.Add(
                     this.configuration.Web.ForgotPassword.Uri,
                     new RouteHandler(
@@ -324,6 +329,8 @@ namespace Stormpath.Owin.Middleware
             // /change
             if (ChangePasswordRoute.ShouldBeEnabled(this.configuration))
             {
+                this.logger.Info($"ChangePassword route enabled on {this.configuration.Web.ChangePassword.Uri}");
+
                 routingTable.Add(
                     this.configuration.Web.ChangePassword.Uri,
                     new RouteHandler(
@@ -335,6 +342,8 @@ namespace Stormpath.Owin.Middleware
             // /verify
             if (VerifyEmailRoute.ShouldBeEnabled(this.configuration))
             {
+                this.logger.Info($"VerifyEmail route enabled on {this.configuration.Web.VerifyEmail.Uri}");
+
                 routingTable.Add(
                     this.configuration.Web.VerifyEmail.Uri,
                     new RouteHandler(

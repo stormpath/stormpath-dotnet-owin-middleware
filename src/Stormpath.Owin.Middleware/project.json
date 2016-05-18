@@ -1,7 +1,6 @@
 {
   "authors": [ "Nate Barbettini" ],
   "compilationOptions": {
-    "warningsAsErrors": true,
     "xmlDoc": true
   },
   "copyright": "(c) 2016 Stormpath, Inc.",
@@ -33,5 +32,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "0.1.4"
+  "version": "0.1.5"
 }
