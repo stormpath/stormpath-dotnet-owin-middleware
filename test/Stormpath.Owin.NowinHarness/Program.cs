@@ -26,6 +26,7 @@ using Stormpath.Owin.Abstractions;
 
 namespace Stormpath.Owin.NowinHarness
 {
+    using SDK.Logging;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     static class Program
@@ -61,7 +62,8 @@ namespace Stormpath.Owin.NowinHarness
                     {
                         name = "My Application"
                     }
-                }
+                },
+                Logger = new ConsoleLogger(LogLevel.Trace)
             });
 
             // Insert it into the OWIN pipeline
@@ -81,6 +83,35 @@ namespace Stormpath.Owin.NowinHarness
 
                 await next.Invoke(env);
             })));
+        }
+    }
+
+    public class ConsoleLogger : ILogger
+    {
+        private readonly LogLevel level;
+
+        public ConsoleLogger(LogLevel level)
+        {
+            this.level = level;
+        }
+
+        public void Log(LogEntry entry)
+        {
+            if (entry.Severity < this.level)
+            {
+                return;
+            }
+
+            var message = $"{entry.Severity}: {entry.Source} ";
+
+            if (entry.Exception != null)
+            {
+                message += $"Exception: {entry.Exception.Message} at {entry.Exception.Source}, ";
+            }
+
+            message += $"{entry.Message}";
+
+            Console.WriteLine(message);
         }
     }
 
