@@ -66,12 +66,13 @@ namespace Stormpath.Owin.Middleware
 
             // Ensure that the application exists
             EnsureApplication(client, integrationConfiguration);
-            options.Logger.Info($"Using Stormpath application {integrationConfiguration.Application.Href}", "StormpathMiddleware.Initialize.Create");
+            options.Logger.Info($"Using Stormpath application {integrationConfiguration.Application.Href}", "Initialize.Create");
 
             // Validate Account Store configuration
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
             EnsureAccountStores(client, integrationConfiguration);
 
+            options.Logger.Trace("Stormpath middleware ready!", "Initialize.Create");
             return new StormpathMiddleware(options.ViewRenderer, options.Logger, userAgentBuilder, clientFactory, integrationConfiguration);
         }
 
