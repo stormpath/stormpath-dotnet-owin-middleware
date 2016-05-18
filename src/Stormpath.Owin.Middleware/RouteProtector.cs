@@ -18,6 +18,7 @@ using System;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -29,6 +30,8 @@ namespace Stormpath.Owin.Middleware
         public static string AnyScheme = "*";
 
         private readonly WebConfiguration webConfiguration;
+        private readonly ILogger logger;
+
         private readonly Action<WebCookieConfiguration> deleteCookie;
         private readonly Action<int> setStatusCode;
         private readonly Action<string> redirect;
@@ -44,9 +47,11 @@ namespace Stormpath.Owin.Middleware
             WebConfiguration webConfiguration,
             Action<WebCookieConfiguration> deleteCookieAction,
             Action<int> setStatusCodeAction,
-            Action<string> redirectAction)
+            Action<string> redirectAction,
+            ILogger logger)
         {
             this.webConfiguration = webConfiguration;
+            this.logger = logger;
 
             this.deleteCookie = deleteCookieAction;
             this.setStatusCode = setStatusCodeAction;
@@ -90,7 +95,7 @@ namespace Stormpath.Owin.Middleware
             deleteCookie(webConfiguration.AccessTokenCookie);
             deleteCookie(webConfiguration.RefreshTokenCookie);
 
-            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, webConfiguration.Produces);
+            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, webConfiguration.Produces, logger);
 
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)

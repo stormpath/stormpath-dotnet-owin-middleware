@@ -65,7 +65,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var spToken = queryString.GetString("sptoken");
 
             if (string.IsNullOrEmpty(spToken))
@@ -96,7 +96,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, cancellationToken);
+            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
@@ -125,7 +125,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var spToken = queryString.GetString("sptoken");
 
             if (string.IsNullOrEmpty(spToken))
@@ -141,7 +141,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, cancellationToken);
+            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
 
             var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct =>
             {

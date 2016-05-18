@@ -33,7 +33,7 @@ namespace Stormpath.Owin.Middleware.Route
     {
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
             var viewModelBuilder = new ExtendedLoginViewModelBuilder(
                 _configuration.Web,
@@ -66,11 +66,11 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
             var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var model = PostBodyParser.ToModel<LoginPostModel>(body, bodyContentType);
-            var formData = FormContentParser.Parse(body);
+            var model = PostBodyParser.ToModel<LoginPostModel>(body, bodyContentType, _logger);
+            var formData = FormContentParser.Parse(body, _logger);
 
             bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
@@ -92,7 +92,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 var grantResult = await HandleLogin(client, model.Login, model.Password, cancellationToken);
 
-                Cookies.AddCookiesToResponse(context, client, grantResult, _configuration);
+                Cookies.AddCookiesToResponse(context, client, grantResult, _configuration, _logger);
             }
             catch (ResourceException rex)
             {
@@ -133,7 +133,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var model = await PostBodyParser.ToModel<LoginPostModel>(context, bodyContentType, cancellationToken);
+            var model = await PostBodyParser.ToModel<LoginPostModel>(context, bodyContentType, _logger, cancellationToken);
 
             bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
@@ -144,7 +144,7 @@ namespace Stormpath.Owin.Middleware.Route
             var grantResult = await HandleLogin(client, model.Login, model.Password, cancellationToken);
             // Errors will be caught up in AbstractRouteMiddleware
 
-            Cookies.AddCookiesToResponse(context, client, grantResult, _configuration);
+            Cookies.AddCookiesToResponse(context, client, grantResult, _configuration, _logger);
 
             var token = await grantResult.GetAccessTokenAsync(cancellationToken);
             var account = await token.GetAccountAsync(cancellationToken);

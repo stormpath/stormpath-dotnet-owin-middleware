@@ -19,6 +19,7 @@ using System.Globalization;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Internal
@@ -31,38 +32,39 @@ namespace Stormpath.Owin.Middleware.Internal
         public static string FormatDate(DateTimeOffset dateTimeOffset)
             => $"{dateTimeOffset.UtcDateTime.ToString(DateFormat, CultureInfo.InvariantCulture)} GMT";
 
-        public static void AddCookiesToResponse(IOwinEnvironment context, IClient client, IOauthGrantAuthenticationResult grantResult, StormpathConfiguration configuration)
+        public static void AddCookiesToResponse(IOwinEnvironment context, IClient client, IOauthGrantAuthenticationResult grantResult, StormpathConfiguration configuration, ILogger logger)
         {
             bool isSecureRequest = context.Request.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
 
             if (!string.IsNullOrEmpty(grantResult.AccessTokenString))
             {
                 var expirationDate = client.NewJwtParser().Parse(grantResult.AccessTokenString).Body.Expiration;
-                SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessTokenString, expirationDate, isSecureRequest);
+                SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessTokenString, expirationDate, isSecureRequest, logger);
             }
 
             if (!string.IsNullOrEmpty(grantResult.RefreshTokenString))
             {
                 var expirationDate = client.NewJwtParser().Parse(grantResult.RefreshTokenString).Body.Expiration;
-                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshTokenString, expirationDate, isSecureRequest);
+                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshTokenString, expirationDate, isSecureRequest, logger);
             }
         }
 
-        public static void DeleteTokenCookies(IOwinEnvironment context, WebConfiguration webConfiguration)
+        public static void DeleteTokenCookies(IOwinEnvironment context, WebConfiguration webConfiguration, ILogger logger)
         {
-            Delete(context, webConfiguration.AccessTokenCookie);
-            Delete(context, webConfiguration.RefreshTokenCookie);
+            Delete(context, webConfiguration.AccessTokenCookie, logger);
+            Delete(context, webConfiguration.RefreshTokenCookie, logger);
         }
 
-        public static void Delete(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration)
-            => SetTokenCookie(context, cookieConfiguration, string.Empty, Epoch, false);
+        public static void Delete(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration, ILogger logger)
+            => SetTokenCookie(context, cookieConfiguration, string.Empty, Epoch, false, logger);
 
         private static void SetTokenCookie(
             IOwinEnvironment context,
             WebCookieConfiguration cookieConfig,
             string value,
             DateTimeOffset? expiration,
-            bool isSecureRequest)
+            bool isSecureRequest,
+            ILogger logger)
         {
             var keyValuePair = $"{Uri.EscapeDataString(cookieConfig.Name)}={Uri.EscapeDataString(value)}";
             var domain = $"domain={cookieConfig.Domain}";
@@ -70,7 +72,7 @@ namespace Stormpath.Owin.Middleware.Internal
             var pathToken = string.IsNullOrEmpty(cookieConfig.Path)
                 ? "/"
                 : cookieConfig.Path;
-            var path = $"path={(pathToken)}";
+            var path = $"path={pathToken}";
 
             
             var expires = expiration != null
@@ -90,9 +92,12 @@ namespace Stormpath.Owin.Middleware.Internal
 
             var setCookieValue = string.Join("; ", new string[] { keyValuePair, domain, path, expires, httpOnly, secure });
 
-            context.Response.Headers.AddString("Set-Cookie", setCookieValue);
+            logger.Trace($"Adding cookie to request: '{setCookieValue}'", nameof(SetTokenCookie));
+
+            context.Response.OnSendingHeaders(_ =>
+            {
+                context.Response.Headers.AddString("Set-Cookie", setCookieValue);
+            }, null);
         }
-
-
     }
 }

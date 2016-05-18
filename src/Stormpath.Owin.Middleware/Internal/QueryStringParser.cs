@@ -14,16 +14,23 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     public static class QueryStringParser
     {
-        public static IDictionary<string, string[]> Parse(string queryString)
+        public static IDictionary<string, string[]> Parse(string queryString, ILogger logger)
         {
+            if (string.IsNullOrEmpty(queryString))
+            {
+                return new Dictionary<string, string[]>();
+            }
+
             var temporaryDictionary = new Dictionary<string, List<string>>();
 
             foreach (var item in queryString.Split('&'))
@@ -33,16 +40,23 @@ namespace Stormpath.Owin.Middleware.Internal
                     continue;
                 }
 
-                var tokens = item.Split('=');
-                var key = WebUtility.UrlDecode(tokens[0]);
-                var value = WebUtility.UrlDecode(tokens[1]);
-
-                if (!temporaryDictionary.ContainsKey(key))
+                try
                 {
-                    temporaryDictionary[key] = new List<string>();
-                }
+                    var tokens = item.Split('=');
+                    var key = WebUtility.UrlDecode(tokens[0]);
+                    var value = WebUtility.UrlDecode(tokens[1]);
 
-                temporaryDictionary[key].Add(value);
+                    if (!temporaryDictionary.ContainsKey(key))
+                    {
+                        temporaryDictionary[key] = new List<string>();
+                    }
+
+                    temporaryDictionary[key].Add(value);
+                }
+                catch (Exception ex)
+                {
+                    logger.Warn(ex, $"Error parsing item '{item}'", "QueryStringParser.Parse");
+                }
             }
 
             return temporaryDictionary.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray());

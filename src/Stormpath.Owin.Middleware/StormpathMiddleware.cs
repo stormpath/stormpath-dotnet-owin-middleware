@@ -33,7 +33,7 @@ namespace Stormpath.Owin.Middleware
     public sealed partial class StormpathMiddleware
     {
         private readonly IViewRenderer viewRenderer;
-        private readonly ILogger logger = null;
+        private readonly ILogger logger;
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
         private readonly IScopedClientFactory clientFactory;
         private readonly IntegrationConfiguration configuration;
@@ -74,6 +74,15 @@ namespace Stormpath.Owin.Middleware
             {
                 var currentUser = await GetUserAsync(context, scopedClient);
 
+                if (currentUser == null)
+                {
+                    logger.Trace("Request is anonymous", "StormpathMiddleware.Invoke");
+                }
+                else
+                {
+                    logger.Trace($"Request for Account '{currentUser.Href}'", "StormpathMiddleware.Invoke");
+                }
+
                 AddStormpathVariablesToEnvironment(
                     environment,
                     configuration,
@@ -89,6 +98,8 @@ namespace Stormpath.Owin.Middleware
                     return;
                 }
 
+                logger.Trace($"Handling request '{requestPath}'", "StormpathMiddleware.Invoke");
+
                 if (routeHandler.AuthenticationRequired)
                 {
                     var filter = new AuthenticationRequiredFilter(this.logger);
@@ -103,6 +114,7 @@ namespace Stormpath.Owin.Middleware
 
                 if (!handled)
                 {
+                    logger.Trace("Handler skipped request.", "StormpathMiddleware.Invoke");
                     await this.next.Invoke(environment);
                 }
             }

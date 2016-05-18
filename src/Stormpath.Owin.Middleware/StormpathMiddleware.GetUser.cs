@@ -15,6 +15,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
@@ -55,11 +56,14 @@ namespace Stormpath.Owin.Middleware
                 return apiAuthenticationResult;
             }
 
+            logger.Trace("No user found on request", nameof(GetUserAsync));
             return null;
         }
 
         private Task<IAccount> TryBasicAuthenticationAsync(IOwinEnvironment context, IClient client)
         {
+            this.logger.Warn("Basic Authentication is not yet supported", nameof(TryBasicAuthenticationAsync));
+
             // TODO Basic auth
             return Task.FromResult<IAccount>(null);
         }
@@ -67,18 +71,21 @@ namespace Stormpath.Owin.Middleware
         private Task<IAccount> TryBearerAuthenticationAsync(IOwinEnvironment context, IClient client)
         {
             var bearerHeader = context.Request.Headers.GetString("Authorization");
-            bool isValid = !string.IsNullOrEmpty(bearerHeader) && bearerHeader.StartsWith("Bearer ");
+            bool isValid = !string.IsNullOrEmpty(bearerHeader) && bearerHeader.StartsWith("Bearer ", StringComparison.Ordinal);
             if (!isValid)
             {
+                logger.Trace("No Bearer header found", nameof(TryBearerAuthenticationAsync));
                 return Task.FromResult<IAccount>(null);
             }
 
-            var bearerPayload = bearerHeader?.Substring(7); // Bearer_
+            var bearerPayload = bearerHeader?.Substring(7); // Bearer[ ]
             if (string.IsNullOrEmpty(bearerPayload))
             {
+                logger.Warn("Found Bearer header, but payload was empty", nameof(TryBearerAuthenticationAsync));
                 return Task.FromResult<IAccount>(null);
             }
 
+            logger.Info("Request authenticated using Bearer authentication", nameof(TryBearerAuthenticationAsync));
             return ValidateAccessTokenAsync(context, client, bearerPayload);
         }
 
@@ -87,10 +94,11 @@ namespace Stormpath.Owin.Middleware
             var cookieHeader = context.Request.Headers.GetString("Cookie");
             if (string.IsNullOrEmpty(cookieHeader))
             {
+                logger.Trace("No authentication cookie found", nameof(TryCookieAuthenticationAsync));
                 return null;
             }
 
-            var cookieParser = new CookieParser(cookieHeader);
+            var cookieParser = new CookieParser(cookieHeader, logger);
             var accessToken = cookieParser.Get(this.configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(this.configuration.Web.RefreshTokenCookie.Name);
 
@@ -100,6 +108,7 @@ namespace Stormpath.Owin.Middleware
                 var validAccount = await ValidateAccessTokenAsync(context, client, accessToken);
                 if (validAccount != null)
                 {
+                    logger.Info("Request authenticated using Access Token cookie", nameof(TryCookieAuthenticationAsync));
                     return validAccount;
                 }
             }
@@ -110,13 +119,14 @@ namespace Stormpath.Owin.Middleware
                 var refreshedAccount = await RefreshAccessTokenAsync(context, client, refreshToken);
                 if (refreshedAccount != null)
                 {
+                    logger.Info("Request authenticated using Refresh Token cookie", nameof(TryCookieAuthenticationAsync));
                     return refreshedAccount;
                 }
             }
 
             // Failed on both counts. Delete access and refresh token cookies
-            Cookies.DeleteTokenCookies(context, this.configuration.Web);
-
+            Cookies.DeleteTokenCookies(context, this.configuration.Web, logger);
+            logger.Info("Request contained invalid cookies, not authenticated", nameof(TryCookieAuthenticationAsync));
             return null;
         }
 
@@ -139,14 +149,14 @@ namespace Stormpath.Owin.Middleware
                 result = await authenticator.AuthenticateAsync(request, context.CancellationToken);
 
             }
-            catch (InvalidJwtException jwe)
+            catch (InvalidJwtException jwex)
             {
-                logger.Info($"Failed to authenticate the request due to a malformed or expired access token. Message: '{jwe.Message}'", nameof(ValidateAccessTokenAsync));
+                logger.Info($"Failed to authenticate the request due to a malformed or expired access token. Message: '{jwex.Message}'", nameof(ValidateAccessTokenAsync));
                 return null;
             }
             catch (ResourceException rex)
             {
-                logger.Info($"Failed to authenticate the request. Invalid access_token found. Message: '{rex.DeveloperMessage}'", "GetUserAsync");
+                logger.Warn(rex, "Failed to authenticate the request. Invalid access_token found.", nameof(ValidateAccessTokenAsync));
                 return null;
             }
 
@@ -155,9 +165,9 @@ namespace Stormpath.Owin.Middleware
             {
                 account = await GetExpandedAccountAsync(client, result, context.CancellationToken);
             }
-            catch (ResourceException)
+            catch (ResourceException ex)
             {
-                logger.Info($"Failed to get account {result.AccountHref}", "GetUserAsync");
+                logger.Error(ex, $"Failed to get account {result.AccountHref}", nameof(ValidateAccessTokenAsync));
             }
 
             return account;
@@ -178,14 +188,14 @@ namespace Stormpath.Owin.Middleware
             {
                 grantResult = await authenticator.AuthenticateAsync(request, context.CancellationToken);
             }
-            catch (InvalidJwtException jwe)
+            catch (InvalidJwtException jwex)
             {
-                logger.Info($"Failed to authenticate the request due to a malformed or expired refresh token. Message: '{jwe.Message}'", nameof(RefreshAccessTokenAsync));
+                logger.Info($"Failed to authenticate the request due to a malformed or expired refresh token. Message: '{jwex.Message}'", nameof(RefreshAccessTokenAsync));
                 return null;
             }
             catch (ResourceException rex)
             {
-                logger.Info($"Failed to refresh an access_token given a refresh_token. Message: '{rex.DeveloperMessage}'");
+                logger.Warn(rex, "Failed to refresh an access_token given a refresh_token.");
                 return null;
             }
 
@@ -197,7 +207,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (ResourceException rex)
             {
-                logger.Info($"Failed to get a new access token after receiving grant response. Message: '{rex.DeveloperMessage}'", nameof(RefreshAccessTokenAsync));
+                logger.Error(rex, "Failed to get a new access token after receiving grant response.", nameof(RefreshAccessTokenAsync));
             }
 
             // Get the account details
@@ -206,13 +216,14 @@ namespace Stormpath.Owin.Middleware
             {
                 account = await GetExpandedAccountAsync(client, newAccessToken, context.CancellationToken);
             }
-            catch (ResourceException)
+            catch (ResourceException rex)
             {
-                logger.Info($"Failed to get account {newAccessToken.AccountHref}", "AttemptRefreshGrantAsync");
+                logger.Error(rex, $"Failed to get account {newAccessToken.AccountHref}", nameof(RefreshAccessTokenAsync));
                 return null;
             }
 
-            Cookies.AddCookiesToResponse(context, client, grantResult, this.configuration);
+            logger.Trace("Access token refreshed using Refresh token. Adding cookies to response", nameof(RefreshAccessTokenAsync));
+            Cookies.AddCookiesToResponse(context, client, grantResult, this.configuration, logger);
 
             return account;
         }

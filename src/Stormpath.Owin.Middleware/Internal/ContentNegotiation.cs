@@ -17,19 +17,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     public static class ContentNegotiation
     {
-        public static ContentNegotiationResult NegotiateAcceptHeader(string acceptHeader, IEnumerable<string> producesList)
+        public static ContentNegotiationResult NegotiateAcceptHeader(string acceptHeader, IEnumerable<string> producesList, ILogger logger)
         {
             if (string.IsNullOrEmpty(acceptHeader))
             {
                 acceptHeader = "*/*";
             }
 
-            var sortedAccept = ParseAndSortHeader(acceptHeader);
+            var sortedAccept = ParseAndSortHeader(acceptHeader, logger);
 
             foreach (var potentialContentType in sortedAccept)
             {
@@ -48,7 +49,8 @@ namespace Stormpath.Owin.Middleware.Internal
                 }
             }
 
-            // Negotiation failed
+            logger.Trace($"Could not negotiate Content-Type for header '{acceptHeader}'", "ContentNegotiation.NegotiateAcceptHeader");
+
             return new ContentNegotiationResult(
                 success: false,
                 contentType: ContentType.Parse(sortedAccept.First()));
@@ -62,28 +64,43 @@ namespace Stormpath.Owin.Middleware.Internal
             return new ContentNegotiationResult(isValid, parsed);
         }
 
-        private static string[] ParseAndSortHeader(string acceptHeader)
+        private static string[] ParseAndSortHeader(string acceptHeader, ILogger logger)
         {
+            if (string.IsNullOrEmpty(acceptHeader))
+            {
+                return new string[] { };
+            }
+
             var results = new Dictionary<string, double>();
 
             var mediaRanges = acceptHeader.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var mediaRange in mediaRanges)
             {
-                var tokens = mediaRange
-                    .Split(';')
-                    .Select(t => t.Trim());
-
-                var qualityFactor = 1.0;
-                var qualityFactorToken = tokens.Where(t => t.StartsWith("q=")).SingleOrDefault();
-
-                bool qualityFactorTokenContainsValue = qualityFactorToken?.IndexOf("q=") + 2 > qualityFactorToken?.Length;
-                if (qualityFactorTokenContainsValue)
+                try
                 {
-                    double.TryParse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=") + 2), out qualityFactor);
-                }
+                    var tokens = mediaRange
+                        .Split(';')
+                        .Select(t => t.Trim());
 
-                results.Add(tokens.ElementAt(0), qualityFactor);
+                    var qualityFactor = 1.0;
+                    var qualityFactorToken = tokens.Where(t => t.StartsWith("q=")).SingleOrDefault();
+
+                    bool qualityFactorTokenContainsValue = qualityFactorToken?.IndexOf("q=") + 2 > qualityFactorToken?.Length;
+                    if (qualityFactorTokenContainsValue)
+                    {
+                        if (!double.TryParse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=") + 2), out qualityFactor))
+                        {
+                            logger.Warn($"Could not parse quality factor token '{qualityFactorToken}'", "ContentNegotiation.ParseAndSortHeader");
+                        }
+                    }
+
+                    results.Add(tokens.ElementAt(0), qualityFactor);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, $"Could not parse media range token '{mediaRange}'", "ContentNegotiation.ParseAndSortHeader");
+                }
             }
 
             var sorted = results

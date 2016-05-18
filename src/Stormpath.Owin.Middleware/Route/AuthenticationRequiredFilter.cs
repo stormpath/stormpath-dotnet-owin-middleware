@@ -41,7 +41,7 @@ namespace Stormpath.Owin.Middleware.Route
             var authenticatedUser = environment.Get<IAccount>(OwinKeys.StormpathUser);
             var authenticationScheme = environment.Get<string>(OwinKeys.StormpathUserScheme);
 
-            var deleteCookieAction = new Action<WebCookieConfiguration>(cookie => Cookies.Delete(context, cookie));
+            var deleteCookieAction = new Action<WebCookieConfiguration>(cookie => Cookies.Delete(context, cookie, logger));
             var setStatusCodeAction = new Action<int>(code => context.Response.StatusCode = code);
             var redirectAction = new Action<string>(location => context.Response.Headers.SetString("Location", location));
 
@@ -49,7 +49,8 @@ namespace Stormpath.Owin.Middleware.Route
                 configuration.Web,
                 deleteCookieAction,
                 setStatusCodeAction,
-                redirectAction);
+                redirectAction,
+                logger);
 
             if (handler.IsAuthenticated(authenticationScheme, RouteProtector.AnyScheme, authenticatedUser))
             {

@@ -17,17 +17,21 @@
 
 using System;
 using System.Collections.Generic;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     public class CookieParser
     {
-        private IDictionary<string, string> cookies;
+        private readonly ILogger logger;
+        private readonly IDictionary<string, string> cookies;
 
-        public CookieParser(string cookieHeader)
+        public CookieParser(string cookieHeader, ILogger logger)
         {
+            this.logger = logger;
             this.cookies = new Dictionary<string, string>(StringComparer.Ordinal);
-            ParseDelimited(cookieHeader, SemicolonAndComma, AddCookieCallback, this.cookies);
+
+            ParseDelimited(cookieHeader, SemicolonAndComma, AddCookieCallback, this.cookies, logger);
         }
 
         public string Get(string key)
@@ -47,7 +51,7 @@ namespace Stormpath.Owin.Middleware.Internal
             }
         };
 
-        private static void ParseDelimited(string text, char[] delimiters, Action<string, string, IDictionary<string, string>> callback, IDictionary<string, string> state)
+        private static void ParseDelimited(string text, char[] delimiters, Action<string, string, IDictionary<string, string>> callback, IDictionary<string, string> state, ILogger logger)
         {
             var textLength = text.Length;
             var equalIndex = text.IndexOf('=');
@@ -79,10 +83,9 @@ namespace Stormpath.Owin.Middleware.Internal
                             Uri.UnescapeDataString(value),
                             state);
                     }
-                    catch (ArgumentOutOfRangeException)
+                    catch (Exception ex)
                     {
-                        // bad cookie data
-                        // todo log
+                        logger.Error(ex, $"Error parsing cookie content '{text}'", "CookieParser.ParseDelimited");
                     }
 
                     equalIndex = text.IndexOf('=', equalIndex + 1);

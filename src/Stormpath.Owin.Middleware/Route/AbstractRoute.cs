@@ -72,14 +72,13 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var acceptHeader = owinContext.Request.Headers.GetString("Accept");
-            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, _configuration.Web.Produces);
+            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, _configuration.Web.Produces, _logger);
 
             if (!contentNegotiationResult.Success)
             {
+                _logger.Trace($"Content negotiation failed for request {owinContext.Request.Path}. Skipping", nameof(InvokeAsync));
                 return false;
             }
-
-            _logger.Info($"Stormpath middleware handling request {owinContext.Request.Path}");
 
             try
             {
@@ -96,6 +95,7 @@ namespace Stormpath.Owin.Middleware.Route
                 else
                 {
                     // todo handle framework errors
+                    _logger.Error(rex, source: nameof(InvokeAsync));
                     throw;
                 }
             }
@@ -110,6 +110,7 @@ namespace Stormpath.Owin.Middleware.Route
                 else
                 {
                     // todo handle framework errors
+                    _logger.Error(ex, source: nameof(InvokeAsync));
                     throw;
                 }
             }
@@ -130,6 +131,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             // Do nothing and pass on to next middleware.
+            _logger.Trace("Request method was not GET or POST", nameof(DispatchAsync));
             return Task.FromResult(false);
         }
 

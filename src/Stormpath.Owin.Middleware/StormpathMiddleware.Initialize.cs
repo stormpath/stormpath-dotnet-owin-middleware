@@ -66,7 +66,7 @@ namespace Stormpath.Owin.Middleware
 
             // Ensure that the application exists
             EnsureApplication(client, integrationConfiguration);
-            options.Logger.Info($"Using Stormpath application {integrationConfiguration.Application.Href}");
+            options.Logger.Info($"Using Stormpath application {integrationConfiguration.Application.Href}", "StormpathMiddleware.Initialize.Create");
 
             // Validate Account Store configuration
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
@@ -251,7 +251,7 @@ namespace Stormpath.Owin.Middleware
             // /oauth/token
             if (this.configuration.Web.Oauth2.Enabled)
             {
-                this.logger.Info($"Oauth2 route enabled on {this.configuration.Web.Oauth2.Uri}");
+                this.logger.Info($"Oauth2 route enabled on {this.configuration.Web.Oauth2.Uri}", "BuildRoutingTable");
 
                 routingTable.Add(
                     this.configuration.Web.Oauth2.Uri,
@@ -264,7 +264,7 @@ namespace Stormpath.Owin.Middleware
             // /register
             if (this.configuration.Web.Register.Enabled)
             {
-                this.logger.Info($"Register route enabled on {this.configuration.Web.Register.Uri}");
+                this.logger.Info($"Register route enabled on {this.configuration.Web.Register.Uri}", "BuildRoutingTable");
 
                 routingTable.Add(
                     this.configuration.Web.Register.Uri,
@@ -277,7 +277,7 @@ namespace Stormpath.Owin.Middleware
             // /login
             if (this.configuration.Web.Login.Enabled)
             {
-                this.logger.Info($"Login route enabled on {this.configuration.Web.Login.Uri}");
+                this.logger.Info($"Login route enabled on {this.configuration.Web.Login.Uri}", "BuildRoutingTable");
 
                 routingTable.Add(
                     this.configuration.Web.Login.Uri,
@@ -290,7 +290,7 @@ namespace Stormpath.Owin.Middleware
             // /me
             if (this.configuration.Web.Me.Enabled)
             {
-                this.logger.Info($"Me route enabled on {this.configuration.Web.Me.Uri}");
+                this.logger.Info($"Me route enabled on {this.configuration.Web.Me.Uri}", "BuildRoutingTable");
 
                 routingTable.Add(
                     this.configuration.Web.Me.Uri,
@@ -303,7 +303,7 @@ namespace Stormpath.Owin.Middleware
             // /logout
             if (this.configuration.Web.Logout.Enabled)
             {
-                this.logger.Info($"Logout route enabled on {this.configuration.Web.Logout.Uri}");
+                this.logger.Info($"Logout route enabled on {this.configuration.Web.Logout.Uri}", "BuildRoutingTable");
 
                 routingTable.Add(
                     this.configuration.Web.Logout.Uri,
@@ -316,7 +316,7 @@ namespace Stormpath.Owin.Middleware
             // /forgot   
             if (ForgotPasswordRoute.ShouldBeEnabled(this.configuration))
             {
-                this.logger.Info($"ForgotPassword route enabled on {this.configuration.Web.ForgotPassword.Uri}");
+                this.logger.Info($"ForgotPassword route enabled on {this.configuration.Web.ForgotPassword.Uri}", "BuildRoutingTable");
 
                 routingTable.Add(
                     this.configuration.Web.ForgotPassword.Uri,
@@ -329,7 +329,7 @@ namespace Stormpath.Owin.Middleware
             // /change
             if (ChangePasswordRoute.ShouldBeEnabled(this.configuration))
             {
-                this.logger.Info($"ChangePassword route enabled on {this.configuration.Web.ChangePassword.Uri}");
+                this.logger.Info($"ChangePassword route enabled on {this.configuration.Web.ChangePassword.Uri}", "BuildRoutingTable");
 
                 routingTable.Add(
                     this.configuration.Web.ChangePassword.Uri,
@@ -342,7 +342,7 @@ namespace Stormpath.Owin.Middleware
             // /verify
             if (VerifyEmailRoute.ShouldBeEnabled(this.configuration))
             {
-                this.logger.Info($"VerifyEmail route enabled on {this.configuration.Web.VerifyEmail.Uri}");
+                this.logger.Info($"VerifyEmail route enabled on {this.configuration.Web.VerifyEmail.Uri}", "BuildRoutingTable");
 
                 routingTable.Add(
                     this.configuration.Web.VerifyEmail.Uri,

@@ -18,20 +18,21 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     public static class PostBodyParser
     {
-        public static async Task<T> ToModel<T>(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
+        public static async Task<T> ToModel<T>(IOwinEnvironment context, ContentType bodyContentType, ILogger logger, CancellationToken cancellationToken)
             where T : new()
         {
             var bodyString = await context.Request.GetBodyAsStringAsync(cancellationToken);
 
-            return ToModel<T>(bodyString, bodyContentType);
+            return ToModel<T>(bodyString, bodyContentType, logger);
         }
 
-        public static T ToModel<T>(string body, ContentType bodyContentType)
+        public static T ToModel<T>(string body, ContentType bodyContentType, ILogger logger)
             where T : new()
         {
             if (bodyContentType == ContentType.Json)
@@ -41,7 +42,7 @@ namespace Stormpath.Owin.Middleware.Internal
 
             if (bodyContentType == ContentType.FormUrlEncoded)
             {
-                var formDictionary = FormContentParser.Parse(body);
+                var formDictionary = FormContentParser.Parse(body, logger);
                 return new PocoBinder<T>(key => formDictionary.GetString(key)).Bind();
             }
 

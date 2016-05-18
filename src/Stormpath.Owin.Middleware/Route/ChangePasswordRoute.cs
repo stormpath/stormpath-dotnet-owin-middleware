@@ -36,7 +36,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var spToken = queryString.GetString("sptoken");
 
             if (string.IsNullOrEmpty(spToken))
@@ -64,9 +64,9 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, cancellationToken);
+            var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
 
             if (!model.Password.Equals(model.ConfirmPassword, StringComparison.Ordinal))
             {
@@ -112,7 +112,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var spToken = queryString.GetString("sptoken");
 
             if (string.IsNullOrEmpty(spToken))
@@ -130,8 +130,8 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
-            var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, cancellationToken);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
             var application = await client.GetApplicationAsync(_configuration.Application.Href);
 
             await application.VerifyPasswordResetTokenAsync(model.SpToken, cancellationToken);

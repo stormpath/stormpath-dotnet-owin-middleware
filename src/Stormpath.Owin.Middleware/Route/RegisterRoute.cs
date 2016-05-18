@@ -144,8 +144,8 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType);
-            var formData = FormContentParser.Parse(body);
+            var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType, _logger);
+            var formData = FormContentParser.Parse(body, _logger);
 
             var allNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value))).Select(f => f.Key).ToList();
 
@@ -209,7 +209,7 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType);
+            var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType, _logger);
             var formData = Serializer.DeserializeDictionary(body);
 
             var allNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(f.Value.ToString())).Select(f => f.Key).ToList();

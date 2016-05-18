@@ -35,7 +35,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
             var viewModelBuilder = new ForgotPasswordViewModelBuilder(_configuration.Web, queryString);
             var forgotViewModel = viewModelBuilder.Build();
@@ -50,7 +50,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var model = await PostBodyParser.ToModel<ForgotPasswordPostModel>(context, bodyContentType, cancellationToken);
+                var model = await PostBodyParser.ToModel<ForgotPasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
 
                 await application.SendPasswordResetEmailAsync(model.Email, cancellationToken);
             }
@@ -68,7 +68,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var model = await PostBodyParser.ToModel<ForgotPasswordPostModel>(context, bodyContentType, cancellationToken);
+                var model = await PostBodyParser.ToModel<ForgotPasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
 
                 await application.SendPasswordResetEmailAsync(model.Email, cancellationToken);
             }

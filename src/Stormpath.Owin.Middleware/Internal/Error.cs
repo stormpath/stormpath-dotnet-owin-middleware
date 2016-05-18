@@ -40,8 +40,7 @@ namespace Stormpath.Owin.Middleware.Internal
             if (error.Body != null)
             {
                 context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
-                context.Response.Headers.SetString("Cache-Control", "no-store");
-                context.Response.Headers.SetString("Pragma", "no-cache");
+                Caching.AddDoNotCacheHeaders(context);
 
                 await context.Response.WriteAsync(Serializer.Serialize(error.Body), Encoding.UTF8);
                 return true;
@@ -59,8 +58,7 @@ namespace Stormpath.Owin.Middleware.Internal
         {
             context.Response.StatusCode = statusCode;
             context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
-            context.Response.Headers.SetString("Cache-Control", "no-store");
-            context.Response.Headers.SetString("Pragma", "no-cache");
+            Caching.AddDoNotCacheHeaders(context);
 
             var errorModel = new
             {

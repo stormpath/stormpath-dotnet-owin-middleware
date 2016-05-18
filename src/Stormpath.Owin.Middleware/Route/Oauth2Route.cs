@@ -51,7 +51,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var requestBody = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var formData = FormContentParser.Parse(requestBody);
+            var formData = FormContentParser.Parse(requestBody, _logger);
 
             var grantType = formData.GetString("grant_type");
             var username = WebUtility.UrlDecode(formData.GetString("username"));
