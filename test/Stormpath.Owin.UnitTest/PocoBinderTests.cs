@@ -34,7 +34,11 @@ namespace Stormpath.Owin.UnitTest
                 ["password"] = "bar"
             };
 
-            var binder = new PocoBinder<ChangePasswordPostModel>(key => propertyBag[key]);
+            var binder = new PocoBinder<ChangePasswordPostModel>(
+                hasValueFunc: key => propertyBag.ContainsKey(key),
+                valueFunc: key => propertyBag[key],
+                logger: null);
+
             var result = binder.Bind();
 
             result.SpToken.Should().Be("foo");

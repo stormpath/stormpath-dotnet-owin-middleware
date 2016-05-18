@@ -43,7 +43,11 @@ namespace Stormpath.Owin.Middleware.Internal
             if (bodyContentType == ContentType.FormUrlEncoded)
             {
                 var formDictionary = FormContentParser.Parse(body, logger);
-                return new PocoBinder<T>(key => formDictionary.GetString(key)).Bind();
+
+                return new PocoBinder<T>(
+                    key => formDictionary.ContainsKey(key),
+                    key => formDictionary.GetString(key),
+                    logger).Bind();
             }
 
             // This should never happen. The logic in AbstractRoute should throw first if the Content-Type is unsupported.

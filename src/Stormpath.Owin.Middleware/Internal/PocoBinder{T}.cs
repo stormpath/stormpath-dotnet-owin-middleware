@@ -16,17 +16,35 @@
 
 using System;
 using System.Reflection;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     public class PocoBinder<T>
         where T : new()
     {
-        private readonly Func<string, string> valueFunc;
+        private readonly Func<string, bool> hasValue;
+        private readonly Func<string, object> getValue;
+        private readonly ILogger logger;
 
-        public PocoBinder(Func<string, string> valueFunc)
+        public PocoBinder(
+            Func<string, bool> hasValueFunc,
+            Func<string, object> valueFunc,
+            ILogger logger)
         {
-            this.valueFunc = valueFunc;
+            if (hasValueFunc == null)
+            {
+                throw new ArgumentNullException(nameof(hasValueFunc));
+            }
+
+            if (valueFunc == null)
+            {
+                throw new ArgumentNullException(nameof(valueFunc));
+            }
+
+            this.hasValue = hasValueFunc;
+            this.getValue = valueFunc;
+            this.logger = logger;
         }
 
         public T Bind()
@@ -37,10 +55,17 @@ namespace Stormpath.Owin.Middleware.Internal
             {
                 if (property.PropertyType != typeof(string))
                 {
-                    throw new Exception($"Unsupported target property type {property.PropertyType.Name}.");
+                    logger.Trace($"Skipping property '{property.Name}' with unsupported type '{property.PropertyType}' while binding {typeof(T).Name}", "PocoBinder.Bind");
+                    continue;
                 }
 
-                property.SetValue(result, this.valueFunc(property.Name));
+                if (!hasValue(property.Name))
+                {
+                    logger.Trace($"Skipping property '{property.Name}' while binding {typeof(T).Name} because no value was found", "PocoBinder.Bind");
+                    continue;
+                }
+
+                property.SetValue(result, this.getValue(property.Name));
             }
 
             return result;

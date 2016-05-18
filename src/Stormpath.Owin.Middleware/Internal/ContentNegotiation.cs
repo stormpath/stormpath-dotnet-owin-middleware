@@ -83,10 +83,16 @@ namespace Stormpath.Owin.Middleware.Internal
                         .Split(';')
                         .Select(t => t.Trim());
 
+                    if (!tokens.Any())
+                    {
+                        logger.Info($"Malformed media range token in header '{acceptHeader}'", "ContentNegotiation.ParseAndSortHeader");
+                        continue;
+                    }
+
                     var qualityFactor = 1.0;
                     var qualityFactorToken = tokens.Where(t => t.StartsWith("q=")).SingleOrDefault();
 
-                    bool qualityFactorTokenContainsValue = qualityFactorToken?.IndexOf("q=") + 2 > qualityFactorToken?.Length;
+                    bool qualityFactorTokenContainsValue = qualityFactorToken?.IndexOf("q=") + 2 < qualityFactorToken?.Length;
                     if (qualityFactorTokenContainsValue)
                     {
                         if (!double.TryParse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=") + 2), out qualityFactor))
