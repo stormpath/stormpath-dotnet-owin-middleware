@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Stormpath.Configuration.Abstractions.Immutable;
 
@@ -24,42 +25,50 @@ namespace Stormpath.Owin.Abstractions.ViewModel
     {
         private readonly IReadOnlyList<string> fieldOrder;
         private readonly IReadOnlyDictionary<string, WebFieldConfiguration> fields;
+        private readonly IReadOnlyDictionary<string, WebFieldConfiguration> defaultFields; 
 
-        public FormFieldViewModelBuilder(IReadOnlyList<string> fieldOrder, IReadOnlyDictionary<string, WebFieldConfiguration> fields)
+        public FormFieldViewModelBuilder(
+            IReadOnlyList<string> fieldOrder,
+            IReadOnlyDictionary<string, WebFieldConfiguration> fields,
+            IReadOnlyDictionary<string, WebFieldConfiguration> defaultFields)
         {
             this.fieldOrder = fieldOrder;
             this.fields = fields;
+            this.defaultFields = defaultFields;
         }
 
-        public List<FormFieldViewModel> Build()
+        public IEnumerable<FormFieldViewModel> Build()
         {
-            var result = new List<FormFieldViewModel>();
+            // fieldOrder is not guaranteed to list every field, if it's been edited
+            var unorderedFields = this.fields.Select(kvp => kvp.Key).Where(f => !fieldOrder.Contains(f));
+            var unorderedDefaultFields = this.defaultFields.Select(kvp => kvp.Key).Where(f => !fieldOrder.Contains(f));
+            var finalFieldOrdering = new List<string>(fieldOrder
+                .Concat(unorderedFields)
+                .Concat(unorderedDefaultFields));
 
-            foreach (var fieldName in fieldOrder)
+            var definitions = finalFieldOrdering.Select(name =>
             {
                 WebFieldConfiguration field = null;
-                if (!fields.TryGetValue(fieldName, out field))
+
+                bool isDefinedOrDefault = fields.TryGetValue(name, out field) || defaultFields.TryGetValue(name, out field);
+                if (!isDefinedOrDefault)
                 {
-                    throw new Exception($"Invalid field '{fieldName}' in fieldOrder list.");
+                    throw new Exception($"Invalid field '{name}' in fieldOrder list.");
                 }
 
-                bool enabledAndVisible = field.Enabled && field.Visible;
-                if (!enabledAndVisible)
-                {
-                    continue;
-                }
+                return new { name, field };
+            });
 
-                result.Add(new FormFieldViewModel()
+            return definitions
+                .Where(def => def.field.Enabled && def.field.Visible)
+                .Select(def => new FormFieldViewModel()
                 {
-                    Label = field.Label,
-                    Name = fieldName,
-                    Placeholder = field.Placeholder,
-                    Required = field.Required,
-                    Type = field.Type
+                    Label = def.field.Label,
+                    Name = def.name,
+                    Placeholder = def.field.Placeholder,
+                    Required = def.field.Required,
+                    Type = def.field.Type
                 });
-            }
-
-            return result;
         }
     }
 }

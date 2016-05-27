@@ -32,17 +32,7 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class RegisterRoute : AbstractRoute
     {
-        private static readonly string[] defaultFields =
-        {
-            "givenName",
-            "middleName",
-            "surname",
-            "username",
-            "email",
-            "password",
-            "confirmPassword",
-            "customData"
-        };
+        private static readonly string[] defaultFields = Configuration.Abstractions.Default.Configuration.Web.Register.Form.Fields.Select(kvp => kvp.Key).ToArray();
 
         private async Task<IAccount> HandleRegistration(
             RegisterPostModel postData,
@@ -52,6 +42,8 @@ namespace Stormpath.Owin.Middleware.Route
             Func<string, CancellationToken, Task> errorHandler,
             CancellationToken cancellationToken)
         {
+            var viewModel = new RegisterViewModelBuilder(_configuration.Web.Register).Build();
+
             bool missingEmailOrPassword = string.IsNullOrEmpty(postData.Email) || string.IsNullOrEmpty(postData.Password);
             if (missingEmailOrPassword)
             {
@@ -59,7 +51,8 @@ namespace Stormpath.Owin.Middleware.Route
                 return null;
             }
 
-            if (_configuration.Web.Register.Form.Fields["confirmPassword"].Enabled)
+            bool hasConfirmPasswordField = viewModel.Form.Fields.Where(f => f.Name == "confirmPassword").Any();
+            if (hasConfirmPasswordField)
             {
                 if (postData.Password != postData.ConfirmPassword)
                 {
@@ -68,8 +61,7 @@ namespace Stormpath.Owin.Middleware.Route
                 }
             }
 
-            var registerViewModel = new RegisterViewModelBuilder(_configuration.Web.Register).Build();
-            foreach (var field in registerViewModel.Form.Fields)
+            foreach (var field in viewModel.Form.Fields)
             {
                 if (field.Required && !fieldNames.Contains(field.Name, StringComparer.Ordinal))
                 {
@@ -78,24 +70,23 @@ namespace Stormpath.Owin.Middleware.Route
                 }
             }
 
-            bool givenNameIsNotRequired =
-                !_configuration.Web.Register.Form.Fields["givenName"].Required
-                || !_configuration.Web.Register.Form.Fields["givenName"].Enabled;
-            if (string.IsNullOrEmpty(postData.GivenName) && givenNameIsNotRequired)
+            var givenNameField = viewModel.Form.Fields.Where(f => f.Name == "givenName").SingleOrDefault();
+            bool isGivenNameRequired = givenNameField?.Required ?? false;
+            if (string.IsNullOrEmpty(postData.GivenName) && !isGivenNameRequired)
             {
                 postData.GivenName = "UNKNOWN";
             }
 
-            bool surnameIsNotRequired =
-                !_configuration.Web.Register.Form.Fields["surname"].Required
-                || !_configuration.Web.Register.Form.Fields["surname"].Enabled;
-            if (string.IsNullOrEmpty(postData.Surname) && surnameIsNotRequired)
+            var surnameField = viewModel.Form.Fields.Where(f => f.Name == "surname").SingleOrDefault();
+            bool isSurnameRequired = surnameField?.Required ?? false;
+            bool surnameIsNotRequired = surnameField == null || !surnameField.Required;
+            if (string.IsNullOrEmpty(postData.Surname) && !surnameIsNotRequired)
             {
                 postData.Surname = "UNKNOWN";
             }
 
             // Any custom fields must be defined in configuration
-            var definedCustomFields = registerViewModel.Form.Fields
+            var definedCustomFields = viewModel.Form.Fields
                 .Where(f => !defaultFields.Contains(f.Name))
                 .Select(f => f.Name);
 

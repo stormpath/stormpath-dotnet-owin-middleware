@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System.Linq;
 using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
@@ -31,8 +32,11 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         {
             var result = new LoginViewModel();
 
-            var fieldViewModelBuilder = new FormFieldViewModelBuilder(loginRouteConfiguration.Form.FieldOrder, loginRouteConfiguration.Form.Fields);
-            result.Form.Fields = fieldViewModelBuilder.Build();
+            var fieldViewModelBuilder = new FormFieldViewModelBuilder(
+                loginRouteConfiguration.Form.FieldOrder,
+                loginRouteConfiguration.Form.Fields,
+                Stormpath.Configuration.Abstractions.Default.Configuration.Web.Login.Form.Fields);
+            result.Form.Fields = fieldViewModelBuilder.Build().ToArray();
 
             return result;
         }

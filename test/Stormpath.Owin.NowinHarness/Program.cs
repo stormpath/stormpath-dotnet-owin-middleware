@@ -26,6 +26,7 @@ using Stormpath.Owin.Abstractions;
 
 namespace Stormpath.Owin.NowinHarness
 {
+    using Configuration.Abstractions;
     using SDK.Logging;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
@@ -56,11 +57,32 @@ namespace Stormpath.Owin.NowinHarness
             {
                 LibraryUserAgent = "nowin/0.22.2",
                 ViewRenderer = new SimpleViewRenderer(),
-                Configuration = new
+                Configuration = new StormpathConfiguration
                 {
-                    application = new
+                    Application = new ApplicationConfiguration
                     {
-                        name = "My Application"
+                        Name = "My Application"
+                    },
+                    Web = new WebConfiguration
+                    {
+                        Register = new WebRegisterRouteConfiguration
+                        {
+                            Form = new WebRegisterRouteFormConfiguration
+                            {
+                                Fields = new Dictionary<string, WebFieldConfiguration>
+                                {
+                                    ["givenName"] = new WebFieldConfiguration()
+                                    {
+                                        Enabled = true,
+                                        Visible = true,
+                                        Label = "First Name",
+                                        Placeholder = "First Name",
+                                        Required = false,
+                                        Type = "text",
+                                    },
+                                }
+                            }
+                        }
                     }
                 },
                 Logger = new ConsoleLogger(LogLevel.Trace)

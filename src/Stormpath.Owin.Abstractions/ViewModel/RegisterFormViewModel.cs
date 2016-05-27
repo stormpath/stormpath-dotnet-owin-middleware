@@ -20,6 +20,6 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class RegisterFormViewModel
     {
-        public List<FormFieldViewModel> Fields { get; set; } = new List<FormFieldViewModel>();
+        public IReadOnlyList<FormFieldViewModel> Fields { get; set; } = new FormFieldViewModel[] { };
     }
 }
