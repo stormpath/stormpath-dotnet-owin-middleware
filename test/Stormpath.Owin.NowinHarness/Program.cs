@@ -63,27 +63,6 @@ namespace Stormpath.Owin.NowinHarness
                     {
                         Name = "My Application"
                     },
-                    Web = new WebConfiguration
-                    {
-                        Register = new WebRegisterRouteConfiguration
-                        {
-                            Form = new WebRegisterRouteFormConfiguration
-                            {
-                                Fields = new Dictionary<string, WebFieldConfiguration>
-                                {
-                                    ["givenName"] = new WebFieldConfiguration()
-                                    {
-                                        Enabled = true,
-                                        Visible = true,
-                                        Label = "First Name",
-                                        Placeholder = "First Name",
-                                        Required = false,
-                                        Type = "text",
-                                    },
-                                }
-                            }
-                        }
-                    }
                 },
                 Logger = new ConsoleLogger(LogLevel.Trace)
             });
