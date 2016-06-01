@@ -43,6 +43,7 @@ namespace Stormpath.Owin.Middleware
         /// <param name="deleteCookieAction">The routine to run to delete cookies in the response.</param>
         /// <param name="setStatusCodeAction">The routine to run to set the response status code.</param>
         /// <param name="redirectAction">The routine to run to set the response Location header.</param>
+        /// <param name="logger">The <see cref="ILogger"/> to use.</param>
         public RouteProtector(
             WebConfiguration webConfiguration,
             Action<WebCookieConfiguration> deleteCookieAction,
@@ -61,10 +62,10 @@ namespace Stormpath.Owin.Middleware
         /// <summary>
         /// Checks whether a properly-authenticated user is making this request.
         /// </summary>
-        /// <remarks><paramref name="authenticationScheme"/> and <paramref name="account"/> are available in the OWIN environment as <see cref="Common.OwinKeys.StormpathUser"/> and <see cref="Common.OwinKeys.StormpathUserScheme"/>, respectively.</remarks>
+        /// <remarks><paramref name="authenticationScheme"/> and <paramref name="account"/> are available in the OWIN environment as <see cref="Abstractions.OwinKeys.StormpathUser"/> and <see cref="Abstractions.OwinKeys.StormpathUserScheme"/>, respectively.</remarks>
         /// <param name="authenticationScheme">The authentication scheme used for the request.</param>
         /// <param name="requiredAuthenticationScheme">The authentication scheme that must be used for this route, or <see cref="AnyScheme"/>.</param>
-        /// <param name="account">The </param>
+        /// <param name="account">The Stormpath Account, if any.</param>
         /// <returns><see langword="true"/> if the request is authenticated; <see langword="false"/> otherwise.</returns>
         public bool IsAuthenticated(string authenticationScheme, string requiredAuthenticationScheme, IAccount account)
         {
@@ -76,6 +77,7 @@ namespace Stormpath.Owin.Middleware
             bool requireSpecificAuthenticationScheme =
                 !string.IsNullOrEmpty(requiredAuthenticationScheme)
                 && !AnyScheme.Equals(requiredAuthenticationScheme);
+
             if (requireSpecificAuthenticationScheme && !requiredAuthenticationScheme.Equals(authenticationScheme, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
