@@ -1,35 +1,38 @@
 {
   "authors": [ "Nate Barbettini" ],
-  "commands": {
-    "test": "xunit.runner.dnx"
-  },
   "dependencies": {
-    "FluentAssertions": "4.2.2",
-    "Stormpath.Owin.Middleware": "0.1.5-beta1",
-    "xunit": "2.1.0",
-    "xunit.runner.dnx": "2.1.0-rc1-build204"
+    "dotnet-test-xunit": "1.0.0-rc2-build10025",
+    "FluentAssertions": "4.6.3",
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.0-rc2-3002702"
+    },
+    "Stormpath.Owin.Middleware": {
+      "target": "project",
+      "version": "0.2.0-beta1"
+    },
+    "xunit": "2.1.0"
   },
   "description": "Unit Tests for Stormpath OWIN middleware.",
   "frameworks": {
-    "dnxcore50": {
-      "dependencies": {
-        "Microsoft.CSharp": "4.0.1-beta-23516",
-        "System.Collections": "4.0.11-beta-23516",
-        "System.Linq": "4.0.1-beta-23516",
-        "System.Runtime": "4.0.21-beta-23516",
-        "System.Threading": "4.0.11-beta-23516"
-      }
+    "netcoreapp1.0": {
+      "imports": [
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   },
-  "language": "en-US",
-  "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
-  "owners": [ "Stormpath, Inc." ],
-  "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
-  "repository": {
-    "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
+  "packOptions": {
+    "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
+    "owners": [ "Stormpath, Inc." ],
+    "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
+    "repository": {
+      "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
+    }
   },
+  "testRunner": "xunit",
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.UnitTest"
   },
-  "version": "0.1.5-beta1"
+  "version": "0.2.0-beta1"
 }

@@ -1,16 +1,22 @@
 {
-  "version": "1.0.0",
-  "description": "Precompiles Razor views.",
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true
-  },
-  "dependencies": {
-    "Microsoft.AspNetCore.Razor": "1.0.0-*"
-  },
-  "frameworks": {
-    "dnx451": { }
   },
   "commands": {
     "run": "RazorPrecompiler"
-  }
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Razor": "1.0.0-rc2-final",
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.0-rc2-3002702"
+    }
+  },
+  "description": "Precompiles Razor views.",
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [ ]
+    }
+  },
+  "version": "1.1.0"
 }
