@@ -1,23 +1,26 @@
 {
   "authors": [ "Nate Barbettini" ],
-  "content": [
-    "Views/Stormpath/*.cshtml"
-  ],
   "dependencies": {
-    "Stormpath.Owin.Abstractions": "0.1.2"
+    "Stormpath.Owin.Abstractions": {
+      "target": "project",
+      "version": "0.2.0-beta1"
+    }
   },
   "description": "Common views for the Stormpath OWIN middleware library.",
   "frameworks": {
-    "dnx451": { },
-    "dotnet5.1": { }
+    "netstandard1.1": { }
   },
-  "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
-  "language": "en-US",
-  "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
-  "owners": [ "Stormpath, Inc." ],
-  "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
-  "repository": {
-    "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
+  "packOptions": {
+    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
+    "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
+    "owners": [ "Stormpath, Inc." ],
+    "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
+    "repository": {
+      "url": "https://github.com/stormpath/stormpath-dotnet-owin-middleware"
+    }
   },
-  "version": "0.1.2"
+  "publishOptions": {
+    "include": "Views/Stormpath/*.cshtml"
+  },
+  "version": "0.2.0-beta1"
 }
