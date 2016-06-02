@@ -1,6 +1,10 @@
 {
   "authors": [ "Nate Barbettini" ],
   "buildOptions": {
+    "nowarn": [
+      "CS1591"
+    ],
+    "warningsAsErrors": true,
     "xmlDoc": true
   },
   "dependencies": {
@@ -27,5 +31,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Abstractions"
   },
-  "version": "0.2.0-beta1"
+  "version": "0.2.0"
 }

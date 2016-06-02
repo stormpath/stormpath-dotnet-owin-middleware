@@ -230,7 +230,7 @@ namespace Stormpath.Owin.Views.Precompiled
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <remarks>
-        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
+        /// <see cref="DeferredWrite.WriteTo(TextWriter)"/> is invoked for <see cref="DeferredWrite"/> types.
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
         /// </remarks>

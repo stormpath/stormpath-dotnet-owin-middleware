@@ -22,12 +22,12 @@ using System.Threading.Tasks;
 namespace Stormpath.Owin.Views.Precompiled
 {
     /// <summary>
-    /// Represents a deferred write operation in a <see cref="BaseView"/>.
+    /// Represents a deferred write operation in a <see cref="BaseView{T}"/>.
     /// </summary>
     public class DeferredWrite
     {
         /// <summary>
-        /// Creates a new instance of <see cref="HelperResult"/>.
+        /// Creates a new instance of <see cref="DeferredWrite"/>.
         /// </summary>
         /// <param name="func">The delegate to invoke when <see cref="WriteTo(TextWriter)"/> is called.</param>
         public DeferredWrite(Func<TextWriter, Task> func)
@@ -38,7 +38,7 @@ namespace Stormpath.Owin.Views.Precompiled
         public Func<TextWriter, Task> WriteFunc { get; }
 
         /// <summary>
-        /// Method invoked to produce content from the <see cref="HelperResult"/>.
+        /// Method invoked to produce content from the <see cref="DeferredWrite"/>.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         public Task WriteTo(TextWriter writer)
