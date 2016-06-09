@@ -16,6 +16,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.SDK.Client;
@@ -66,7 +67,10 @@ namespace Stormpath.Owin.Middleware.Internal
             ILogger logger)
         {
             var keyValuePair = $"{Uri.EscapeDataString(cookieConfig.Name)}={Uri.EscapeDataString(value)}";
-            var domain = $"domain={cookieConfig.Domain}";
+
+            var domain = !string.IsNullOrEmpty(cookieConfig.Domain)
+                ? $"domain={cookieConfig.Domain}"
+                : null;
 
             var pathToken = string.IsNullOrEmpty(cookieConfig.Path)
                 ? "/"
@@ -82,14 +86,16 @@ namespace Stormpath.Owin.Middleware.Internal
                 ? "HttpOnly"
                 : null;
 
-            var includeSecureToken = cookieConfig.Secure == null
-                ? isSecureRequest
-                : cookieConfig.Secure.Value;
+            var includeSecureToken = cookieConfig.Secure ?? isSecureRequest;
             var secure = includeSecureToken
-                ? "secure"
+                ? "Secure"
                 : null;
 
-            var setCookieValue = string.Join("; ", new string[] { keyValuePair, domain, path, expires, httpOnly, secure });
+            var valueTokens = 
+                new string[] {keyValuePair, domain, path, expires, httpOnly, secure}
+                .Where(t => !string.IsNullOrEmpty(t));
+
+            var setCookieValue = string.Join("; ", valueTokens);
 
             logger.Trace($"Adding cookie to response: '{setCookieValue}'", nameof(SetTokenCookie));
 
