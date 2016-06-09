@@ -18,13 +18,27 @@ namespace Stormpath.Owin.UnitTest
 
         [Theory]
         [MemberData(nameof(EmptyTestCases))]
-        public void ParsesEmptyHeaders(string[] input)
+        public void ParsesEmptyHeaders(string[] headers)
         {
-            var parsed = new CookieParser(input, logger: null);
+            var parsed = new CookieParser(headers, logger: null);
 
             parsed.Count.Should().Be(0);
         }
 
-        //public void ParsesCookie(string )
+        public static IEnumerable<object[]> TestCases()
+        {
+            yield return new object[] { new string[] { "access_token=eyJra.eyJqd.hGdm; foo=bar; baz=qux" } };
+            yield return new object[] { new string[] { "access_token=eyJra.eyJqd.hGdm, foo=bar; baz=qux" } };
+            yield return new object[] { new string[] { "  access_token=eyJra.eyJqd.hGdm;     foo=bar;; " } };
+        }
+
+        [Theory]
+        [MemberData(nameof(TestCases))]
+        public void ParsesCookie(string[] headers)
+        {
+            var parsed = new CookieParser(headers, logger: null);
+
+            parsed.Get("access_token").Should().Be("eyJra.eyJqd.hGdm");
+        }
     }
 }
