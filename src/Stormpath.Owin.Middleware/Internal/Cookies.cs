@@ -34,29 +34,28 @@ namespace Stormpath.Owin.Middleware.Internal
 
         public static void AddCookiesToResponse(IOwinEnvironment context, IClient client, IOauthGrantAuthenticationResult grantResult, StormpathConfiguration configuration, ILogger logger)
         {
-            bool isSecureRequest = context.Request.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
-
             if (!string.IsNullOrEmpty(grantResult.AccessTokenString))
             {
                 var expirationDate = client.NewJwtParser().Parse(grantResult.AccessTokenString).Body.Expiration;
-                SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessTokenString, expirationDate, isSecureRequest, logger);
+                SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessTokenString, expirationDate, IsSecureRequest(context), logger);
             }
 
             if (!string.IsNullOrEmpty(grantResult.RefreshTokenString))
             {
                 var expirationDate = client.NewJwtParser().Parse(grantResult.RefreshTokenString).Body.Expiration;
-                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshTokenString, expirationDate, isSecureRequest, logger);
+                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshTokenString, expirationDate, IsSecureRequest(context), logger);
             }
         }
 
-        public static void DeleteTokenCookies(IOwinEnvironment context, WebConfiguration webConfiguration, ILogger logger)
+        public static void Delete(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration, ILogger logger)
         {
-            Delete(context, webConfiguration.AccessTokenCookie, logger);
-            Delete(context, webConfiguration.RefreshTokenCookie, logger);
+            logger.Trace($"Deleting cookie '{cookieConfiguration.Name}' on response");
+
+            SetTokenCookie(context, cookieConfiguration, string.Empty, Epoch, IsSecureRequest(context), logger);
         }
 
-        public static void Delete(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration, ILogger logger)
-            => SetTokenCookie(context, cookieConfiguration, string.Empty, Epoch, false, logger);
+        private static bool IsSecureRequest(IOwinEnvironment context)
+            => context.Request.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
 
         private static void SetTokenCookie(
             IOwinEnvironment context,
@@ -92,7 +91,7 @@ namespace Stormpath.Owin.Middleware.Internal
 
             var setCookieValue = string.Join("; ", new string[] { keyValuePair, domain, path, expires, httpOnly, secure });
 
-            logger.Trace($"Adding cookie to request: '{setCookieValue}'", nameof(SetTokenCookie));
+            logger.Trace($"Adding cookie to response: '{setCookieValue}'", nameof(SetTokenCookie));
 
             context.Response.OnSendingHeaders(_ =>
             {

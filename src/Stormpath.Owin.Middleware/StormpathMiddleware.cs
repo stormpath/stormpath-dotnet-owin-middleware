@@ -69,6 +69,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
+            logger.Trace($"Incoming request {context.Request.Path}", "StormpathMiddleware.Invoke");
 
             using (var scopedClient = this.CreateScopedClient(context))
             {

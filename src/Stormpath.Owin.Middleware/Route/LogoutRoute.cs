@@ -53,13 +53,16 @@ namespace Stormpath.Owin.Middleware.Route
             await RevokeTokens(context, client, cancellationToken);
 
             // Delete cookies
-            Cookies.DeleteTokenCookies(context, _configuration.Web, _logger);
+            Cookies.Delete(context, _configuration.Web.AccessTokenCookie, _logger);
+            Cookies.Delete(context, _configuration.Web.RefreshTokenCookie, _logger);
         }
 
         private async Task RevokeTokens(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var cookieHeader = context.Request.Headers.GetString("Cookie");
-            var cookieParser = new CookieParser(cookieHeader, _logger);
+            string[] rawCookies = null;
+            context.Request.Headers.TryGetValue("Cookie", out rawCookies);
+
+            var cookieParser = new CookieParser(rawCookies, _logger);
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
 

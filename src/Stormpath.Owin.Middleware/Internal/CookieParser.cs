@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
@@ -26,13 +27,18 @@ namespace Stormpath.Owin.Middleware.Internal
         private readonly ILogger logger;
         private readonly IDictionary<string, string> cookies;
 
-        public CookieParser(string cookieHeader, ILogger logger)
+        public CookieParser(string[] cookieHeaders, ILogger logger)
         {
             this.logger = logger;
             this.cookies = new Dictionary<string, string>(StringComparer.Ordinal);
 
-            ParseDelimited(cookieHeader, SemicolonAndComma, AddCookieCallback, this.cookies, logger);
+            foreach (var cookieHeader in cookieHeaders)
+            {
+                ParseDelimited(cookieHeader, SemicolonAndComma, AddCookieCallback, this.cookies, this.logger);
+            }
         }
+
+        private static readonly char[] SemicolonAndComma = new[] { ';', ',' };
 
         public string Get(string key)
         {
@@ -41,7 +47,14 @@ namespace Stormpath.Owin.Middleware.Internal
             return value;
         }
 
-        private static readonly char[] SemicolonAndComma = new[] { ';', ',' };
+        public IEnumerable<KeyValuePair<string, string>> AsEnumerable()
+            => this.cookies.AsEnumerable();
+
+        public int Count
+            => this.cookies.Count;
+
+        public bool Contains(string name)
+            => this.cookies.ContainsKey(name);
 
         private static readonly Action<string, string, IDictionary<string, string>> AddCookieCallback = (name, value, dict) =>
         {
@@ -51,8 +64,18 @@ namespace Stormpath.Owin.Middleware.Internal
             }
         };
 
-        private static void ParseDelimited(string text, char[] delimiters, Action<string, string, IDictionary<string, string>> callback, IDictionary<string, string> state, ILogger logger)
+        private static void ParseDelimited(
+            string text, 
+            char[] delimiters,
+            Action<string, string, IDictionary<string, string>> callback,
+            IDictionary<string, string> state,
+            ILogger logger)
         {
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
             var textLength = text.Length;
             var equalIndex = text.IndexOf('=');
             if (equalIndex == -1)

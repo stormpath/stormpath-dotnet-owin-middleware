@@ -16,6 +16,7 @@
 // </copyright>
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
@@ -28,6 +29,7 @@ using Stormpath.SDK.Error;
 using Stormpath.SDK.Jwt;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
+using Stormpath.SDK.Shared.Extensions;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -62,7 +64,7 @@ namespace Stormpath.Owin.Middleware
 
         private Task<IAccount> TryBasicAuthenticationAsync(IOwinEnvironment context, IClient client)
         {
-            this.logger.Warn("Basic Authentication is not yet supported", nameof(TryBasicAuthenticationAsync));
+            this.logger.Trace("Basic Authentication is not yet supported", nameof(TryBasicAuthenticationAsync));
 
             // TODO Basic auth
             return Task.FromResult<IAccount>(null);
@@ -78,55 +80,85 @@ namespace Stormpath.Owin.Middleware
                 return Task.FromResult<IAccount>(null);
             }
 
-            var bearerPayload = bearerHeader?.Substring(7); // Bearer[ ]
+            var bearerPayload = bearerHeader?.Substring(7); // "Bearer " + payload
             if (string.IsNullOrEmpty(bearerPayload))
             {
-                logger.Warn("Found Bearer header, but payload was empty", nameof(TryBearerAuthenticationAsync));
+                logger.Info("Found Bearer header, but payload was empty", nameof(TryBearerAuthenticationAsync));
                 return Task.FromResult<IAccount>(null);
             }
 
-            logger.Info("Request authenticated using Bearer authentication", nameof(TryBearerAuthenticationAsync));
+            logger.Info("Using Bearer header to authenticate request", nameof(TryBearerAuthenticationAsync));
             return ValidateAccessTokenAsync(context, client, bearerPayload);
         }
 
         private async Task<IAccount> TryCookieAuthenticationAsync(IOwinEnvironment context, IClient client)
         {
-            var cookieHeader = context.Request.Headers.GetString("Cookie");
-            if (string.IsNullOrEmpty(cookieHeader))
+            string[] rawCookies = null;
+
+            if (!context.Request.Headers.TryGetValue("Cookie", out rawCookies))
             {
-                logger.Trace("No authentication cookie found", nameof(TryCookieAuthenticationAsync));
+                logger.Trace("No cookie header found", nameof(TryCookieAuthenticationAsync));
                 return null;
             }
 
-            var cookieParser = new CookieParser(cookieHeader, logger);
+            var cookieParser = new CookieParser(rawCookies, logger);
+
+            if (cookieParser.Count == 0)
+            {
+                logger.Trace("No cookies parsed from header", nameof(TryCookieAuthenticationAsync));
+                return null;
+            }
+
+            logger.Trace("Cookies found on request: " + cookieParser.AsEnumerable().Select(x => $"'{x.Key}'").Join(", "), nameof(TryCookieAuthenticationAsync));
+
             var accessToken = cookieParser.Get(this.configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(this.configuration.Web.RefreshTokenCookie.Name);
 
             // Attempt to validate incoming Access Token
             if (!string.IsNullOrEmpty(accessToken))
             {
+                logger.Trace($"Found nonempty access token cookie '{this.configuration.Web.AccessTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
+
                 var validAccount = await ValidateAccessTokenAsync(context, client, accessToken);
                 if (validAccount != null)
                 {
                     logger.Info("Request authenticated using Access Token cookie", nameof(TryCookieAuthenticationAsync));
                     return validAccount;
                 }
+                else
+                {
+                    logger.Info("Access token cookie was not valid", nameof(TryCookieAuthenticationAsync));
+                }
             }
 
             // Try using refresh token instead
             if (!string.IsNullOrEmpty(refreshToken))
             {
+                logger.Trace($"Found nonempty refresh token cookie '{this.configuration.Web.RefreshTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
+
                 var refreshedAccount = await RefreshAccessTokenAsync(context, client, refreshToken);
                 if (refreshedAccount != null)
                 {
                     logger.Info("Request authenticated using Refresh Token cookie", nameof(TryCookieAuthenticationAsync));
                     return refreshedAccount;
                 }
+                else
+                {
+                    logger.Info("Refresh token cookie was not valid", nameof(TryCookieAuthenticationAsync));
+                }
             }
 
-            // Failed on both counts. Delete access and refresh token cookies
-            Cookies.DeleteTokenCookies(context, this.configuration.Web, logger);
-            logger.Info("Request contained invalid cookies, not authenticated", nameof(TryCookieAuthenticationAsync));
+            // Failed on both counts. Delete access and refresh token cookies if necessary
+            if (cookieParser.Contains(this.configuration.Web.AccessTokenCookie.Name))
+            {
+                Cookies.Delete(context, this.configuration.Web.AccessTokenCookie, logger);
+            }
+            if (cookieParser.Contains(this.configuration.Web.RefreshTokenCookie.Name))
+            {
+                Cookies.Delete(context, this.configuration.Web.RefreshTokenCookie, logger);
+            }
+
+            logger.Info("No access or refresh token cookies found", nameof(TryCookieAuthenticationAsync));
             return null;
         }
 
