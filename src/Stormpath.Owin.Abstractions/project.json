@@ -8,7 +8,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Stormpath.Configuration.Abstractions": "5.1.0"
+    "Stormpath.Configuration.Abstractions": "5.1.0" 
   },
   "description": "Common components (views, view models) for the Stormpath OWIN middleware library.",
   "frameworks": {
@@ -31,5 +31,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Abstractions"
   },
-  "version": "0.2.0"
+  "version": "0.2.1-beta2"
 }

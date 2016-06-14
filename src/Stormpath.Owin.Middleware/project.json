@@ -12,7 +12,7 @@
     "Stormpath.Configuration.Abstractions": "5.1.0",
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "0.2.0"
+      "version": "0.2.1-beta2"
     },
     "Stormpath.SDK": "0.9.1"
   },
@@ -48,5 +48,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "0.2.1"
+  "version": "0.2.2-beta1"
 }

@@ -20,6 +20,6 @@ namespace Stormpath.Owin.Abstractions
 {
     public interface IViewRenderer
     {
-        Task RenderAsync(string viewName, object viewModel, IOwinEnvironment context, System.Threading.CancellationToken cancellationToken);
+        Task<bool> RenderAsync(string name, object model, IOwinEnvironment context, System.Threading.CancellationToken cancellationToken);
     }
 }
