@@ -23,6 +23,7 @@ using Microsoft.Owin.Hosting;
 using Owin;
 using Stormpath.Owin.Middleware;
 using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Views.Precompiled;
 
 namespace Stormpath.Owin.NowinHarness
 {
@@ -52,11 +53,13 @@ namespace Stormpath.Owin.NowinHarness
     {
         public void Configuration(IAppBuilder app)
         {
+            var logger = new ConsoleLogger(LogLevel.Trace);
+
             // Initialize the Stormpath middleware
             var stormpath = StormpathMiddleware.Create(new StormpathMiddlewareOptions()
             {
                 LibraryUserAgent = "nowin/0.22.2",
-                ViewRenderer = new SimpleViewRenderer(),
+                ViewRenderer = new PrecompiledViewRenderer(logger),
                 Configuration = new StormpathConfiguration
                 {
                     Application = new ApplicationConfiguration
@@ -64,7 +67,7 @@ namespace Stormpath.Owin.NowinHarness
                         Name = "My Application"
                     },
                 },
-                Logger = new ConsoleLogger(LogLevel.Trace)
+                Logger = logger
             });
 
             // Insert it into the OWIN pipeline
@@ -73,7 +76,7 @@ namespace Stormpath.Owin.NowinHarness
             // Add a sample middleware that responds to GET /foo
             app.Use(new Func<AppFunc, AppFunc>(next => (async env =>
             {
-                if (env["owin.RequestPath"] as string == "/foo")
+                if (env["owin.RequestPath"] as string == "/")
                 {
                     using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
                     {
@@ -113,21 +116,6 @@ namespace Stormpath.Owin.NowinHarness
             message += $"{entry.Message}";
 
             Console.WriteLine(message);
-        }
-    }
-
-    public class SimpleViewRenderer : IViewRenderer
-    {
-        public Task RenderAsync(string viewName, object viewModel, IOwinEnvironment context, CancellationToken cancellationToken)
-        {
-            var view = Stormpath.Owin.Views.Precompiled.ViewResolver.GetView(viewName);
-            if (view == null)
-            {
-                // Or, hook into your existing view rendering implementation
-                throw new Exception($"View '{viewName}' not found.");
-            }
-
-            return view.ExecuteAsync(viewModel, context.Response.Body);
         }
     }
 }
