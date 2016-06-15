@@ -46,23 +46,19 @@ namespace Stormpath.Owin.Middleware.Route
         private async Task HandleLogout(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             // Remove user from request
-            var stormpathUser = context.Request[OwinKeys.StormpathUser] as IAccount;
             context.Request[OwinKeys.StormpathUser] = null;
 
-            // Revoke tokens
-            await RevokeTokens(context, client, cancellationToken);
+            string[] rawCookies;
+            context.Request.Headers.TryGetValue("Cookie", out rawCookies);
+            var cookieParser = new CookieParser(rawCookies, _logger);
 
-            // Delete cookies
-            Cookies.Delete(context, _configuration.Web.AccessTokenCookie, _logger);
-            Cookies.Delete(context, _configuration.Web.RefreshTokenCookie, _logger);
+            await RevokeTokens(context, client, cookieParser, cancellationToken);
+            
+            DeleteCookies(context, cookieParser);
         }
 
-        private async Task RevokeTokens(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        private async Task RevokeTokens(IOwinEnvironment context, IClient client, CookieParser cookieParser, CancellationToken cancellationToken)
         {
-            string[] rawCookies = null;
-            context.Request.Headers.TryGetValue("Cookie", out rawCookies);
-
-            var cookieParser = new CookieParser(rawCookies, _logger);
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
 
@@ -88,6 +84,7 @@ namespace Stormpath.Owin.Middleware.Route
         private bool IsValidJwt(string jwt, IClient client, out string jti)
         {
             jti = null;
+
             if (string.IsNullOrEmpty(jwt))
             {
                 return false;
@@ -104,6 +101,18 @@ namespace Stormpath.Owin.Middleware.Route
             catch (InvalidJwtException)
             {
                 return false;
+            }
+        }
+
+        private void DeleteCookies(IOwinEnvironment context, CookieParser cookieParser)
+        {
+            if (cookieParser.Contains(_configuration.Web.AccessTokenCookie.Name))
+            {
+                Cookies.Delete(context, _configuration.Web.AccessTokenCookie, _logger);
+            }
+            if (cookieParser.Contains(_configuration.Web.RefreshTokenCookie.Name))
+            {
+                Cookies.Delete(context, _configuration.Web.RefreshTokenCookie, _logger);
             }
         }
     }
