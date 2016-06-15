@@ -43,6 +43,7 @@ namespace Stormpath.Owin.Middleware.Route
             CancellationToken cancellationToken)
         {
             var viewModel = new RegisterViewModelBuilder(_configuration.Web.Register).Build();
+            var suppliedFieldNames = fieldNames?.ToArray() ?? new string[] {};
 
             bool missingEmailOrPassword = string.IsNullOrEmpty(postData.Email) || string.IsNullOrEmpty(postData.Password);
             if (missingEmailOrPassword)
@@ -63,7 +64,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             foreach (var field in viewModel.Form.Fields)
             {
-                if (field.Required && !fieldNames.Contains(field.Name, StringComparer.Ordinal))
+                if (field.Required && !suppliedFieldNames.Contains(field.Name, StringComparer.Ordinal))
                 {
                     await errorHandler($"{field.Label} is missing.", cancellationToken);
                     return null;
@@ -85,15 +86,14 @@ namespace Stormpath.Owin.Middleware.Route
                 postData.Surname = "UNKNOWN";
             }
 
-            // Any custom fields must be defined in configuration
-            var definedCustomFields = viewModel.Form.Fields
-                .Where(f => !defaultFields.Contains(f.Name))
-                .Select(f => f.Name);
+            var enabledFields = viewModel.Form.Fields.Select(f => f.Name);
 
-            bool containsUndefinedCustomFields = customFields.Select(x => x.Key).Except(definedCustomFields).Any();
-            if (containsUndefinedCustomFields)
+            var undefinedFields = suppliedFieldNames
+                .Concat(customFields.Select(f => f.Key))
+                .Except(enabledFields);
+            if (undefinedFields.Any())
             {
-                await errorHandler($"Unknown field '{customFields.Select(x => x.Key).Except(definedCustomFields).First()}'.", cancellationToken);
+                await errorHandler($"Unknown field '{undefinedFields.First()}'.", cancellationToken);
                 return null;
             }
 
