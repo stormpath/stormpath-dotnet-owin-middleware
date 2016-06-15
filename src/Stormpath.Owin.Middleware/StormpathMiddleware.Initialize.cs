@@ -33,7 +33,7 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
-        public static StormpathMiddleware Create(StormpathMiddlewareOptions options)
+        public static StormpathMiddleware Create(StormpathOwinOptions options)
         {
             if (string.IsNullOrEmpty(options.LibraryUserAgent))
             {

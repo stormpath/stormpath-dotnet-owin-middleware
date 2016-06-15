@@ -19,7 +19,7 @@ using Stormpath.Owin.Abstractions;
 
 namespace Stormpath.Owin.Middleware
 {
-    public sealed class StormpathMiddlewareOptions
+    public sealed class StormpathOwinOptions
     {
         public object Configuration { get; set; }
 

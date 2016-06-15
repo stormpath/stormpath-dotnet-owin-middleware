@@ -56,7 +56,7 @@ namespace Stormpath.Owin.NowinHarness
             var logger = new ConsoleLogger(LogLevel.Trace);
 
             // Initialize the Stormpath middleware
-            var stormpath = StormpathMiddleware.Create(new StormpathMiddlewareOptions()
+            var stormpath = StormpathMiddleware.Create(new StormpathOwinOptions()
             {
                 LibraryUserAgent = "nowin/0.22.2",
                 ViewRenderer = new PrecompiledViewRenderer(logger),
