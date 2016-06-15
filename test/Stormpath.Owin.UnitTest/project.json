@@ -9,7 +9,7 @@
     },
     "Stormpath.Owin.Middleware": {
       "target": "project",
-      "version": "0.2.1"
+      "version": "1.0.0-beta1"
     },
     "xunit": "2.1.0"
   },
@@ -34,5 +34,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.UnitTest"
   },
-  "version": "0.2.1"
+  "version": "1.0.0-beta1"
 }

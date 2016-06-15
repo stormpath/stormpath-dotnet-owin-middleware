@@ -31,5 +31,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Abstractions"
   },
-  "version": "0.2.1-beta2"
+  "version": "1.0.0-beta1"
 }

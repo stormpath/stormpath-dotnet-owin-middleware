@@ -12,9 +12,9 @@
     "Stormpath.Configuration.Abstractions": "5.1.0",
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "0.2.1-beta2"
+      "version": "1.0.0-beta1"
     },
-    "Stormpath.SDK": "0.9.1"
+    "Stormpath.SDK": "0.9.2"
   },
   "description": "Stormpath OWIN middleware for .NET.",
   "frameworks": {
@@ -48,5 +48,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "0.2.2-beta1"
+  "version": "1.0.0-beta1"
 }
