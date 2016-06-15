@@ -32,6 +32,13 @@ namespace Stormpath.Owin.Middleware.Internal
             this.logger = logger;
             this.cookies = new Dictionary<string, string>(StringComparer.Ordinal);
 
+            bool hasCookies = cookieHeaders?.Any() ?? false;
+
+            if (!hasCookies)
+            {
+                return;
+            }
+
             foreach (var cookieHeader in cookieHeaders)
             {
                 ParseDelimited(cookieHeader, SemicolonAndComma, AddCookieCallback, this.cookies, this.logger);
