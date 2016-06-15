@@ -168,7 +168,7 @@ namespace Stormpath.Owin.Middleware
                 .SetJwt(accessTokenJwt)
                 .Build();
 
-            var application = await client.GetApplicationAsync(this.configuration.Application.Href);
+            var application = await client.GetApplicationAsync(this.configuration.Application.Href, context.CancellationToken);
             var authenticator = application.NewJwtAuthenticator();
             if (this.configuration.Web.Oauth2.Password.ValidationStrategy == WebOauth2TokenValidationStrategy.Local)
             {
@@ -212,7 +212,7 @@ namespace Stormpath.Owin.Middleware
                 .SetRefreshToken(refreshTokenJwt)
                 .Build();
 
-            var application = await client.GetApplicationAsync(this.configuration.Application.Href);
+            var application = await client.GetApplicationAsync(this.configuration.Application.Href, context.CancellationToken);
             var authenticator = application.NewRefreshGrantAuthenticator();
 
             IOauthGrantAuthenticationResult grantResult = null;

@@ -44,7 +44,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return await HttpResponse.Redirect(context, _configuration.Web.ForgotPassword.Uri);
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href);
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             try
             {
@@ -80,7 +80,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var spToken = queryString.GetString("sptoken");
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href);
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             try
             {
@@ -120,7 +120,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href);
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
             // Errors are caught in AbstractRouteMiddleware
@@ -132,7 +132,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
-            var application = await client.GetApplicationAsync(_configuration.Application.Href);
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             await application.VerifyPasswordResetTokenAsync(model.SpToken, cancellationToken);
             // Errors are caught in AbstractRouteMiddleware

@@ -42,7 +42,7 @@ namespace Stormpath.Owin.Middleware.Internal
                 context.Response.Headers.SetString("Content-Type", Constants.JsonContentType);
                 Caching.AddDoNotCacheHeaders(context);
 
-                await context.Response.WriteAsync(Serializer.Serialize(error.Body), Encoding.UTF8);
+                await context.Response.WriteAsync(Serializer.Serialize(error.Body), Encoding.UTF8, cancellationToken);
                 return true;
             }
             else
