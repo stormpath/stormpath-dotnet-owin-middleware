@@ -3,7 +3,7 @@
   "dependencies": {
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.1.0-beta1"
+      "version": "1.1.0"
     }
   },
   "description": "Common views for the Stormpath OWIN middleware library.",
@@ -22,5 +22,5 @@
   "publishOptions": {
     "include": "Views/Stormpath/*.cshtml"
   },
-  "version": "0.2.1"
+  "version": "0.3.0"
 }
