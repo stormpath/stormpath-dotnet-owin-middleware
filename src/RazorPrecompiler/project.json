@@ -1,15 +1,16 @@
 {
   "buildOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "emitEntryPoint": true
   },
   "commands": {
     "run": "RazorPrecompiler"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Razor": "1.0.0-rc2-final",
+    "Microsoft.AspNetCore.Razor": "1.0.0",
     "Microsoft.NETCore.App": {
       "type": "platform",
-      "version": "1.0.0-rc2-3002702"
+      "version": "1.0.0"
     }
   },
   "description": "Precompiles Razor views.",
@@ -18,5 +19,5 @@
       "imports": [ ]
     }
   },
-  "version": "1.1.0"
+  "version": "1.2.0"
 }
