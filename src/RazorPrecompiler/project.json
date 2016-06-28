@@ -3,9 +3,6 @@
     "warningsAsErrors": true,
     "emitEntryPoint": true
   },
-  "commands": {
-    "run": "RazorPrecompiler"
-  },
   "dependencies": {
     "Microsoft.AspNetCore.Razor": "1.0.0",
     "Microsoft.NETCore.App": {
