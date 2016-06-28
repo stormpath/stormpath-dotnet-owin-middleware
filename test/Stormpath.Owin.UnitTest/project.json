@@ -1,7 +1,7 @@
 {
   "authors": [ "Nate Barbettini" ],
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-rc2-build10025",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "FluentAssertions": "4.6.3",
     "Microsoft.NETCore.App": {
       "type": "platform",
