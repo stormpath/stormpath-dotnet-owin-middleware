@@ -728,10 +728,10 @@ WriteAttributeValue("", 6294, Model.FormData.Get(field.Name) ?? string.Empty, 62
 #line default
 #line hidden
 
-            WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 7053, "\"", 7081, 1);
+            WriteLiteral("                    <a style=\"float:left\"");
+            BeginWriteAttribute("href", " href=\"", 7052, "\"", 7080, 1);
 #line 131 "Login.cshtml"
-WriteAttributeValue("", 7060, Model.VerifyEmailUri, 7060, 21, false);
+WriteAttributeValue("", 7059, Model.VerifyEmailUri, 7059, 21, false);
 
 #line default
 #line hidden
@@ -758,9 +758,9 @@ WriteAttributeValue("", 7060, Model.VerifyEmailUri, 7060, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 7263, "\"", 7294, 1);
+            BeginWriteAttribute("href", " href=\"", 7262, "\"", 7293, 1);
 #line 136 "Login.cshtml"
-WriteAttributeValue("", 7270, Model.ForgotPasswordUri, 7270, 24, false);
+WriteAttributeValue("", 7269, Model.ForgotPasswordUri, 7269, 24, false);
 
 #line default
 #line hidden
