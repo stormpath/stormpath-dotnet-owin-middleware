@@ -23,6 +23,8 @@ namespace Stormpath.Owin.Middleware
     {
         public object Configuration { get; set; }
 
+        public string ConfigurationFileRoot { get; set; }
+
         public ILogger Logger { get; set; }
 
         public string LibraryUserAgent { get; set; }

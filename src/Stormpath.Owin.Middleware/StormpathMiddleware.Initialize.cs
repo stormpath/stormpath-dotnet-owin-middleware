@@ -49,7 +49,7 @@ namespace Stormpath.Owin.Middleware
             IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(options.LibraryUserAgent);
 
             // Initialize and warm up SDK
-            var clientFactory = InitializeClient(options.Configuration);
+            var clientFactory = InitializeClient(options.Configuration, options.ConfigurationFileRoot);
 
             // Scope a client for our resolution steps below
             var client = clientFactory.Create(new ScopedClientOptions()
@@ -76,7 +76,7 @@ namespace Stormpath.Owin.Middleware
             return new StormpathMiddleware(options.ViewRenderer, options.Logger, userAgentBuilder, clientFactory, integrationConfiguration);
         }
 
-        private static IScopedClientFactory InitializeClient(object initialConfiguration)
+        private static IScopedClientFactory InitializeClient(object initialConfiguration, string configurationFileRoot)
         {
             // Construct base client
             var baseClient = Clients.Builder()
@@ -87,6 +87,7 @@ namespace Stormpath.Owin.Middleware
 #endif
                 .SetSerializer(Serializers.Create().JsonNetSerializer())
                 .SetConfiguration(initialConfiguration)
+                .SetConfigurationFileRoot(configurationFileRoot)
                 .Build();
 
             // Attempt to connect and prime the cache with ITenant

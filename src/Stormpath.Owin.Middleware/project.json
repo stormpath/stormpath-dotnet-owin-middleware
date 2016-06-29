@@ -9,12 +9,11 @@
   },
   "copyright": "(c) 2016 Stormpath, Inc.",
   "dependencies": {
-    "Stormpath.Configuration.Abstractions": "5.2.0",
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
-    "Stormpath.SDK": "0.91.0"
+    "Stormpath.SDK": "0.92.0"
   },
   "description": "Stormpath OWIN middleware for .NET.",
   "frameworks": {
@@ -45,5 +44,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "1.1.0"
+  "version": "1.2.0"
 }
