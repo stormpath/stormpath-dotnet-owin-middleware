@@ -11,15 +11,14 @@
   "dependencies": {
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
-    "Stormpath.SDK.Abstractions": "0.91.0"
+    "Stormpath.SDK.Abstractions": "0.92.0"
   },
   "description": "Precompiled views for the Stormpath OWIN middleware library.",
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Collections": "4.0.0.0",
         "System.Runtime": {
           "type": "build",
           "version": "4.0.0.0"
@@ -44,5 +43,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Views.Precompiled"
   },
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

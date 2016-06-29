@@ -13,19 +13,16 @@
       "target": "project",
       "version": "1.2.0"
     },
-    "Stormpath.SDK": "0.92.0"
+    "Stormpath.SDK": "0.92.1"
   },
   "description": "Stormpath OWIN middleware for .NET.",
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Collections": "4.0.0.0",
         "System.Runtime": {
           "type": "build",
           "version": "4.0.0.0"
-        },
-        "System.Text.Encoding": "4.0.0.0",
-        "System.Threading.Tasks": "4.0.0.0"
+        }
       }
     },
     "netstandard1.3": {
@@ -44,5 +41,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "1.2.0"
+  "version": "1.2.1"
 }
