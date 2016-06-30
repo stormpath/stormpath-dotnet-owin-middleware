@@ -14,18 +14,23 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
+using System.Linq;
 using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Abstractions.Configuration
 {
     public sealed class IntegrationConfiguration : StormpathConfiguration
     {
-        public IntegrationConfiguration(StormpathConfiguration existing, TenantConfiguration tenantConfiguration)
+        public IntegrationConfiguration(StormpathConfiguration existing, TenantConfiguration tenantConfiguration, IEnumerable<KeyValuePair<string, ProviderConfiguration>> providers)
             : base(existing)
         {
             this.Tenant = tenantConfiguration;
+            this.Providers = providers.ToArray();
         }
 
         public TenantConfiguration Tenant { get; }
+
+        public IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> Providers { get; }
     }
 }

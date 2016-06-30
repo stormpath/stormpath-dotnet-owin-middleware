@@ -1,14 +1,18 @@
 {
   "authors": [ "Nate Barbettini" ],
   "dependencies": {
+    "Microsoft.AspNetCore.Razor.Tools": {
+      "type": "build",
+      "version": "1.0.0-preview2-final"
+    },
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.1.0"
+      "version": "1.2.0"
     }
   },
   "description": "Common views for the Stormpath OWIN middleware library.",
   "frameworks": {
-    "netstandard1.1": { }
+    "netcoreapp1.0": {}
   },
   "packOptions": {
     "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
@@ -22,5 +26,8 @@
   "publishOptions": {
     "include": "Views/Stormpath/*.cshtml"
   },
-  "version": "0.3.0"
+  "tools": {
+    "Microsoft.AspNetCore.Razor.Tools": "1.0.0-preview2-final"
+  },
+  "version": "0.4.0-beta1"
 }

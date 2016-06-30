@@ -18,9 +18,15 @@ using Stormpath.Owin.Abstractions
 #line default
 #line hidden
     ;
+#line 4 "Login.cshtml"
+using Stormpath.Owin.Abstractions.ViewModel
+
+#line default
+#line hidden
+    ;
     using System.Threading.Tasks;
 
-    public class Login : BaseView<Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel>
+    public class Login : BaseView<ExtendedLoginViewModel>
     {
         #line hidden
         public Login()
@@ -30,8 +36,16 @@ using Stormpath.Owin.Abstractions
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            WriteLiteral(@"
-<!DOCTYPE html>
+            WriteLiteral("\r\n");
+#line 6 "Login.cshtml"
+  
+    bool hasSocialProviders = Model.AccountStores.Any();
+    AccountStoreViewModel facebookStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("facebook", StringComparison.OrdinalIgnoreCase));
+
+#line default
+#line hidden
+
+            WriteLiteral(@"<!DOCTYPE html>
 <!--[if lt IE 7]>      <html class=""no-js lt-ie9 lt-ie8 lt-ie7""> <![endif]-->
 <!--[if IE 7]>         <html class=""no-js lt-ie9 lt-ie8""> <![endif]-->
 <!--[if IE 8]>         <html class=""no-js lt-ie9""> <![endif]-->
@@ -438,28 +452,28 @@ p {
     <!--[if lt IE 9]>
      <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js'></script>
      <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></script>
-   ");
-            WriteLiteral(" <![endif]-->\r\n</head>\r\n<body class=\"login\">\r\n    <div class=\"container custom-container\">\r\n        <div class=\"va-wrapper\">\r\n            <div class=\"view login-view container\">\r\n");
-#line 34 "Login.cshtml"
+    <");
+            WriteLiteral("![endif]-->\r\n</head>\r\n<body class=\"login\">\r\n    <div class=\"container custom-container\">\r\n        <div class=\"va-wrapper\">\r\n            <div class=\"view login-view container\">\r\n");
+#line 36 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 34 "Login.cshtml"
+#line 36 "Login.cshtml"
                  if (Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
 
 #line default
 #line hidden
 
             WriteLiteral("                    <div class=\"box row\">\r\n                        <div class=\"email-password-area col-xs-12 large col-sm-12\">\r\n                            <div class=\"header\">\r\n");
-#line 38 "Login.cshtml"
+#line 40 "Login.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 38 "Login.cshtml"
+#line 40 "Login.cshtml"
                                  if (Model.Status.Equals("unverified", StringComparison.OrdinalIgnoreCase))
                                 {
 
@@ -472,22 +486,22 @@ p {
                                         account by clicking the link we sent to your inbox.
                                     </p>
                                     <p>Didn't get the email? <a");
-            BeginWriteAttribute("href", " href=\"", 2321, "\"", 2349, 1);
-#line 45 "Login.cshtml"
-WriteAttributeValue("", 2328, Model.VerifyEmailUri, 2328, 21, false);
+            BeginWriteAttribute("href", " href=\"", 2477, "\"", 2505, 1);
+#line 47 "Login.cshtml"
+WriteAttributeValue("", 2484, Model.VerifyEmailUri, 2484, 21, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">Click Here</a>.</p>\r\n                                    <br>\r\n");
-#line 47 "Login.cshtml"
+#line 49 "Login.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                                ");
-#line 48 "Login.cshtml"
+#line 50 "Login.cshtml"
                                  if (Model.Status.Equals("verified", StringComparison.OrdinalIgnoreCase))
                                 {
 
@@ -495,14 +509,14 @@ WriteAttributeValue("", 2328, Model.VerifyEmailUri, 2328, 21, false);
 #line hidden
 
             WriteLiteral("                                    <span>Your Account Has Been Verified.</span>\r\n                                    <p>\r\n                                        You may now login.\r\n                                    </p>\r\n");
-#line 54 "Login.cshtml"
+#line 56 "Login.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                                ");
-#line 55 "Login.cshtml"
+#line 57 "Login.cshtml"
                                  if (Model.Status.Equals("created", StringComparison.OrdinalIgnoreCase))
                                 {
 
@@ -510,14 +524,14 @@ WriteAttributeValue("", 2328, Model.VerifyEmailUri, 2328, 21, false);
 #line hidden
 
             WriteLiteral("                                    <span>Your Account Has Been Created.</span>\r\n                                    <p>\r\n                                        You may now login.\r\n                                    </p>\r\n");
-#line 61 "Login.cshtml"
+#line 63 "Login.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                                ");
-#line 62 "Login.cshtml"
+#line 64 "Login.cshtml"
                                  if (Model.Status.Equals("reset", StringComparison.OrdinalIgnoreCase))
                                 {
 
@@ -525,14 +539,14 @@ WriteAttributeValue("", 2328, Model.VerifyEmailUri, 2328, 21, false);
 #line hidden
 
             WriteLiteral("                                    <span>Password Reset Successfully.</span>\r\n                                    <p>\r\n                                        You can now login with your new password.\r\n                                    </p>\r\n");
-#line 68 "Login.cshtml"
+#line 70 "Login.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                                ");
-#line 69 "Login.cshtml"
+#line 71 "Login.cshtml"
                                  if (Model.Status.Equals("forgot", StringComparison.OrdinalIgnoreCase))
                                 {
 
@@ -544,27 +558,37 @@ WriteAttributeValue("", 2328, Model.VerifyEmailUri, 2328, 21, false);
                                         If an account exists for the email provided, you will receive an email shortly.
                                     </p>
 ");
-#line 75 "Login.cshtml"
+#line 77 "Login.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </div>\r\n                        </div>\r\n                    </div>\r\n");
-#line 79 "Login.cshtml"
+#line 81 "Login.cshtml"
                 }
 
 #line default
 #line hidden
 
-            WriteLiteral("                <br>\r\n                <div class=\"box row\">\r\n                    <div class=\"email-password-area col-xs-12 large col-sm-12\"> \r\n");
-#line 83 "Login.cshtml"
+            WriteLiteral("                <br>\r\n                <div class=\"box row\">\r\n                    <div");
+            BeginWriteAttribute("class", " class=\"", 4481, "\"", 4579, 3);
+            WriteAttributeValue("", 4489, "email-password-area", 4489, 19, true);
+            WriteAttributeValue(" ", 4508, "col-xs-12", 4509, 10, true);
+#line 84 "Login.cshtml"
+WriteAttributeValue(" ", 4518, hasSocialProviders ? "small col-sm-8" : "large col-sm-12", 4519, 61, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(">\r\n");
+#line 85 "Login.cshtml"
                         
 
 #line default
 #line hidden
 
-#line 83 "Login.cshtml"
+#line 85 "Login.cshtml"
                          if (Model.RegistrationEnabled)
                         {
 
@@ -572,15 +596,15 @@ WriteAttributeValue("", 2328, Model.VerifyEmailUri, 2328, 21, false);
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Log In or <a");
-            BeginWriteAttribute("href", " href=\"", 4633, "\"", 4658, 1);
-#line 86 "Login.cshtml"
-WriteAttributeValue("", 4640, Model.RegisterUri, 4640, 18, false);
+            BeginWriteAttribute("href", " href=\"", 4767, "\"", 4792, 1);
+#line 88 "Login.cshtml"
+WriteAttributeValue("", 4774, Model.RegisterUri, 4774, 18, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">Create Account</a></span>\r\n                            </div>\r\n");
-#line 88 "Login.cshtml"
+#line 90 "Login.cshtml"
                         }
                         else
                         {
@@ -589,14 +613,14 @@ WriteAttributeValue("", 4640, Model.RegisterUri, 4640, 18, false);
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Log In</span>\r\n                            </div>\r\n");
-#line 94 "Login.cshtml"
+#line 96 "Login.cshtml"
                         }
 
 #line default
 #line hidden
 
             WriteLiteral("                        ");
-#line 95 "Login.cshtml"
+#line 97 "Login.cshtml"
                          if (Model.Errors.Any())
                         {
 
@@ -604,13 +628,13 @@ WriteAttributeValue("", 4640, Model.RegisterUri, 4640, 18, false);
 #line hidden
 
             WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n");
-#line 98 "Login.cshtml"
+#line 100 "Login.cshtml"
                                 
 
 #line default
 #line hidden
 
-#line 98 "Login.cshtml"
+#line 100 "Login.cshtml"
                                  foreach (var error in Model.Errors)
                                 {
 
@@ -618,33 +642,33 @@ WriteAttributeValue("", 4640, Model.RegisterUri, 4640, 18, false);
 #line hidden
 
             WriteLiteral("                                    <p>");
-#line 100 "Login.cshtml"
+#line 102 "Login.cshtml"
                                   Write(error);
 
 #line default
 #line hidden
             WriteLiteral("</p>\r\n");
-#line 101 "Login.cshtml"
+#line 103 "Login.cshtml"
                                 }
 
 #line default
 #line hidden
 
             WriteLiteral("                            </div>\r\n");
-#line 103 "Login.cshtml"
+#line 105 "Login.cshtml"
                         }
 
 #line default
 #line hidden
 
             WriteLiteral("                        <form method=\"post\" role=\"form\" class=\"login-form form-horizontal\">\r\n\r\n");
-#line 107 "Login.cshtml"
+#line 109 "Login.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 107 "Login.cshtml"
+#line 109 "Login.cshtml"
                              foreach (var field in Model.Form.Fields)
                             {
 
@@ -652,76 +676,181 @@ WriteAttributeValue("", 4640, Model.RegisterUri, 4640, 18, false);
 #line hidden
 
             WriteLiteral("                                <div");
-            BeginWriteAttribute("class", " class=\"", 5679, "\"", 5722, 2);
-            WriteAttributeValue("", 5687, "form-group", 5687, 10, true);
-#line 109 "Login.cshtml"
-WriteAttributeValue(" ", 5697, $"group-{field.Name}", 5698, 25, false);
+            BeginWriteAttribute("class", " class=\"", 5813, "\"", 5856, 2);
+            WriteAttributeValue("", 5821, "form-group", 5821, 10, true);
+#line 111 "Login.cshtml"
+WriteAttributeValue(" ", 5831, $"group-{field.Name}", 5832, 25, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            WriteLiteral(">\r\n                                    <label class=\"col-sm-4\">");
-#line 110 "Login.cshtml"
-                                                       Write(field.Label);
+            WriteLiteral(">\r\n                                    <label");
+            BeginWriteAttribute("class", " class=\"", 5902, "\"", 5958, 1);
+#line 112 "Login.cshtml"
+WriteAttributeValue("", 5910, hasSocialProviders ? "col-sm-12" : "col-sm-4", 5910, 48, false);
 
 #line default
 #line hidden
-            WriteLiteral("</label> \r\n                                    <div class=\"col-sm-8\">\r\n                                        <input");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 6071, "\"", 6103, 1);
+            EndWriteAttribute();
+            WriteLiteral(">\r\n                                        ");
 #line 113 "Login.cshtml"
-WriteAttributeValue("", 6085, field.Placeholder, 6085, 18, false);
+                                   Write(field.Label);
 
 #line default
 #line hidden
-            EndWriteAttribute();
-            BeginWriteAttribute("name", "\r\n                                               name=\"", 6104, "\"", 6170, 1);
-#line 114 "Login.cshtml"
-WriteAttributeValue("", 6159, field.Name, 6159, 11, false);
-
-#line default
-#line hidden
-            EndWriteAttribute();
-            BeginWriteAttribute("type", "\r\n                                               type=\"", 6171, "\"", 6237, 1);
+            WriteLiteral("\r\n                                    </label>\r\n                                    <div");
+            BeginWriteAttribute("class", " class=\"", 6102, "\"", 6158, 1);
 #line 115 "Login.cshtml"
-WriteAttributeValue("", 6226, field.Type, 6226, 11, false);
+WriteAttributeValue("", 6110, hasSocialProviders ? "col-sm-12" : "col-sm-8", 6110, 48, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("value", "\r\n                                               value=\"", 6238, "\"", 6343, 1);
-#line 116 "Login.cshtml"
-WriteAttributeValue("", 6294, Model.FormData.Get(field.Name) ?? string.Empty, 6294, 49, false);
+            WriteLiteral(">\r\n                                        <input");
+            BeginWriteAttribute("placeholder", " placeholder=\"", 6307, "\"", 6339, 1);
+#line 117 "Login.cshtml"
+WriteAttributeValue("", 6321, field.Placeholder, 6321, 18, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            BeginWriteAttribute("name", "\r\n                                               name=\"", 6340, "\"", 6406, 1);
+#line 118 "Login.cshtml"
+WriteAttributeValue("", 6395, field.Name, 6395, 11, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            BeginWriteAttribute("type", "\r\n                                               type=\"", 6407, "\"", 6473, 1);
+#line 119 "Login.cshtml"
+WriteAttributeValue("", 6462, field.Type, 6462, 11, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            BeginWriteAttribute("value", "\r\n                                               value=\"", 6474, "\"", 6579, 1);
+#line 120 "Login.cshtml"
+WriteAttributeValue("", 6530, Model.FormData.Get(field.Name) ?? string.Empty, 6530, 49, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral("\r\n                                               class=\"form-control\"\r\n                                               ");
-#line 118 "Login.cshtml"
+#line 122 "Login.cshtml"
                                            Write(field.Required ? "required" : string.Empty);
 
 #line default
 #line hidden
             WriteLiteral(">\r\n                                    </div>\r\n                                </div>\r\n");
-#line 121 "Login.cshtml"
+#line 125 "Login.cshtml"
                             }
 
 #line default
 #line hidden
 
-            WriteLiteral(@"                            <div>
-                                <button type=""submit"" class=""login btn btn-login btn-sp-green"">Log In</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            WriteLiteral("                            <div>\r\n                                <button type=\"submit\" class=\"login btn btn-login btn-sp-green\">Log In</button>\r\n                            </div>\r\n                        </form>\r\n                    </div>\r\n");
+#line 131 "Login.cshtml"
+                    
+
+#line default
+#line hidden
+
+#line 131 "Login.cshtml"
+                     if (hasSocialProviders)
+                    {
+
+#line default
+#line hidden
+
+            WriteLiteral("                        <div class=\"social-area col-xs-12 col-sm-4\">\r\n                            <div class=\"header\">&nbps;</div>\r\n                            <label>Easy 1-click login:</label>\r\n");
+#line 136 "Login.cshtml"
+                            
+
+#line default
+#line hidden
+
+#line 136 "Login.cshtml"
+                             if (facebookStore != null)
+                            {
+
+#line default
+#line hidden
+
+            WriteLiteral(@"                                <button class=""btn btn-social btn-facebook"" onclick=""facebookLogin()"">Facebook</button>
+                                <script type=""text/javascript"">
+                                    function facebookLogin() {
+                                        var FB = window.FB;
+                                        var facebookScope = '");
+#line 142 "Login.cshtml"
+                                                        Write(facebookStore.Provider.Scope);
+
+#line default
+#line hidden
+            WriteLiteral(@"';
+
+                                        FB.login(function (response) {
+                                            if (response.status === 'connected') {
+                                                var queryStr = window.location.search.replace('?', '');
+                                                // TODO make dynamic
+                                                if (queryStr) {
+                                                    // Don't include any access_token parameters in
+                                                    // the query string as it will be added by us.
+                                                    queryStr = queryStr.replace(/(&?)access_token=([^&]*)/, '');
+
+                                                    window.location.replace('/callbacks/facebook?' + queryStr + '&access_token=' + response.authResponse.accessToken);
+                                                } else {
+                                                    window.location.replace('/c");
+            WriteLiteral(@"allbacks/facebook?access_token=' + response.authResponse.accessToken);
+                                                }
+                                            }
+                                        }, { scope: facebookScope });
+                                    }
+
+                                    window.fbAsyncInit = function () {
+                                        FB.init({
+                                            appId: '");
+#line 163 "Login.cshtml"
+                                               Write(facebookStore.Provider.ClientId);
+
+#line default
+#line hidden
+            WriteLiteral(@"',
+                                            cookie: true,
+                                            xfbml: true,
+                                            version: 'v2.3'
+                                        });
+                                    };
+
+                                    (function (d, s, id) {
+                                        var js, fjs = d.getElementsByTagName(s)[0];
+                                        if (d.getElementById(id)) { return; }
+                                        js = d.createElement(s); js.id = id;
+                                        js.src = ""//connect.facebook.net/en_US/sdk.js"";
+                                        fjs.parentNode.insertBefore(js, fjs);
+                                    }(document, 'script', 'facebook-jssdk'));
+                                </script>
 ");
-#line 129 "Login.cshtml"
+#line 178 "Login.cshtml"
+                            }
+
+#line default
+#line hidden
+
+            WriteLiteral("                        </div>\r\n");
+#line 180 "Login.cshtml"
+                    }
+
+#line default
+#line hidden
+
+            WriteLiteral("                </div>\r\n");
+#line 182 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 129 "Login.cshtml"
+#line 182 "Login.cshtml"
                  if (Model.VerifyEmailEnabled)
                 {
 
@@ -729,28 +858,28 @@ WriteAttributeValue("", 6294, Model.FormData.Get(field.Name) ?? string.Empty, 62
 #line hidden
 
             WriteLiteral("                    <a style=\"float:left\"");
-            BeginWriteAttribute("href", " href=\"", 7052, "\"", 7080, 1);
-#line 131 "Login.cshtml"
-WriteAttributeValue("", 7059, Model.VerifyEmailUri, 7059, 21, false);
+            BeginWriteAttribute("href", " href=\"", 10451, "\"", 10479, 1);
+#line 184 "Login.cshtml"
+WriteAttributeValue("", 10458, Model.VerifyEmailUri, 10458, 21, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Resend Verification Email?</a>\r\n");
-#line 132 "Login.cshtml"
+#line 185 "Login.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 134 "Login.cshtml"
+#line 187 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 134 "Login.cshtml"
+#line 187 "Login.cshtml"
                  if (Model.ForgotPasswordEnabled)
                 {
 
@@ -758,15 +887,15 @@ WriteAttributeValue("", 7059, Model.VerifyEmailUri, 7059, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 7262, "\"", 7293, 1);
-#line 136 "Login.cshtml"
-WriteAttributeValue("", 7269, Model.ForgotPasswordUri, 7269, 24, false);
+            BeginWriteAttribute("href", " href=\"", 10661, "\"", 10692, 1);
+#line 189 "Login.cshtml"
+WriteAttributeValue("", 10668, Model.ForgotPasswordUri, 10668, 24, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Forgot Password?</a>\r\n");
-#line 137 "Login.cshtml"
+#line 190 "Login.cshtml"
                 }
 
 #line default

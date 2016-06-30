@@ -37,6 +37,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var viewModelBuilder = new ExtendedLoginViewModelBuilder(
                 _configuration.Web,
+                _configuration.Providers,
                 ChangePasswordRoute.ShouldBeEnabled(_configuration),
                 VerifyEmailRoute.ShouldBeEnabled(_configuration),
                 queryString,
@@ -77,6 +78,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 var viewModelBuilder = new ExtendedLoginViewModelBuilder(
                     _configuration.Web,
+                    _configuration.Providers,
                     ChangePasswordRoute.ShouldBeEnabled(_configuration),
                     VerifyEmailRoute.ShouldBeEnabled(_configuration),
                     queryString,
@@ -98,6 +100,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 var viewModelBuilder = new ExtendedLoginViewModelBuilder(
                     _configuration.Web,
+                    _configuration.Providers,
                     ChangePasswordRoute.ShouldBeEnabled(_configuration),
                     VerifyEmailRoute.ShouldBeEnabled(_configuration),
                     queryString,

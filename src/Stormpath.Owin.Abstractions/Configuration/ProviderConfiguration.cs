@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="ProviderConfiguration.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,27 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-
-namespace Stormpath.Owin.Abstractions.ViewModel
+namespace Stormpath.Owin.Abstractions.Configuration
 {
-    public class LoginViewModel
+    public sealed class ProviderConfiguration
     {
-        public LoginFormViewModel Form { get; set; } = new LoginFormViewModel();
+        public ProviderConfiguration(
+            string clientId,
+            string clientSecret,
+            string uri)
+        {
+            ClientId = clientId;
+            ClientSecret = clientSecret;
+            Uri = uri;
+            //Enabled = enabled;
+        }
 
-        public IReadOnlyList<AccountStoreViewModel> AccountStores { get; set; } = new List<AccountStoreViewModel>();
+        public string ClientId { get; }
+
+        public string ClientSecret { get; }
+
+        public string Uri { get; }
+
+        //public bool Enabled { get; }
     }
 }

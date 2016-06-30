@@ -17,13 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Stormpath.Configuration.Abstractions.Immutable;
+using Stormpath.Owin.Abstractions.Configuration;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class ExtendedLoginViewModelBuilder
     {
         private readonly WebConfiguration webConfiguration;
+        private readonly IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> providerConfigurations;
         private readonly bool forgotPasswordEnabled;
         private readonly bool verifyEmailEnabled;
         private readonly IDictionary<string, string[]> queryString;
@@ -31,12 +34,14 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 
         public ExtendedLoginViewModelBuilder(
             WebConfiguration webConfiguration,
+            IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> providerConfigurations,
             bool forgotPasswordEnabled,
             bool verifyEmailEnabled,
             IDictionary<string, string[]> queryString,
             IDictionary<string, string[]> previousFormData)
         {
             this.webConfiguration = webConfiguration;
+            this.providerConfigurations = providerConfigurations;
             this.forgotPasswordEnabled = forgotPasswordEnabled;
             this.verifyEmailEnabled = verifyEmailEnabled;
             this.queryString = queryString;
@@ -56,7 +61,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             result.VerifyEmailEnabled = this.verifyEmailEnabled;
             result.VerifyEmailUri = this.webConfiguration.VerifyEmail.Uri;
 
-            // status parameter from queryString
+            // Status parameter from queryString
             result.Status = this.queryString.GetString("status");
 
             // Previous form submission (if any)
@@ -71,6 +76,19 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                     })
                     .ToDictionary(kvp => kvp.Key, kvp => string.Join(",", kvp.Value));
             }
+
+            // Social Providers
+            result.AccountStores = this.providerConfigurations.Select(x => new AccountStoreViewModel()
+            {
+                Name = x.Key,
+                Provider = new AccountStoreProviderViewModel()
+                {
+                    ClientId = x.Value.ClientId,
+                    Href = x.Value.Uri,
+                    ProviderId = x.Key,
+                    Scope = this.webConfiguration.Social.Get(x.Key)?.Scope
+                }
+            }).ToArray();
 
             return result;
         }

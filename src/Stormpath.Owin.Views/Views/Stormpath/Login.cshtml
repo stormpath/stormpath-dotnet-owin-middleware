@@ -1,11 +1,13 @@
-﻿@model Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel
+﻿@model ExtendedLoginViewModel
 @using System
 @using System.Linq
 @using Stormpath.Owin.Abstractions
+@using Stormpath.Owin.Abstractions.ViewModel
 
-@*@functions {
-    private Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel Model { get; }
-}*@
+@{
+    bool hasSocialProviders = Model.AccountStores.Any();
+    AccountStoreViewModel facebookStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("facebook", StringComparison.OrdinalIgnoreCase));
+}
 
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
@@ -81,7 +83,7 @@
                 }
                 <br>
                 <div class="box row">
-                    <div class="email-password-area col-xs-12 large col-sm-12"> @* switch col-sm-12 to col-sm-8 if social providers are present *@
+                    <div class="email-password-area col-xs-12 @(hasSocialProviders ? "small col-sm-8" : "large col-sm-12")">
                         @if (Model.RegistrationEnabled)
                         {
                             <div class="header">
@@ -109,8 +111,10 @@
                             @foreach (var field in Model.Form.Fields)
                             {
                                 <div class="form-group @($"group-{field.Name}")">
-                                    <label class="col-sm-4">@field.Label</label> @* switch to col-sm-12 if social providers are present *@
-                                    <div class="col-sm-8">
+                                    <label class="@(hasSocialProviders ? "col-sm-12" : "col-sm-4")">
+                                        @field.Label
+                                    </label>
+                                    <div class="@(hasSocialProviders ? "col-sm-12" : "col-sm-8")">
                                         @* switch to col-sm-12 if social providers are present *@
                                         <input placeholder="@field.Placeholder"
                                                name="@field.Name"
@@ -126,7 +130,56 @@
                             </div>
                         </form>
                     </div>
-                    @* Social provider section *@
+                    @if (hasSocialProviders)
+                    {
+                        <div class="social-area col-xs-12 col-sm-4">
+                            <div class="header">&nbps;</div>
+                            <label>Easy 1-click login:</label>
+                            @if (facebookStore != null)
+                            {
+                                <button class="btn btn-social btn-facebook" onclick="facebookLogin()">Facebook</button>
+                                <script type="text/javascript">
+                                    function facebookLogin() {
+                                        var FB = window.FB;
+                                        var facebookScope = '@facebookStore.Provider.Scope';
+
+                                        FB.login(function (response) {
+                                            if (response.status === 'connected') {
+                                                var queryStr = window.location.search.replace('?', '');
+                                                // TODO make dynamic
+                                                if (queryStr) {
+                                                    // Don't include any access_token parameters in
+                                                    // the query string as it will be added by us.
+                                                    queryStr = queryStr.replace(/(&?)access_token=([^&]*)/, '');
+
+                                                    window.location.replace('/callbacks/facebook?' + queryStr + '&access_token=' + response.authResponse.accessToken);
+                                                } else {
+                                                    window.location.replace('/callbacks/facebook?access_token=' + response.authResponse.accessToken);
+                                                }
+                                            }
+                                        }, { scope: facebookScope });
+                                    }
+
+                                    window.fbAsyncInit = function () {
+                                        FB.init({
+                                            appId: '@facebookStore.Provider.ClientId',
+                                            cookie: true,
+                                            xfbml: true,
+                                            version: 'v2.3'
+                                        });
+                                    };
+
+                                    (function (d, s, id) {
+                                        var js, fjs = d.getElementsByTagName(s)[0];
+                                        if (d.getElementById(id)) { return; }
+                                        js = d.createElement(s); js.id = id;
+                                        js.src = "//connect.facebook.net/en_US/sdk.js";
+                                        fjs.parentNode.insertBefore(js, fjs);
+                                    }(document, 'script', 'facebook-jssdk'));
+                                </script>
+                            }
+                        </div>
+                    }
                 </div>
                 @if (Model.VerifyEmailEnabled)
                 {
