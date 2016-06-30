@@ -23,7 +23,10 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Error;
+using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 using Stormpath.SDK.Provider;
 
@@ -43,45 +46,42 @@ namespace Stormpath.Owin.Middleware.Route
         {
             if (string.IsNullOrEmpty(accessToken))
             {
-                // TODO move this to a central place
-                var errorUri = $"{_configuration.Web.Login.Uri}?status=social_badtoken";
-                return await HttpResponse.Redirect(context, errorUri);
+                return await HttpResponse.Redirect(context, GetErrorUri());
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
-            var request = client.Providers()
-                .Facebook()
-                .Account()
-                .SetAccessToken(accessToken)
-                .Build();
-            var result = await application.GetAccountAsync(request, cancellationToken);
-            var account = result.Account;
-            // todo error handling
+            IAccount account;
+            try
+            {
+                var request = client.Providers()
+                    .Facebook()
+                    .Account()
+                    .SetAccessToken(accessToken)
+                    .Build();
+                var result = await application.GetAccountAsync(request, cancellationToken);
+                account = result.Account;
+            }
+            catch (ResourceException rex)
+            {
+                _logger.Warn(rex, source: "FacebookCallbackRoute");
+                account = null;
+            }
 
-            // Exchange stormpath token
-            // todo refactor out to helper lib
+            if (account == null)
+            {
+                return await HttpResponse.Redirect(context, GetErrorUri());
+            }
 
-            var oauthExchangeJwt = client.NewJwtBuilder()
-                .SetSubject(account.Href)
-                .SetIssuedAt(DateTimeOffset.UtcNow)
-                .SetExpiration(DateTimeOffset.UtcNow.AddMinutes(1)) // very short
-                .SetIssuer(application.Href)
-                .SetClaim("status", "AUTHENTICATED")
-                .SetAudience(_configuration.Client.ApiKey.Id)
-                .SignWith(_configuration.Client.ApiKey.Secret, Encoding.UTF8)
-                .Build();
+            var tokenExchanger = new StormpathTokenExchanger(client, application, _configuration, _logger);
+            var exchangeResult = await tokenExchanger.Exchange(accessToken, account, cancellationToken);
 
-            var exchangeRequest = OauthRequests.NewIdSiteTokenAuthenticationRequest()
-                .SetJwt(oauthExchangeJwt.ToString())
-                .Build();
-
-            var exchangeResult = await application.NewIdSiteTokenAuthenticator()
-                .AuthenticateAsync(exchangeRequest, cancellationToken);
-            // todo error handling
+            if (exchangeResult == null)
+            {
+                return await HttpResponse.Redirect(context, GetErrorUri());
+            }
 
             Cookies.AddCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
-
             return await HttpResponse.Redirect(context, _configuration.Web.Login.NextUri);
         }
 
@@ -94,9 +94,12 @@ namespace Stormpath.Owin.Middleware.Route
                 return LoginWithAccessToken(queryString.GetString("access_token"), context, client, cancellationToken);
             }
 
-            // TODO move this to a central place
-            var errorUri = $"{_configuration.Web.Login.Uri}?status=social_failed";
-            return HttpResponse.Redirect(context, errorUri);
+            return HttpResponse.Redirect(context, GetErrorUri());
+        }
+
+        private string GetErrorUri()
+        {
+            return $"{_configuration.Web.Login.Uri}?status=social_failed";
         }
     }
 }
