@@ -316,14 +316,14 @@ namespace Stormpath.Owin.Middleware
 
         private IReadOnlyDictionary<string, RouteHandler> BuildRoutingTable()
         {
-            var routingTable = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
+            var routing = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
 
             // /oauth/token
             if (this.configuration.Web.Oauth2.Enabled)
             {
                 this.logger.Info($"Oauth2 route enabled on {this.configuration.Web.Oauth2.Uri}", "BuildRoutingTable");
 
-                routingTable.Add(
+                routing.Add(
                     this.configuration.Web.Oauth2.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
@@ -336,7 +336,7 @@ namespace Stormpath.Owin.Middleware
             {
                 this.logger.Info($"Register route enabled on {this.configuration.Web.Register.Uri}", "BuildRoutingTable");
 
-                routingTable.Add(
+                routing.Add(
                     this.configuration.Web.Register.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
@@ -349,7 +349,7 @@ namespace Stormpath.Owin.Middleware
             {
                 this.logger.Info($"Login route enabled on {this.configuration.Web.Login.Uri}", "BuildRoutingTable");
 
-                routingTable.Add(
+                routing.Add(
                     this.configuration.Web.Login.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
@@ -362,7 +362,7 @@ namespace Stormpath.Owin.Middleware
             {
                 this.logger.Info($"Me route enabled on {this.configuration.Web.Me.Uri}", "BuildRoutingTable");
 
-                routingTable.Add(
+                routing.Add(
                     this.configuration.Web.Me.Uri,
                     new RouteHandler(
                         authenticationRequired: true,
@@ -375,7 +375,7 @@ namespace Stormpath.Owin.Middleware
             {
                 this.logger.Info($"Logout route enabled on {this.configuration.Web.Logout.Uri}", "BuildRoutingTable");
 
-                routingTable.Add(
+                routing.Add(
                     this.configuration.Web.Logout.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
@@ -388,7 +388,7 @@ namespace Stormpath.Owin.Middleware
             {
                 this.logger.Info($"ForgotPassword route enabled on {this.configuration.Web.ForgotPassword.Uri}", "BuildRoutingTable");
 
-                routingTable.Add(
+                routing.Add(
                     this.configuration.Web.ForgotPassword.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
@@ -401,7 +401,7 @@ namespace Stormpath.Owin.Middleware
             {
                 this.logger.Info($"ChangePassword route enabled on {this.configuration.Web.ChangePassword.Uri}", "BuildRoutingTable");
 
-                routingTable.Add(
+                routing.Add(
                     this.configuration.Web.ChangePassword.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
@@ -414,7 +414,7 @@ namespace Stormpath.Owin.Middleware
             {
                 this.logger.Info($"VerifyEmail route enabled on {this.configuration.Web.VerifyEmail.Uri}", "BuildRoutingTable");
 
-                routingTable.Add(
+                routing.Add(
                     this.configuration.Web.VerifyEmail.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
@@ -422,7 +422,22 @@ namespace Stormpath.Owin.Middleware
                     );
             }
 
-            return routingTable;
+            // /callbacks/facebook
+            if (FacebookCallbackRoute.ShouldBeEnabled(this.configuration))
+            {
+                var facebookProvider =this.configuration.Providers
+                    .First(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase))
+                    .Value;
+                this.logger.Info($"Facebook callback route enabled on {facebookProvider.Uri}", "BuildRoutingTable");
+
+                routing.Add(
+                    facebookProvider.Uri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync));
+            }
+
+            return routing;
         }
     }
 }

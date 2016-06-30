@@ -762,7 +762,7 @@ WriteAttributeValue("", 6530, Model.FormData.Get(field.Name) ?? string.Empty, 65
 #line default
 #line hidden
 
-            WriteLiteral("                        <div class=\"social-area col-xs-12 col-sm-4\">\r\n                            <div class=\"header\">&nbps;</div>\r\n                            <label>Easy 1-click login:</label>\r\n");
+            WriteLiteral("                        <div class=\"social-area col-xs-12 col-sm-4\">\r\n                            <div class=\"header\">&nbsp;</div>\r\n                            <label>Easy 1-click login:</label>\r\n");
 #line 136 "Login.cshtml"
                             
 
