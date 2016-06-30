@@ -10,7 +10,7 @@
   "dependencies": {
     "Stormpath.Configuration.Abstractions": "5.3.0" 
   },
-  "description": "Common components (views, view models) for the Stormpath OWIN middleware library.",
+  "description": "Common components for the Stormpath OWIN middleware library.",
   "frameworks": {
     "net45": { },
     "netstandard1.1": {
