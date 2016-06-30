@@ -1,4 +1,4 @@
-﻿// <copyright file="FacebookCallbackRoute.cs" company="Stormpath, Inc.">
+﻿// <copyright file="GoogleCallbackRoute.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,21 +29,20 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class FacebookCallbackRoute : AbstractRoute
+    public class GoogleCallbackRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
-            => configuration.Web.Social.ContainsKey("facebook")
-               && configuration.Providers.Any(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase));
+            => configuration.Web.Social.ContainsKey("google")
+               && configuration.Providers.Any(p => p.Key.Equals("google", StringComparison.OrdinalIgnoreCase));
 
-        private async Task<bool> LoginWithAccessToken(
-            string accessToken,
+        private async Task<bool> LoginWithAccessCode(
+            string code,
             IOwinEnvironment context,
             IClient client,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(accessToken))
+            if (string.IsNullOrEmpty(code))
             {
-                _logger.Warn("Facebook access_token was empty", nameof(FacebookCallbackRoute));
                 return await HttpResponse.Redirect(context, GetErrorUri());
             }
 
@@ -54,9 +53,9 @@ namespace Stormpath.Owin.Middleware.Route
             try
             {
                 var request = client.Providers()
-                    .Facebook()
+                    .Google()
                     .Account()
-                    .SetAccessToken(accessToken)
+                    .SetCode(code)
                     .Build();
                 var result = await application.GetAccountAsync(request, cancellationToken);
                 account = result.Account;
@@ -64,7 +63,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                _logger.Warn(rex, source: nameof(FacebookCallbackRoute));
+                _logger.Warn(rex, source: nameof(GoogleCallbackRoute));
                 account = null;
             }
 
@@ -93,9 +92,9 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            if (queryString.ContainsKey("access_token"))
+            if (queryString.ContainsKey("code"))
             {
-                return LoginWithAccessToken(queryString.GetString("access_token"), context, client, cancellationToken);
+                return LoginWithAccessCode(queryString.GetString("code"), context, client, cancellationToken);
             }
 
             return HttpResponse.Redirect(context, GetErrorUri());

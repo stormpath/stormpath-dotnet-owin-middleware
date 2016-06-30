@@ -25,16 +25,13 @@ namespace Stormpath.Owin.Abstractions.Configuration
         {
             ClientId = clientId;
             ClientSecret = clientSecret;
-            Uri = uri;
-            //Enabled = enabled;
+            CallbackUri = uri;
         }
 
         public string ClientId { get; }
 
         public string ClientSecret { get; }
 
-        public string Uri { get; }
-
-        //public bool Enabled { get; }
+        public string CallbackUri { get; }
     }
 }

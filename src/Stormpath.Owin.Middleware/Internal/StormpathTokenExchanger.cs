@@ -47,7 +47,7 @@ namespace Stormpath.Owin.Middleware.Internal
             _logger = logger;
         }
 
-        public Task<IOauthGrantAuthenticationResult> Exchange(string accessToken, IAccount account, CancellationToken cancellationToken)
+        public Task<IOauthGrantAuthenticationResult> Exchange(IAccount account, CancellationToken cancellationToken)
         {
             var oauthExchangeJwt = _client.NewJwtBuilder()
                 .SetSubject(account.Href)
@@ -71,7 +71,7 @@ namespace Stormpath.Owin.Middleware.Internal
             }
             catch (ResourceException rex)
             {
-                _logger.Warn(rex, source: "StormpathTokenExchanger");
+                _logger.Warn(rex, source: nameof(StormpathTokenExchanger));
 
                 return Task.FromResult<IOauthGrantAuthenticationResult>(null);
             }

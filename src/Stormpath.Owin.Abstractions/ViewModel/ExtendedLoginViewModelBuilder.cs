@@ -81,10 +81,10 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             result.AccountStores = this.providerConfigurations.Select(x => new AccountStoreViewModel()
             {
                 Name = x.Key,
+                Href = x.Value.CallbackUri,
                 Provider = new AccountStoreProviderViewModel()
                 {
                     ClientId = x.Value.ClientId,
-                    Href = x.Value.Uri,
                     ProviderId = x.Key,
                     Scope = this.webConfiguration.Social.Get(x.Key)?.Scope
                 }

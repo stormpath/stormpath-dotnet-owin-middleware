@@ -7,6 +7,7 @@
 @{
     bool hasSocialProviders = Model.AccountStores.Any();
     AccountStoreViewModel facebookStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("facebook", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel googleStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("google", StringComparison.OrdinalIgnoreCase));
 }
 
 <!DOCTYPE html>
@@ -152,9 +153,9 @@
                                                     // the query string as it will be added by us.
                                                     queryStr = queryStr.replace(/(&?)access_token=([^&]*)/, '');
 
-                                                    window.location.replace('/callbacks/facebook?' + queryStr + '&access_token=' + response.authResponse.accessToken);
+                                                    window.location.replace('@facebookStore.Href?' + queryStr + '&access_token=' + response.authResponse.accessToken);
                                                 } else {
-                                                    window.location.replace('/callbacks/facebook?access_token=' + response.authResponse.accessToken);
+                                                    window.location.replace('@facebookStore.Href?access_token=' + response.authResponse.accessToken);
                                                 }
                                             }
                                         }, { scope: facebookScope });
@@ -176,6 +177,28 @@
                                         js.src = "//connect.facebook.net/en_US/sdk.js";
                                         fjs.parentNode.insertBefore(js, fjs);
                                     }(document, 'script', 'facebook-jssdk'));
+                                </script>
+                            }
+
+                            @if (googleStore != null)
+                            {
+                                <button class="btn btn-social btn-google" onclick="googleLogin()">Google</button>
+                                <script type="text/javascript">
+                                    if (!location.origin)
+                                        location.origin = location.protocol + "//" + location.host;
+
+                                    function googleLogin() {
+                                        var clientId = '@googleStore.Provider.ClientId';
+                                        var googleScope = '@googleStore.Provider.Scope';
+
+                                        var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=' +
+                                            clientId +
+                                            '&scope=' + googleScope +
+                                            '&include_granted_scopes=true&redirect_uri=' +
+                                            location.origin + '@googleStore.Href';
+
+                                        window.location = finalUrl;
+                                    }
                                 </script>
                             }
                         </div>
