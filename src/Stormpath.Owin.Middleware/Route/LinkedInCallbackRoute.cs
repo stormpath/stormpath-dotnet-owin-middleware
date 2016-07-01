@@ -1,4 +1,4 @@
-﻿// <copyright file="GithubCallbackRoute.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LinkedInCallbackRoute.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,11 +29,11 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class GithubCallbackRoute : AbstractRoute
+    public class LinkedInCallbackRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
-            => configuration.Web.Social.ContainsKey("github")
-               && configuration.Providers.Any(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase));
+            => configuration.Web.Social.ContainsKey("linkedin")
+               && configuration.Providers.Any(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase));
 
         private async Task<bool> LoginWithAccessCode(
             string code,
@@ -49,17 +49,17 @@ namespace Stormpath.Owin.Middleware.Route
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             var providerData = _configuration.Providers
-                .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
+                .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
                 .Value;
 
-            var oauthCodeExchanger = new OauthCodeExchanger("https://github.com/login/oauth/access_token", _logger);
+            var oauthCodeExchanger = new OauthCodeExchanger("https://www.linkedin.com/uas/oauth2/accessToken", _logger);
             var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
                 code, _configuration.Web.BasePath, providerData.CallbackUri, providerData.ClientId,
                 providerData.ClientSecret, cancellationToken);
 
             if (string.IsNullOrEmpty(accessToken))
             {
-                _logger.Warn("Exchanged access token was null", source: nameof(GithubCallbackRoute));
+                _logger.Warn("Exchanged access token was null", source: nameof(LinkedInCallbackRoute));
                 return await HttpResponse.Redirect(context, GetErrorUri());
             }
 
@@ -68,7 +68,7 @@ namespace Stormpath.Owin.Middleware.Route
             try
             {
                 var request = client.Providers()
-                    .Github()
+                    .LinkedIn()
                     .Account()
                     .SetAccessToken(accessToken)
                     .Build();
@@ -78,7 +78,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                _logger.Warn(rex, source: nameof(GithubCallbackRoute));
+                _logger.Warn(rex, source: nameof(LinkedInCallbackRoute));
                 account = null;
             }
 
@@ -107,12 +107,19 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            if (queryString.ContainsKey("code"))
+            if (queryString.ContainsKey("error"))
             {
-                return LoginWithAccessCode(queryString.GetString("code"), context, client, cancellationToken);
+                _logger.Warn($"Error: '{queryString.GetString("error")}'", nameof(LinkedInCallbackRoute));
+                return HttpResponse.Redirect(context, GetErrorUri());
             }
 
-            return HttpResponse.Redirect(context, GetErrorUri());
+            if (!queryString.ContainsKey("code"))
+            {
+                _logger.Warn("Missing code parameter", nameof(LinkedInCallbackRoute));
+                return HttpResponse.Redirect(context, GetErrorUri());
+            }
+
+            return LoginWithAccessCode(queryString.GetString("code"), context, client, cancellationToken);
         }
 
         private string GetErrorUri()

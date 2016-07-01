@@ -31,9 +31,9 @@ namespace Stormpath.Owin.NowinHarness
     using SDK.Logging;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
-    static class Program
+    public static class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             var options = new StartOptions
             {

@@ -6,9 +6,10 @@
 
 @{
     bool hasSocialProviders = Model.AccountStores.Any();
-    AccountStoreViewModel facebookStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("facebook", StringComparison.OrdinalIgnoreCase));
-    AccountStoreViewModel googleStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("google", StringComparison.OrdinalIgnoreCase));
-    AccountStoreViewModel githubStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("github", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel facebookProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("facebook", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel googleProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("google", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel githubProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("github", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel linkedInProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("linkedin", StringComparison.OrdinalIgnoreCase));
 }
 
 <!DOCTYPE html>
@@ -137,13 +138,13 @@
                         <div class="social-area col-xs-12 col-sm-4">
                             <div class="header">&nbsp;</div>
                             <label>Easy 1-click login:</label>
-                            @if (facebookStore != null)
+                            @if (facebookProvider != null)
                             {
                                 <button class="btn btn-social btn-facebook" onclick="facebookLogin()">Facebook</button>
                                 <script type="text/javascript">
                                     function facebookLogin() {
                                         var FB = window.FB;
-                                        var facebookScope = '@facebookStore.Provider.Scope';
+                                        var facebookScope = '@facebookProvider.Provider.Scope';
 
                                         FB.login(function (response) {
                                             if (response.status === 'connected') {
@@ -154,9 +155,9 @@
                                                     // the query string as it will be added by us.
                                                     queryStr = queryStr.replace(/(&?)access_token=([^&]*)/, '');
 
-                                                    window.location.replace('@facebookStore.Href?' + queryStr + '&access_token=' + response.authResponse.accessToken);
+                                                    window.location.replace('@facebookProvider.Href?' + queryStr + '&access_token=' + response.authResponse.accessToken);
                                                 } else {
-                                                    window.location.replace('@facebookStore.Href?access_token=' + response.authResponse.accessToken);
+                                                    window.location.replace('@facebookProvider.Href?access_token=' + response.authResponse.accessToken);
                                                 }
                                             }
                                         }, { scope: facebookScope });
@@ -164,7 +165,7 @@
 
                                     window.fbAsyncInit = function () {
                                         FB.init({
-                                            appId: '@facebookStore.Provider.ClientId',
+                                            appId: '@facebookProvider.Provider.ClientId',
                                             cookie: true,
                                             xfbml: true,
                                             version: 'v2.3'
@@ -181,7 +182,7 @@
                                 </script>
                             }
 
-                            @if (googleStore != null)
+                            @if (googleProvider != null)
                             {
                                 <button class="btn btn-social btn-google" onclick="googleLogin()">Google</button>
                                 <script type="text/javascript">
@@ -189,21 +190,21 @@
                                         location.origin = location.protocol + "//" + location.host;
 
                                     function googleLogin() {
-                                        var clientId = '@googleStore.Provider.ClientId';
-                                        var googleScope = '@googleStore.Provider.Scope';
+                                        var clientId = '@googleProvider.Provider.ClientId';
+                                        var googleScope = '@googleProvider.Provider.Scope';
 
                                         var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=' +
                                             clientId +
                                             '&scope=' + googleScope +
                                             '&include_granted_scopes=true&redirect_uri=' +
-                                            location.origin + '@googleStore.Href';
+                                            location.origin + '@googleProvider.Href';
 
                                         window.location = finalUrl;
                                     }
                                 </script>
                             }
 
-                            @if (githubStore != null)
+                            @if (githubProvider != null)
                             {
                                 <button class="btn btn-social btn-github" onclick="githubLogin()">Github</button>
                                 <script type="text/javascript">
@@ -211,9 +212,9 @@
                                         location.origin = location.protocol + "//" + location.host;
 
                                     function githubLogin() {
-                                        var clientId = '@githubStore.Provider.ClientId';
-                                        var gitHubScope = '@githubStore.Provider.Scope';
-                                        var redirectUri = location.origin + '@githubStore.Href';
+                                        var clientId = '@githubProvider.Provider.ClientId';
+                                        var gitHubScope = '@githubProvider.Provider.Scope';
+                                        var redirectUri = location.origin + '@githubProvider.Href';
 
                                         var url = 'https://github.com/login/oauth/authorize' +
                                             '?client_id=' + encodeURIComponent(clientId) +
@@ -221,6 +222,61 @@
                                             '&redirect_uri=' + encodeURIComponent(redirectUri);
 
                                         window.location = url;
+                                    }
+                                </script>
+                            }
+
+                            @if (linkedInProvider != null)
+                            {
+                                <button class="btn btn-social btn-linkedin" onclick="linkedinLogin()">LinkedIn</button>
+                                <script type="text/javascript">
+                                    if (!location.origin)
+                                        location.origin = location.protocol + "//" + location.host;
+
+                                    function buildUrl(baseUrl, queryString) {
+                                        var result = baseUrl;
+
+                                        if (queryString) {
+                                            var serializedQueryString = '';
+
+                                            for (var key in queryString) {
+                                                var value = queryString[key];
+
+                                                if (serializedQueryString.length) {
+                                                    serializedQueryString += '&';
+                                                }
+
+                                                // Don't include any access_token parameters in
+                                                // the query string as it will be added by LinkedIn.
+                                                if (key === 'access_token') {
+                                                    continue;
+                                                }
+
+                                                serializedQueryString += key + '=' + encodeURIComponent(value);
+                                            }
+
+                                            result += '?' + serializedQueryString;
+                                        }
+
+                                        return result;
+                                    }
+
+                                    function linkedinLogin() {
+                                        var oauthStateToken = '@Model.OauthStateToken';
+                                        var authorizationUrl = 'https://www.linkedin.com/uas/oauth2/authorization';
+
+                                        var clientId = '@linkedInProvider.Provider.ClientId';
+                                        var redirectUri = location.origin + '@linkedInProvider.Href';
+
+                                        var linkedinScope = '@linkedInProvider.Provider.Scope';
+
+                                        window.location = buildUrl(authorizationUrl, {
+                                            response_type: 'code',
+                                            client_id: clientId,
+                                            scope: linkedinScope,
+                                            redirect_uri: redirectUri,
+                                            state: oauthStateToken
+                                        });
                                     }
                                 </script>
                             }

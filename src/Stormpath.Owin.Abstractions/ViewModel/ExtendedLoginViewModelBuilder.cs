@@ -64,6 +64,9 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             // Status parameter from queryString
             result.Status = this.queryString.GetString("status");
 
+            // Oauth state token (nonce)
+            result.OauthStateToken = Guid.NewGuid().ToString();
+
             // Previous form submission (if any)
             if (this.previousFormData != null)
             {
@@ -86,7 +89,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                 {
                     ClientId = x.Value.ClientId,
                     ProviderId = x.Key,
-                    Scope = this.webConfiguration.Social.Get(x.Key)?.Scope
+                    Scope = x.Value.Scope
                 }
             }).ToArray();
 

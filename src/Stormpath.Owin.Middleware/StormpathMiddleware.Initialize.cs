@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stormpath.Configuration.Abstractions.Immutable;
+using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
@@ -251,37 +252,65 @@ namespace Stormpath.Owin.Middleware
             var asFacebookProvider = provider as IFacebookProvider;
             if (asFacebookProvider != null)
             {
+                WebSocialProviderConfiguration fbConfiguration;
+                if (!webConfig.Social.TryGetValue("facebook", out fbConfiguration))
+                {
+                    return null;
+                }
+
                 return new ProviderConfiguration(
                     asFacebookProvider.ClientId,
                     asFacebookProvider.ClientSecret,
-                    webConfig.Social["facebook"].Uri);
+                    fbConfiguration.Uri,
+                    fbConfiguration.Scope);
             }
 
             var asGoogleProvider = provider as IGoogleProvider;
             if (asGoogleProvider != null)
             {
+                WebSocialProviderConfiguration googleConfiguration;
+                if (!webConfig.Social.TryGetValue("google", out googleConfiguration))
+                {
+                    return null;
+                }
+
                 return new ProviderConfiguration(
                     asGoogleProvider.ClientId,
                     asGoogleProvider.ClientSecret,
-                    webConfig.Social["google"].Uri);
+                    googleConfiguration.Uri,
+                    googleConfiguration.Scope);
             }
 
             var asGithubProvider = provider as IGithubProvider;
             if (asGithubProvider != null)
             {
+                WebSocialProviderConfiguration githubConfiguration;
+                if (!webConfig.Social.TryGetValue("github", out githubConfiguration))
+                {
+                    return null;
+                }
+
                 return new ProviderConfiguration(
                     asGithubProvider.ClientId,
                     asGithubProvider.ClientSecret,
-                    webConfig.Social["github"].Uri);
+                    githubConfiguration.Uri,
+                    githubConfiguration.Scope);
             }
 
             var asLinkedInProvider = provider as ILinkedInProvider;
             if (asLinkedInProvider != null)
             {
+                WebSocialProviderConfiguration linkedinConfiguration;
+                if (!webConfig.Social.TryGetValue("linkedin", out linkedinConfiguration))
+                {
+                    return null;
+                }
+
                 return new ProviderConfiguration(
                     asLinkedInProvider.ClientId,
-                    asLinkedInProvider.ClientId,
-                    webConfig.Social["linkedin"].Uri);
+                    asLinkedInProvider.ClientSecret,
+                    linkedinConfiguration.Uri,
+                    linkedinConfiguration.Scope);
             }
 
             return null;
@@ -495,6 +524,22 @@ namespace Stormpath.Owin.Middleware
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync));
+            }
+
+            // /callbacks/linkedin
+            if (LinkedInCallbackRoute.ShouldBeEnabled(this.configuration))
+            {
+                var linkedInProvider = this.configuration.Providers
+                    .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
+                    .Value;
+
+                this.logger.Info($"LinkedIn callback route enabled on {linkedInProvider.CallbackUri}", nameof(BuildRoutingTable));
+
+                routing.Add(
+                    linkedInProvider.CallbackUri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync));
             }
 
             return routing;

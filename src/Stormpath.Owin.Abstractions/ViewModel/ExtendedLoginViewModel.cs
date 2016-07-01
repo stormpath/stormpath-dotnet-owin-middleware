@@ -57,5 +57,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         public IDictionary<string, string> FormData { get; set; } = new Dictionary<string, string>();
 
         public IList<string> Errors { get; set; } = new List<string>();
+
+        public string OauthStateToken { get; set; }
     }
 }
