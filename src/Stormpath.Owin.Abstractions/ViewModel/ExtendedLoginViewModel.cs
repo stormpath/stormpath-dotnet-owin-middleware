@@ -26,7 +26,8 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             "verified",
             "created",
             "forgot",
-            "reset"
+            "reset",
+            "social_failed"
         };
 
         public ExtendedLoginViewModel()

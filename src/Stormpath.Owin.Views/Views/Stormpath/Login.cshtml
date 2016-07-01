@@ -80,6 +80,13 @@
                                         If an account exists for the email provided, you will receive an email shortly.
                                     </p>
                                 }
+                                @if (Model.Status.Equals("social_failed", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <span>Login failed.</span>
+                                    <p>
+                                        An error occurred while trying to log you in. Please try again.
+                                    </p>
+                                }
                             </div>
                         </div>
                     </div>
