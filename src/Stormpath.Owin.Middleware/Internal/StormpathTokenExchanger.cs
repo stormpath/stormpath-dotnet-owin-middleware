@@ -28,7 +28,7 @@ using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
-    public sealed class StormpathTokenExchanger
+    public class StormpathTokenExchanger
     {
         private readonly IClient _client;
         private readonly IApplication _application;
@@ -47,7 +47,7 @@ namespace Stormpath.Owin.Middleware.Internal
             _logger = logger;
         }
 
-        public Task<IOauthGrantAuthenticationResult> Exchange(IAccount account, CancellationToken cancellationToken)
+        public Task<IOauthGrantAuthenticationResult> ExchangeAsync(IAccount account, CancellationToken cancellationToken)
         {
             var oauthExchangeJwt = _client.NewJwtBuilder()
                 .SetSubject(account.Href)

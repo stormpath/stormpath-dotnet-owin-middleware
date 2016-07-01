@@ -20,6 +20,7 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
+        "System.Net.Http": "4.0.0.0",
         "System.Runtime": {
           "type": "build",
           "version": "4.0.0.0"
@@ -27,6 +28,9 @@
       }
     },
     "netstandard1.3": {
+      "dependencies": {
+        "System.Net.Http": "4.1.0"
+      },
       "imports": "dotnet"
     }
   },

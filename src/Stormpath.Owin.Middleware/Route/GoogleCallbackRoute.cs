@@ -73,7 +73,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var tokenExchanger = new StormpathTokenExchanger(client, application, _configuration, _logger);
-            var exchangeResult = await tokenExchanger.Exchange(account, cancellationToken);
+            var exchangeResult = await tokenExchanger.ExchangeAsync(account, cancellationToken);
 
             if (exchangeResult == null)
             {

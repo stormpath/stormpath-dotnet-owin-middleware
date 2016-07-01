@@ -237,8 +237,12 @@ namespace Stormpath.Owin.Middleware
                     continue;
                 }
 
-                yield return new KeyValuePair<string, ProviderConfiguration>(
-                    provider.ProviderId, GetProviderConfiguration(provider, webConfig));
+                var providerConfiguration = GetProviderConfiguration(provider, webConfig);
+                if (providerConfiguration != null)
+                {
+                    yield return new KeyValuePair<string, ProviderConfiguration>(
+                    provider.ProviderId, providerConfiguration);
+                }
             }
         }
 
@@ -260,6 +264,24 @@ namespace Stormpath.Owin.Middleware
                     asGoogleProvider.ClientId,
                     asGoogleProvider.ClientSecret,
                     webConfig.Social["google"].Uri);
+            }
+
+            var asGithubProvider = provider as IGithubProvider;
+            if (asGithubProvider != null)
+            {
+                return new ProviderConfiguration(
+                    asGithubProvider.ClientId,
+                    asGithubProvider.ClientSecret,
+                    webConfig.Social["github"].Uri);
+            }
+
+            var asLinkedInProvider = provider as ILinkedInProvider;
+            if (asLinkedInProvider != null)
+            {
+                return new ProviderConfiguration(
+                    asLinkedInProvider.ClientId,
+                    asLinkedInProvider.ClientId,
+                    webConfig.Social["linkedin"].Uri);
             }
 
             return null;
@@ -457,6 +479,22 @@ namespace Stormpath.Owin.Middleware
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync));
+            }
+
+            // /callbacks/github
+            if (GithubCallbackRoute.ShouldBeEnabled(this.configuration))
+            {
+                var githubProvider = this.configuration.Providers
+                    .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
+                    .Value;
+
+                this.logger.Info($"Github callback route enabled on {githubProvider.CallbackUri}", nameof(BuildRoutingTable));
+
+                routing.Add(
+                    githubProvider.CallbackUri,
+                    new RouteHandler(
+                        authenticationRequired: false,
+                        handler: client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync));
             }
 
             return routing;

@@ -8,6 +8,7 @@
     bool hasSocialProviders = Model.AccountStores.Any();
     AccountStoreViewModel facebookStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("facebook", StringComparison.OrdinalIgnoreCase));
     AccountStoreViewModel googleStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("google", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel githubStore = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("github", StringComparison.OrdinalIgnoreCase));
 }
 
 <!DOCTYPE html>
@@ -201,6 +202,28 @@
                                     }
                                 </script>
                             }
+
+                            @if (githubStore != null)
+                            {
+                                <button class="btn btn-social btn-github" onclick="githubLogin()">Github</button>
+                                <script type="text/javascript">
+                                    if (!location.origin)
+                                        location.origin = location.protocol + "//" + location.host;
+
+                                    function githubLogin() {
+                                        var clientId = '@githubStore.Provider.ClientId';
+                                        var gitHubScope = '@githubStore.Provider.Scope';
+                                        var redirectUri = location.origin + '@githubStore.Href';
+
+                                        var url = 'https://github.com/login/oauth/authorize' +
+                                            '?client_id=' + encodeURIComponent(clientId) +
+                                            '&scope=' + encodeURIComponent(gitHubScope) +
+                                            '&redirect_uri=' + encodeURIComponent(redirectUri);
+
+                                        window.location = url;
+                                    }
+                                </script>
+                            }
                         </div>
                     }
                 </div>
@@ -213,7 +236,6 @@
                 {
                     <a style="float:right" href="@Model.ForgotPasswordUri" class="forgot">Forgot Password?</a>
                 }
-                
             </div>
         </div>
     </div>

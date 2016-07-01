@@ -1,4 +1,4 @@
-﻿// <copyright file="FacebookCallbackRoute.cs" company="Stormpath, Inc.">
+﻿// <copyright file="GithubCallbackRoute.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,32 +29,46 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class FacebookCallbackRoute : AbstractRoute
+    public class GithubCallbackRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
-            => configuration.Web.Social.ContainsKey("facebook")
-               && configuration.Providers.Any(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase));
+            => configuration.Web.Social.ContainsKey("github")
+               && configuration.Providers.Any(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase));
 
-        private async Task<bool> LoginWithAccessToken(
-            string accessToken,
+        private async Task<bool> LoginWithAccessCode(
+            string code,
             IOwinEnvironment context,
             IClient client,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(accessToken))
+            if (string.IsNullOrEmpty(code))
             {
-                _logger.Warn("Facebook access_token was empty", nameof(FacebookCallbackRoute));
                 return await HttpResponse.Redirect(context, GetErrorUri());
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+
+            var providerData = _configuration.Providers
+                .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
+                .Value;
+
+            var oauthCodeExchanger = new OauthCodeExchanger("https://github.com/login/oauth/access_token", _logger);
+            var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
+                code, _configuration.Web.BasePath, providerData.CallbackUri, providerData.ClientId,
+                providerData.ClientSecret, cancellationToken);
+
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                _logger.Warn("Exchanged access token was null", source: nameof(GithubCallbackRoute));
+                return await HttpResponse.Redirect(context, GetErrorUri());
+            }
 
             IAccount account;
             var isNewAccount = false;
             try
             {
                 var request = client.Providers()
-                    .Facebook()
+                    .Github()
                     .Account()
                     .SetAccessToken(accessToken)
                     .Build();
@@ -64,7 +78,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                _logger.Warn(rex, source: nameof(FacebookCallbackRoute));
+                _logger.Warn(rex, source: nameof(GoogleCallbackRoute));
                 account = null;
             }
 
@@ -93,9 +107,9 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            if (queryString.ContainsKey("access_token"))
+            if (queryString.ContainsKey("code"))
             {
-                return LoginWithAccessToken(queryString.GetString("access_token"), context, client, cancellationToken);
+                return LoginWithAccessCode(queryString.GetString("code"), context, client, cancellationToken);
             }
 
             return HttpResponse.Redirect(context, GetErrorUri());

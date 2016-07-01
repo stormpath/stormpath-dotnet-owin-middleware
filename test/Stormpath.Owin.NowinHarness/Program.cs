@@ -66,6 +66,10 @@ namespace Stormpath.Owin.NowinHarness
                     {
                         Name = "My Application"
                     },
+                    Web = new WebConfiguration()
+                    {
+                        BasePath = "http://localhost:8080"
+                    }
                 },
                 Logger = logger
             });
