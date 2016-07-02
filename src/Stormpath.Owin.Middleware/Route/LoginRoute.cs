@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
@@ -35,14 +36,32 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
+            return await RenderLoginViewAsync(context, cancellationToken, queryString, null);
+        }
+
+        private async Task<bool> RenderLoginViewAsync(
+            IOwinEnvironment context,
+            CancellationToken cancellationToken,
+            IDictionary<string, string[]> queryString,
+            IDictionary<string, string[]> previousFormData,
+            string[] errors = null)
+        {
             var viewModelBuilder = new ExtendedLoginViewModelBuilder(
                 _configuration.Web,
                 _configuration.Providers,
                 ChangePasswordRoute.ShouldBeEnabled(_configuration),
                 VerifyEmailRoute.ShouldBeEnabled(_configuration),
                 queryString,
-                null);
+                previousFormData,
+                errors);
             var loginViewModel = viewModelBuilder.Build();
+
+            Cookies.AddTempCookieToResponse(
+                context,
+                Csrf.OauthStateTokenCookieName,
+                loginViewModel.OauthStateToken,
+                TimeSpan.FromMinutes(5),
+                _logger);
 
             await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
             return true;
@@ -76,40 +95,28 @@ namespace Stormpath.Owin.Middleware.Route
             bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
             {
-                var viewModelBuilder = new ExtendedLoginViewModelBuilder(
-                    _configuration.Web,
-                    _configuration.Providers,
-                    ChangePasswordRoute.ShouldBeEnabled(_configuration),
-                    VerifyEmailRoute.ShouldBeEnabled(_configuration),
+                return await RenderLoginViewAsync(
+                    context,
+                    cancellationToken,
                     queryString,
-                    formData);
-                var loginViewModel = viewModelBuilder.Build();
-                loginViewModel.Errors.Add("The login and password fields are required.");
-
-                await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
-                return true;
+                    formData,
+                    errors: new[] { "The login and password fields are required." });
             }
 
             try
             {
                 var grantResult = await HandleLogin(client, model.Login, model.Password, cancellationToken);
 
-                Cookies.AddCookiesToResponse(context, client, grantResult, _configuration, _logger);
+                Cookies.AddTokenCookiesToResponse(context, client, grantResult, _configuration, _logger);
             }
             catch (ResourceException rex)
             {
-                var viewModelBuilder = new ExtendedLoginViewModelBuilder(
-                    _configuration.Web,
-                    _configuration.Providers,
-                    ChangePasswordRoute.ShouldBeEnabled(_configuration),
-                    VerifyEmailRoute.ShouldBeEnabled(_configuration),
+                return await RenderLoginViewAsync(
+                    context,
+                    cancellationToken,
                     queryString,
-                    formData);
-                var loginViewModel = viewModelBuilder.Build();
-                loginViewModel.Errors.Add(rex.Message);
-
-                await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
-                return true;
+                    formData,
+                    errors: new[] { rex.Message });
             }
 
             var nextUriFromQueryString = queryString.GetString("next");
@@ -147,7 +154,7 @@ namespace Stormpath.Owin.Middleware.Route
             var grantResult = await HandleLogin(client, model.Login, model.Password, cancellationToken);
             // Errors will be caught up in AbstractRouteMiddleware
 
-            Cookies.AddCookiesToResponse(context, client, grantResult, _configuration, _logger);
+            Cookies.AddTokenCookiesToResponse(context, client, grantResult, _configuration, _logger);
 
             var token = await grantResult.GetAccessTokenAsync(cancellationToken);
             var account = await token.GetAccountAsync(cancellationToken);

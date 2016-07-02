@@ -108,11 +108,11 @@ namespace Stormpath.Owin.Middleware.Route
         {
             if (cookieParser.Contains(_configuration.Web.AccessTokenCookie.Name))
             {
-                Cookies.Delete(context, _configuration.Web.AccessTokenCookie, _logger);
+                Cookies.DeleteTokenCookie(context, _configuration.Web.AccessTokenCookie, _logger);
             }
             if (cookieParser.Contains(_configuration.Web.RefreshTokenCookie.Name))
             {
-                Cookies.Delete(context, _configuration.Web.RefreshTokenCookie, _logger);
+                Cookies.DeleteTokenCookie(context, _configuration.Web.RefreshTokenCookie, _logger);
             }
         }
     }

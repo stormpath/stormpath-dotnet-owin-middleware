@@ -85,7 +85,7 @@ namespace Stormpath.Owin.Middleware.Route
                 ? _configuration.Web.Register.NextUri
                 : _configuration.Web.Login.NextUri;
 
-            Cookies.AddCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
+            Cookies.AddTokenCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
             return await HttpResponse.Redirect(context, nextUri);
         }
 

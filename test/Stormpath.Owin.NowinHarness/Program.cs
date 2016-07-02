@@ -15,14 +15,12 @@
 // </copyright>
 
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Threading;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
 using Owin;
 using Stormpath.Owin.Middleware;
-using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Views.Precompiled;
 
 namespace Stormpath.Owin.NowinHarness
@@ -68,7 +66,7 @@ namespace Stormpath.Owin.NowinHarness
                     },
                     Web = new WebConfiguration()
                     {
-                        BasePath = "http://localhost:8080"
+                        ServerUri = "http://localhost:8080"
                     }
                 },
                 Logger = logger

@@ -151,11 +151,11 @@ namespace Stormpath.Owin.Middleware
             // Failed on both counts. Delete access and refresh token cookies if necessary
             if (cookieParser.Contains(this.configuration.Web.AccessTokenCookie.Name))
             {
-                Cookies.Delete(context, this.configuration.Web.AccessTokenCookie, logger);
+                Cookies.DeleteTokenCookie(context, this.configuration.Web.AccessTokenCookie, logger);
             }
             if (cookieParser.Contains(this.configuration.Web.RefreshTokenCookie.Name))
             {
-                Cookies.Delete(context, this.configuration.Web.RefreshTokenCookie, logger);
+                Cookies.DeleteTokenCookie(context, this.configuration.Web.RefreshTokenCookie, logger);
             }
 
             logger.Info("No access or refresh token cookies found", nameof(TryCookieAuthenticationAsync));
@@ -255,7 +255,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             logger.Trace("Access token refreshed using Refresh token. Adding cookies to response", nameof(RefreshAccessTokenAsync));
-            Cookies.AddCookiesToResponse(context, client, grantResult, this.configuration, logger);
+            Cookies.AddTokenCookiesToResponse(context, client, grantResult, this.configuration, logger);
 
             return account;
         }

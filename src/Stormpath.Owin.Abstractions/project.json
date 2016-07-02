@@ -8,7 +8,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Stormpath.Configuration.Abstractions": "5.3.1-beta2"
+    "Stormpath.Configuration.Abstractions": "5.3.1-beta3"
   },
   "description": "Common components for the Stormpath OWIN middleware library.",
   "frameworks": {

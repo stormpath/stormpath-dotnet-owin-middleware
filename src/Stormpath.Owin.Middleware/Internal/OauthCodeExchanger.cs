@@ -38,24 +38,22 @@ namespace Stormpath.Owin.Middleware.Internal
 
         public async Task<string> ExchangeCodeForAccessTokenAsync(
             string code,
-            string baseUri,
             string callbackUri,
             string clientId,
             string clientSecret,
+            string stateToken,
             CancellationToken cancellationToken)
         {
-            baseUri = baseUri.TrimEnd('/');
-            callbackUri = callbackUri.TrimStart('/');
-
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, _oauthUri)
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>()
                 {
                     ["grant_type"] = "authorization_code",
                     ["code"] = code,
-                    ["redirect_uri"] = $"{baseUri}/{callbackUri}",
+                    ["redirect_uri"] = callbackUri,
                     ["client_id"] = clientId,
-                    ["client_secret"] = clientSecret
+                    ["client_secret"] = clientSecret,
+                    ["state"] = stateToken
                 }),
                 Headers =
                 {

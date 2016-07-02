@@ -261,8 +261,9 @@ namespace Stormpath.Owin.Middleware
                 return new ProviderConfiguration(
                     asFacebookProvider.ClientId,
                     asFacebookProvider.ClientSecret,
-                    fbConfiguration.Uri,
-                    fbConfiguration.Scope);
+                    callbackPath: fbConfiguration.Uri,
+                    callbackUri: null,
+                    scope: fbConfiguration.Scope);
             }
 
             var asGoogleProvider = provider as IGoogleProvider;
@@ -274,11 +275,19 @@ namespace Stormpath.Owin.Middleware
                     return null;
                 }
 
+                if (string.IsNullOrEmpty(webConfig.ServerUri))
+                {
+                    throw new InitializationException("The stormpath.web.serverUri property must be set when using Google login integration.");
+                }
+
+                var callbackUri = $"{webConfig.ServerUri.TrimEnd('/')}/{googleConfiguration.Uri.TrimStart('/')}";
+
                 return new ProviderConfiguration(
                     asGoogleProvider.ClientId,
                     asGoogleProvider.ClientSecret,
-                    googleConfiguration.Uri,
-                    googleConfiguration.Scope);
+                    callbackPath: googleConfiguration.Uri,
+                    callbackUri: callbackUri,
+                    scope: googleConfiguration.Scope);
             }
 
             var asGithubProvider = provider as IGithubProvider;
@@ -290,11 +299,19 @@ namespace Stormpath.Owin.Middleware
                     return null;
                 }
 
+                if (string.IsNullOrEmpty(webConfig.ServerUri))
+                {
+                    throw new InitializationException("The stormpath.web.serverUri property must be set when using Github login integration.");
+                }
+
+                var callbackUri = $"{webConfig.ServerUri.TrimEnd('/')}/{githubConfiguration.Uri.TrimStart('/')}";
+
                 return new ProviderConfiguration(
                     asGithubProvider.ClientId,
                     asGithubProvider.ClientSecret,
-                    githubConfiguration.Uri,
-                    githubConfiguration.Scope);
+                    callbackPath: githubConfiguration.Uri,
+                    callbackUri: callbackUri,
+                    scope: githubConfiguration.Scope);
             }
 
             var asLinkedInProvider = provider as ILinkedInProvider;
@@ -306,11 +323,19 @@ namespace Stormpath.Owin.Middleware
                     return null;
                 }
 
+                if (string.IsNullOrEmpty(webConfig.ServerUri))
+                {
+                    throw new InitializationException("The stormpath.web.serverUri property must be set when using LinkedIn login integration.");
+                }
+
+                var callbackUri = $"{webConfig.ServerUri.TrimEnd('/')}/{linkedinConfiguration.Uri.TrimStart('/')}";
+
                 return new ProviderConfiguration(
                     asLinkedInProvider.ClientId,
                     asLinkedInProvider.ClientSecret,
-                    linkedinConfiguration.Uri,
-                    linkedinConfiguration.Scope);
+                    callbackPath: linkedinConfiguration.Uri,
+                    callbackUri: callbackUri,
+                    scope: linkedinConfiguration.Scope);
             }
 
             return null;
@@ -485,10 +510,10 @@ namespace Stormpath.Owin.Middleware
                     .First(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
-                this.logger.Info($"Facebook callback route enabled on {facebookProvider.CallbackUri}", nameof(BuildRoutingTable));
+                this.logger.Info($"Facebook callback route enabled on {facebookProvider.CallbackPath}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    facebookProvider.CallbackUri,
+                    facebookProvider.CallbackPath,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync));
@@ -501,10 +526,10 @@ namespace Stormpath.Owin.Middleware
                     .First(p => p.Key.Equals("google", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
-                this.logger.Info($"Google callback route enabled on {googleProvider.CallbackUri}", nameof(BuildRoutingTable));
+                this.logger.Info($"Google callback route enabled on {googleProvider.CallbackPath}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    googleProvider.CallbackUri,
+                    googleProvider.CallbackPath,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync));
@@ -517,10 +542,10 @@ namespace Stormpath.Owin.Middleware
                     .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
-                this.logger.Info($"Github callback route enabled on {githubProvider.CallbackUri}", nameof(BuildRoutingTable));
+                this.logger.Info($"Github callback route enabled on {githubProvider.CallbackPath}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    githubProvider.CallbackUri,
+                    githubProvider.CallbackPath,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync));
@@ -533,10 +558,10 @@ namespace Stormpath.Owin.Middleware
                     .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
-                this.logger.Info($"LinkedIn callback route enabled on {linkedInProvider.CallbackUri}", nameof(BuildRoutingTable));
+                this.logger.Info($"LinkedIn callback route enabled on {linkedInProvider.CallbackPath}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    linkedInProvider.CallbackUri,
+                    linkedInProvider.CallbackPath,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync));

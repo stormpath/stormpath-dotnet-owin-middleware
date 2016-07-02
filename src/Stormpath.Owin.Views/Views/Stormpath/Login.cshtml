@@ -193,9 +193,6 @@
                             {
                                 <button class="btn btn-social btn-google" onclick="googleLogin()">Google</button>
                                 <script type="text/javascript">
-                                    if (!location.origin)
-                                        location.origin = location.protocol + "//" + location.host;
-
                                     function googleLogin() {
                                         var clientId = '@googleProvider.Provider.ClientId';
                                         var googleScope = '@googleProvider.Provider.Scope';
@@ -203,8 +200,7 @@
                                         var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=' +
                                             clientId +
                                             '&scope=' + googleScope +
-                                            '&include_granted_scopes=true&redirect_uri=' +
-                                            location.origin + '@googleProvider.Href';
+                                            '&include_granted_scopes=true&redirect_uri=@googleProvider.Href';
 
                                         window.location = finalUrl;
                                     }
@@ -215,18 +211,17 @@
                             {
                                 <button class="btn btn-social btn-github" onclick="githubLogin()">Github</button>
                                 <script type="text/javascript">
-                                    if (!location.origin)
-                                        location.origin = location.protocol + "//" + location.host;
-
                                     function githubLogin() {
                                         var clientId = '@githubProvider.Provider.ClientId';
                                         var gitHubScope = '@githubProvider.Provider.Scope';
-                                        var redirectUri = location.origin + '@githubProvider.Href';
+                                        var redirectUri = '@githubProvider.Href';
+                                        var oauthStateToken = '@Model.OauthStateToken';
 
                                         var url = 'https://github.com/login/oauth/authorize' +
                                             '?client_id=' + encodeURIComponent(clientId) +
                                             '&scope=' + encodeURIComponent(gitHubScope) +
-                                            '&redirect_uri=' + encodeURIComponent(redirectUri);
+                                            '&redirect_uri=' + encodeURIComponent(redirectUri) +
+                                            '&state=' + encodeURIComponent(oauthStateToken);
 
                                         window.location = url;
                                     }
@@ -237,9 +232,6 @@
                             {
                                 <button class="btn btn-social btn-linkedin" onclick="linkedinLogin()">LinkedIn</button>
                                 <script type="text/javascript">
-                                    if (!location.origin)
-                                        location.origin = location.protocol + "//" + location.host;
-
                                     function buildUrl(baseUrl, queryString) {
                                         var result = baseUrl;
 
@@ -273,8 +265,7 @@
                                         var authorizationUrl = 'https://www.linkedin.com/uas/oauth2/authorization';
 
                                         var clientId = '@linkedInProvider.Provider.ClientId';
-                                        var redirectUri = location.origin + '@linkedInProvider.Href';
-
+                                        var redirectUri = '@linkedInProvider.Href';
                                         var linkedinScope = '@linkedInProvider.Provider.Scope';
 
                                         window.location = buildUrl(authorizationUrl, {

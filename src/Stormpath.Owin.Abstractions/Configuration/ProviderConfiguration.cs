@@ -21,12 +21,14 @@ namespace Stormpath.Owin.Abstractions.Configuration
         public ProviderConfiguration(
             string clientId,
             string clientSecret,
-            string uri,
+            string callbackPath,
+            string callbackUri,
             string scope)
         {
             ClientId = clientId;
             ClientSecret = clientSecret;
-            CallbackUri = uri;
+            CallbackUri = callbackUri;
+            CallbackPath = callbackPath;
             Scope = scope;
         }
 
@@ -35,6 +37,8 @@ namespace Stormpath.Owin.Abstractions.Configuration
         public string ClientSecret { get; }
 
         public string CallbackUri { get; }
+
+        public string CallbackPath { get; }
 
         public string Scope { get; }
     }

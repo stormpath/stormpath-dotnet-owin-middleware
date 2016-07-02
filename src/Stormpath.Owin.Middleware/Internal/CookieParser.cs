@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stormpath.Owin.Abstractions;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
@@ -26,6 +27,19 @@ namespace Stormpath.Owin.Middleware.Internal
     {
         private readonly ILogger logger;
         private readonly IDictionary<string, string> cookies;
+
+        public static CookieParser FromRequest(IOwinEnvironment context, ILogger logger)
+        {
+            string[] rawCookies;
+
+            if (!context.Request.Headers.TryGetValue("Cookie", out rawCookies))
+            {
+                logger.Trace("No cookie header found", nameof(CookieParser));
+                return null;
+            }
+
+            return new CookieParser(rawCookies, logger);
+        }
 
         public CookieParser(string[] cookieHeaders, ILogger logger)
         {

@@ -33,7 +33,7 @@ namespace Stormpath.Owin.Middleware.Internal
         public static string FormatDate(DateTimeOffset dateTimeOffset)
             => $"{dateTimeOffset.UtcDateTime.ToString(DateFormat, CultureInfo.InvariantCulture)} GMT";
 
-        public static void AddCookiesToResponse(IOwinEnvironment context, IClient client, IOauthGrantAuthenticationResult grantResult, StormpathConfiguration configuration, ILogger logger)
+        public static void AddTokenCookiesToResponse(IOwinEnvironment context, IClient client, IOauthGrantAuthenticationResult grantResult, StormpathConfiguration configuration, ILogger logger)
         {
             if (!string.IsNullOrEmpty(grantResult.AccessTokenString))
             {
@@ -48,11 +48,37 @@ namespace Stormpath.Owin.Middleware.Internal
             }
         }
 
-        public static void Delete(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration, ILogger logger)
+        /// <summary>
+        /// Adds a temporary HTTP-only cookie to the response.
+        /// </summary>
+        /// <param name="context">The OWIN context.</param>
+        /// <param name="name">The cookie name.</param>
+        /// <param name="value">The cookie value.</param>
+        /// <param name="maxAge">The lifetime of the cookie.</param>
+        /// <param name="logger">The logger.</param>
+        public static void AddTempCookieToResponse(IOwinEnvironment context, string name, string value, TimeSpan maxAge, ILogger logger)
+        {
+            value = Uri.EscapeDataString(value);
+
+            var finalCookieValue = string.Join("; ", value, $"max-age={maxAge.TotalSeconds}", "path=/", "HttpOnly");
+
+            SetCookie(context, name, finalCookieValue, logger);
+        }
+
+        public static void DeleteTokenCookie(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration, ILogger logger)
         {
             logger.Trace($"Deleting cookie '{cookieConfiguration.Name}' on response");
 
             SetTokenCookie(context, cookieConfiguration, string.Empty, Epoch, IsSecureRequest(context), logger);
+        }
+
+        public static void DeleteCookie(IOwinEnvironment context, string name, ILogger logger)
+        {
+            logger.Trace($"Deleting cookie '{name}' on response");
+
+            var finalCookieValue = string.Join("; ", string.Empty, "max-age=0", "path=/", "HttpOnly");
+
+            SetCookie(context, name, finalCookieValue, logger);
         }
 
         private static bool IsSecureRequest(IOwinEnvironment context)
@@ -66,7 +92,7 @@ namespace Stormpath.Owin.Middleware.Internal
             bool isSecureRequest,
             ILogger logger)
         {
-            var keyValuePair = $"{Uri.EscapeDataString(cookieConfig.Name)}={Uri.EscapeDataString(value)}";
+            value = Uri.EscapeDataString(value);
 
             var domain = !string.IsNullOrEmpty(cookieConfig.Domain)
                 ? $"domain={cookieConfig.Domain}"
@@ -92,16 +118,27 @@ namespace Stormpath.Owin.Middleware.Internal
                 : null;
 
             var valueTokens = 
-                new string[] {keyValuePair, domain, path, expires, httpOnly, secure}
+                new[] { value, domain, path, expires, httpOnly, secure }
                 .Where(t => !string.IsNullOrEmpty(t));
 
-            var setCookieValue = string.Join("; ", valueTokens);
+            var finalCookieValue = string.Join("; ", valueTokens);
 
-            logger.Trace($"Adding cookie to response: '{setCookieValue}'", nameof(SetTokenCookie));
+            SetCookie(context, cookieConfig.Name, finalCookieValue, logger);
+        }
+
+        private static void SetCookie(
+            IOwinEnvironment context,
+            string name,
+            string value,
+            ILogger logger)
+        {
+            var cookieFormat = $"{Uri.EscapeDataString(name)}={value}";
+
+            logger.Trace($"Adding cookie to response: '{cookieFormat}'", nameof(SetCookie));
 
             context.Response.OnSendingHeaders(_ =>
             {
-                context.Response.Headers.AddString("Set-Cookie", setCookieValue);
+                context.Response.Headers.AddString("Set-Cookie", cookieFormat);
             }, null);
         }
     }

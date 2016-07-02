@@ -31,6 +31,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         private readonly bool verifyEmailEnabled;
         private readonly IDictionary<string, string[]> queryString;
         private readonly IDictionary<string, string[]> previousFormData;
+        private readonly IEnumerable<string> errors;
 
         public ExtendedLoginViewModelBuilder(
             WebConfiguration webConfiguration,
@@ -38,14 +39,16 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             bool forgotPasswordEnabled,
             bool verifyEmailEnabled,
             IDictionary<string, string[]> queryString,
-            IDictionary<string, string[]> previousFormData)
+            IDictionary<string, string[]> previousFormData,
+            IEnumerable<string> errors)
         {
             this.webConfiguration = webConfiguration;
             this.providerConfigurations = providerConfigurations;
             this.forgotPasswordEnabled = forgotPasswordEnabled;
             this.verifyEmailEnabled = verifyEmailEnabled;
-            this.queryString = queryString;
-            this.previousFormData = previousFormData;
+            this.queryString = queryString ?? new Dictionary<string, string[]>();
+            this.previousFormData = previousFormData ?? new Dictionary<string, string[]>();
+            this.errors = errors ?? Enumerable.Empty<string>();
         }
 
         public ExtendedLoginViewModel Build()
@@ -64,11 +67,17 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             // Status parameter from queryString
             result.Status = this.queryString.GetString("status");
 
+            // Error messages to render
+            foreach (var error in this.errors)
+            {
+                result.Errors.Add(error);
+            }
+
             // Oauth state token (nonce)
             result.OauthStateToken = Guid.NewGuid().ToString();
 
             // Previous form submission (if any)
-            if (this.previousFormData != null)
+            if (this.previousFormData != null && this.previousFormData.Any())
             {
                 result.FormData = previousFormData
                     .Where(kvp =>

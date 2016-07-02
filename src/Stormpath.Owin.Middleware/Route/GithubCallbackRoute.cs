@@ -52,10 +52,12 @@ namespace Stormpath.Owin.Middleware.Route
                 .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
                 .Value;
 
+            var cookieParser = CookieParser.FromRequest(context, _logger);
+            var oauthStateToken = cookieParser?.Get(Csrf.OauthStateTokenCookieName);
+
             var oauthCodeExchanger = new OauthCodeExchanger("https://github.com/login/oauth/access_token", _logger);
             var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
-                code, _configuration.Web.BasePath, providerData.CallbackUri, providerData.ClientId,
-                providerData.ClientSecret, cancellationToken);
+                code, providerData.CallbackUri, providerData.ClientId, providerData.ClientSecret, oauthStateToken, cancellationToken);
 
             if (string.IsNullOrEmpty(accessToken))
             {
@@ -99,7 +101,7 @@ namespace Stormpath.Owin.Middleware.Route
                 ? _configuration.Web.Register.NextUri
                 : _configuration.Web.Login.NextUri;
 
-            Cookies.AddCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
+            Cookies.AddTokenCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
             return await HttpResponse.Redirect(context, nextUri);
         }
 

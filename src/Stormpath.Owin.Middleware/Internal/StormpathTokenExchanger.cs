@@ -51,7 +51,7 @@ namespace Stormpath.Owin.Middleware.Internal
         {
             var oauthExchangeJwt = _client.NewJwtBuilder()
                 .SetSubject(account.Href)
-                .SetIssuedAt(DateTimeOffset.UtcNow)
+                .SetIssuedAt(DateTimeOffset.UtcNow.AddSeconds(-5))
                 .SetExpiration(DateTimeOffset.UtcNow.AddMinutes(1)) // very short
                 .SetIssuer(_application.Href)
                 .SetClaim("status", "AUTHENTICATED")

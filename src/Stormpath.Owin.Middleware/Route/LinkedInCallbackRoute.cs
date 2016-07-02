@@ -52,10 +52,18 @@ namespace Stormpath.Owin.Middleware.Route
                 .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
                 .Value;
 
+            if (!Csrf.ConsumeOauthStateToken(context, _logger))
+            {
+                _logger.Info("A user attempted to log in via LinkedIn OAuth with an invalid state token.", nameof(LinkedInCallbackRoute));
+                return await HttpResponse.Redirect(context, GetErrorUri());
+            }
+
+            var cookieParser = CookieParser.FromRequest(context, _logger);
+            var oauthStateToken = cookieParser?.Get(Csrf.OauthStateTokenCookieName);
+
             var oauthCodeExchanger = new OauthCodeExchanger("https://www.linkedin.com/uas/oauth2/accessToken", _logger);
             var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
-                code, _configuration.Web.BasePath, providerData.CallbackUri, providerData.ClientId,
-                providerData.ClientSecret, cancellationToken);
+                code, providerData.CallbackUri, providerData.ClientId, providerData.ClientSecret, oauthStateToken, cancellationToken);
 
             if (string.IsNullOrEmpty(accessToken))
             {
@@ -99,7 +107,7 @@ namespace Stormpath.Owin.Middleware.Route
                 ? _configuration.Web.Register.NextUri
                 : _configuration.Web.Login.NextUri;
 
-            Cookies.AddCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
+            Cookies.AddTokenCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
             return await HttpResponse.Redirect(context, nextUri);
         }
 
