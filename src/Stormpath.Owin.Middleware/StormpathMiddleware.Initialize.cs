@@ -262,7 +262,7 @@ namespace Stormpath.Owin.Middleware
                     asFacebookProvider.ClientId,
                     asFacebookProvider.ClientSecret,
                     callbackPath: fbConfiguration.Uri,
-                    callbackUri: null,
+                    callbackUri: fbConfiguration.Uri,
                     scope: fbConfiguration.Scope);
             }
 
