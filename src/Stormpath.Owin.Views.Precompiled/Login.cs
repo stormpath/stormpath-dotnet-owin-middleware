@@ -945,31 +945,38 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
 
 #line default
 #line hidden
+            WriteLiteral("\';\r\n                                        var oauthStateToken = \'");
+#line 216 "Login.cshtml"
+                                                          Write(Model.OauthStateToken);
+
+#line default
+#line hidden
             WriteLiteral(@"';
 
                                         var url = 'https://github.com/login/oauth/authorize' +
                                             '?client_id=' + encodeURIComponent(clientId) +
                                             '&scope=' + encodeURIComponent(gitHubScope) +
-                                            '&redirect_uri=' + encodeURIComponent(redirectUri);
+                                            '&redirect_uri=' + encodeURIComponent(redirectUri) +
+                                            '&state=' + encodeURIComponent(oauthStateToken);
 
                                         window.location = url;
                                     }
                                 </script>
 ");
-#line 225 "Login.cshtml"
+#line 227 "Login.cshtml"
                             }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 227 "Login.cshtml"
+#line 229 "Login.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 227 "Login.cshtml"
+#line 229 "Login.cshtml"
                              if (linkedInProvider != null)
                             {
 
@@ -1009,25 +1016,25 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
 
                                     function linkedinLogin() {
                                         var oauthStateToken = '");
-#line 260 "Login.cshtml"
+#line 262 "Login.cshtml"
                                                           Write(Model.OauthStateToken);
 
 #line default
 #line hidden
             WriteLiteral("\';\r\n                                        var authorizationUrl = \'https://www.linkedin.com/uas/oauth2/authorization\';\r\n\r\n                                        var clientId = \'");
-#line 263 "Login.cshtml"
+#line 265 "Login.cshtml"
                                                    Write(linkedInProvider.Provider.ClientId);
 
 #line default
 #line hidden
             WriteLiteral("\';\r\n                                        var redirectUri = \'");
-#line 264 "Login.cshtml"
+#line 266 "Login.cshtml"
                                                       Write(linkedInProvider.Href);
 
 #line default
 #line hidden
-            WriteLiteral("\';\r\n\r\n                                        var linkedinScope = \'");
-#line 266 "Login.cshtml"
+            WriteLiteral("\';\r\n                                        var linkedinScope = \'");
+#line 267 "Login.cshtml"
                                                         Write(linkedInProvider.Provider.Scope);
 
 #line default
@@ -1044,27 +1051,27 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                     }
                                 </script>
 ");
-#line 277 "Login.cshtml"
+#line 278 "Login.cshtml"
                             }
 
 #line default
 #line hidden
 
             WriteLiteral("                        </div>\r\n");
-#line 279 "Login.cshtml"
+#line 280 "Login.cshtml"
                     }
 
 #line default
 #line hidden
 
             WriteLiteral("                </div>\r\n");
-#line 281 "Login.cshtml"
+#line 282 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 281 "Login.cshtml"
+#line 282 "Login.cshtml"
                  if (Model.VerifyEmailEnabled)
                 {
 
@@ -1072,28 +1079,28 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
 #line hidden
 
             WriteLiteral("                    <a style=\"float:left\"");
-            BeginWriteAttribute("href", " href=\"", 16465, "\"", 16493, 1);
-#line 283 "Login.cshtml"
-WriteAttributeValue("", 16472, Model.VerifyEmailUri, 16472, 21, false);
+            BeginWriteAttribute("href", " href=\"", 16647, "\"", 16675, 1);
+#line 284 "Login.cshtml"
+WriteAttributeValue("", 16654, Model.VerifyEmailUri, 16654, 21, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Resend Verification Email?</a>\r\n");
-#line 284 "Login.cshtml"
+#line 285 "Login.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 286 "Login.cshtml"
+#line 287 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 286 "Login.cshtml"
+#line 287 "Login.cshtml"
                  if (Model.ForgotPasswordEnabled)
                 {
 
@@ -1101,15 +1108,15 @@ WriteAttributeValue("", 16472, Model.VerifyEmailUri, 16472, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 16675, "\"", 16706, 1);
-#line 288 "Login.cshtml"
-WriteAttributeValue("", 16682, Model.ForgotPasswordUri, 16682, 24, false);
+            BeginWriteAttribute("href", " href=\"", 16857, "\"", 16888, 1);
+#line 289 "Login.cshtml"
+WriteAttributeValue("", 16864, Model.ForgotPasswordUri, 16864, 24, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Forgot Password?</a>\r\n");
-#line 289 "Login.cshtml"
+#line 290 "Login.cshtml"
                 }
 
 #line default
