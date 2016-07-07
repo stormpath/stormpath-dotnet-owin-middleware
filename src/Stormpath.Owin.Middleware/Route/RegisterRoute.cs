@@ -26,6 +26,7 @@ using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Directory;
 using Stormpath.SDK.Error;
 
 namespace Stormpath.Owin.Middleware.Route
@@ -80,8 +81,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var surnameField = viewModel.Form.Fields.Where(f => f.Name == "surname").SingleOrDefault();
             bool isSurnameRequired = surnameField?.Required ?? false;
-            bool surnameIsNotRequired = surnameField == null || !surnameField.Required;
-            if (string.IsNullOrEmpty(postData.Surname) && !surnameIsNotRequired)
+            if (string.IsNullOrEmpty(postData.Surname) && !isSurnameRequired)
             {
                 postData.Surname = "UNKNOWN";
             }
@@ -119,8 +119,32 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var defaultAccountStore = await application.GetDefaultAccountStoreAsync(cancellationToken);
 
-            return await application.CreateAccountAsync(newAccount, cancellationToken);
+            var preRegisterHandlerContext = new PreRegistrationHandlerContext(environment, newAccount)
+            {
+                AccountStore = defaultAccountStore as IDirectory
+            };
+
+            await preRegistrationHandler(preRegisterHandlerContext, cancellationToken);
+
+            IAccount createdAccount;
+
+            if (preRegisterHandlerContext.AccountStore != null)
+            {
+                createdAccount = await preRegisterHandlerContext.AccountStore.CreateAccountAsync(
+                    preRegisterHandlerContext.Account,
+                    preRegisterHandlerContext.Options,
+                    cancellationToken);
+            }
+
+            createdAccount = await application.CreateAccountAsync(preRegisterHandlerContext.Account, preRegisterHandlerContext.Options, cancellationToken);
+
+            var postRegistrationContext = new PostRegistrationHandlerContext(environment, createdAccount);
+
+            await postRegistrationHandler(postRegistrationContext, cancellationToken);
+
+            return createdAccount;
         }
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
