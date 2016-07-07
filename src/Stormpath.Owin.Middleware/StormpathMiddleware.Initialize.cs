@@ -387,7 +387,7 @@ namespace Stormpath.Owin.Middleware
             var route = new T();
 
             route.Initialize(
-                this.configuration,
+                this.Configuration,
                 this.viewRenderer,
                 this.logger,
                 client);
@@ -400,12 +400,12 @@ namespace Stormpath.Owin.Middleware
             var routing = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
 
             // /oauth/token
-            if (this.configuration.Web.Oauth2.Enabled)
+            if (this.Configuration.Web.Oauth2.Enabled)
             {
-                this.logger.Info($"Oauth2 route enabled on {this.configuration.Web.Oauth2.Uri}", nameof(BuildRoutingTable));
+                this.logger.Info($"Oauth2 route enabled on {this.Configuration.Web.Oauth2.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    this.configuration.Web.Oauth2.Uri,
+                    this.Configuration.Web.Oauth2.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<Oauth2Route>(client).InvokeAsync)
@@ -413,12 +413,12 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /register
-            if (this.configuration.Web.Register.Enabled)
+            if (this.Configuration.Web.Register.Enabled)
             {
-                this.logger.Info($"Register route enabled on {this.configuration.Web.Register.Uri}", nameof(BuildRoutingTable));
+                this.logger.Info($"Register route enabled on {this.Configuration.Web.Register.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    this.configuration.Web.Register.Uri,
+                    this.Configuration.Web.Register.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<RegisterRoute>(client).InvokeAsync)
@@ -426,12 +426,12 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /login
-            if (this.configuration.Web.Login.Enabled)
+            if (this.Configuration.Web.Login.Enabled)
             {
-                this.logger.Info($"Login route enabled on {this.configuration.Web.Login.Uri}", nameof(BuildRoutingTable));
+                this.logger.Info($"Login route enabled on {this.Configuration.Web.Login.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    this.configuration.Web.Login.Uri,
+                    this.Configuration.Web.Login.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<LoginRoute>(client).InvokeAsync)
@@ -439,12 +439,12 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /me
-            if (this.configuration.Web.Me.Enabled)
+            if (this.Configuration.Web.Me.Enabled)
             {
-                this.logger.Info($"Me route enabled on {this.configuration.Web.Me.Uri}", nameof(BuildRoutingTable));
+                this.logger.Info($"Me route enabled on {this.Configuration.Web.Me.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    this.configuration.Web.Me.Uri,
+                    this.Configuration.Web.Me.Uri,
                     new RouteHandler(
                         authenticationRequired: true,
                         handler: client => InitializeRoute<MeRoute>(client).InvokeAsync)
@@ -452,12 +452,12 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /logout
-            if (this.configuration.Web.Logout.Enabled)
+            if (this.Configuration.Web.Logout.Enabled)
             {
-                this.logger.Info($"Logout route enabled on {this.configuration.Web.Logout.Uri}", nameof(BuildRoutingTable));
+                this.logger.Info($"Logout route enabled on {this.Configuration.Web.Logout.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    this.configuration.Web.Logout.Uri,
+                    this.Configuration.Web.Logout.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<LogoutRoute>(client).InvokeAsync)
@@ -465,12 +465,12 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /forgot   
-            if (ForgotPasswordRoute.ShouldBeEnabled(this.configuration))
+            if (ForgotPasswordRoute.ShouldBeEnabled(this.Configuration))
             {
-                this.logger.Info($"ForgotPassword route enabled on {this.configuration.Web.ForgotPassword.Uri}", nameof(BuildRoutingTable));
+                this.logger.Info($"ForgotPassword route enabled on {this.Configuration.Web.ForgotPassword.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    this.configuration.Web.ForgotPassword.Uri,
+                    this.Configuration.Web.ForgotPassword.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync)
@@ -478,12 +478,12 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /change
-            if (ChangePasswordRoute.ShouldBeEnabled(this.configuration))
+            if (ChangePasswordRoute.ShouldBeEnabled(this.Configuration))
             {
-                this.logger.Info($"ChangePassword route enabled on {this.configuration.Web.ChangePassword.Uri}", nameof(BuildRoutingTable));
+                this.logger.Info($"ChangePassword route enabled on {this.Configuration.Web.ChangePassword.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    this.configuration.Web.ChangePassword.Uri,
+                    this.Configuration.Web.ChangePassword.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync)
@@ -491,12 +491,12 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /verify
-            if (VerifyEmailRoute.ShouldBeEnabled(this.configuration))
+            if (VerifyEmailRoute.ShouldBeEnabled(this.Configuration))
             {
-                this.logger.Info($"VerifyEmail route enabled on {this.configuration.Web.VerifyEmail.Uri}", nameof(BuildRoutingTable));
+                this.logger.Info($"VerifyEmail route enabled on {this.Configuration.Web.VerifyEmail.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
-                    this.configuration.Web.VerifyEmail.Uri,
+                    this.Configuration.Web.VerifyEmail.Uri,
                     new RouteHandler(
                         authenticationRequired: false,
                         handler: client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync)
@@ -504,9 +504,9 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /callbacks/facebook
-            if (FacebookCallbackRoute.ShouldBeEnabled(this.configuration))
+            if (FacebookCallbackRoute.ShouldBeEnabled(this.Configuration))
             {
-                var facebookProvider =this.configuration.Providers
+                var facebookProvider =this.Configuration.Providers
                     .First(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
@@ -520,9 +520,9 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /callbacks/google
-            if (GoogleCallbackRoute.ShouldBeEnabled(this.configuration))
+            if (GoogleCallbackRoute.ShouldBeEnabled(this.Configuration))
             {
-                var googleProvider = this.configuration.Providers
+                var googleProvider = this.Configuration.Providers
                     .First(p => p.Key.Equals("google", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
@@ -536,9 +536,9 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /callbacks/github
-            if (GithubCallbackRoute.ShouldBeEnabled(this.configuration))
+            if (GithubCallbackRoute.ShouldBeEnabled(this.Configuration))
             {
-                var githubProvider = this.configuration.Providers
+                var githubProvider = this.Configuration.Providers
                     .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
@@ -552,9 +552,9 @@ namespace Stormpath.Owin.Middleware
             }
 
             // /callbacks/linkedin
-            if (LinkedInCallbackRoute.ShouldBeEnabled(this.configuration))
+            if (LinkedInCallbackRoute.ShouldBeEnabled(this.Configuration))
             {
-                var linkedInProvider = this.configuration.Providers
+                var linkedInProvider = this.Configuration.Providers
                     .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
                     .Value;
 

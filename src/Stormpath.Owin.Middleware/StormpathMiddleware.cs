@@ -36,7 +36,6 @@ namespace Stormpath.Owin.Middleware
         private readonly ILogger logger;
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
         private readonly IScopedClientFactory clientFactory;
-        private readonly IntegrationConfiguration configuration;
         private readonly IReadOnlyDictionary<string, RouteHandler> routingTable;
         private AppFunc next;
 
@@ -51,10 +50,12 @@ namespace Stormpath.Owin.Middleware
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;
             this.clientFactory = clientFactory;
-            this.configuration = configuration;
+            this.Configuration = configuration;
 
             this.routingTable = this.BuildRoutingTable();
         }
+
+        public IntegrationConfiguration Configuration { get; }
 
         public void Initialize(AppFunc next)
         {
@@ -86,7 +87,7 @@ namespace Stormpath.Owin.Middleware
 
                 AddStormpathVariablesToEnvironment(
                     environment,
-                    configuration,
+                    Configuration,
                     scopedClient,
                     currentUser);
 

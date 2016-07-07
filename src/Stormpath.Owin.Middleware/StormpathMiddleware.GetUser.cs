@@ -20,7 +20,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
-using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
@@ -111,13 +110,13 @@ namespace Stormpath.Owin.Middleware
 
             logger.Trace("Cookies found on request: " + cookieParser.AsEnumerable().Select(x => $"'{x.Key}'").Join(", "), nameof(TryCookieAuthenticationAsync));
 
-            var accessToken = cookieParser.Get(this.configuration.Web.AccessTokenCookie.Name);
-            var refreshToken = cookieParser.Get(this.configuration.Web.RefreshTokenCookie.Name);
+            var accessToken = cookieParser.Get(this.Configuration.Web.AccessTokenCookie.Name);
+            var refreshToken = cookieParser.Get(this.Configuration.Web.RefreshTokenCookie.Name);
 
             // Attempt to validate incoming Access Token
             if (!string.IsNullOrEmpty(accessToken))
             {
-                logger.Trace($"Found nonempty access token cookie '{this.configuration.Web.AccessTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
+                logger.Trace($"Found nonempty access token cookie '{this.Configuration.Web.AccessTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
 
                 var validAccount = await ValidateAccessTokenAsync(context, client, accessToken);
                 if (validAccount != null)
@@ -134,7 +133,7 @@ namespace Stormpath.Owin.Middleware
             // Try using refresh token instead
             if (!string.IsNullOrEmpty(refreshToken))
             {
-                logger.Trace($"Found nonempty refresh token cookie '{this.configuration.Web.RefreshTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
+                logger.Trace($"Found nonempty refresh token cookie '{this.Configuration.Web.RefreshTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
 
                 var refreshedAccount = await RefreshAccessTokenAsync(context, client, refreshToken);
                 if (refreshedAccount != null)
@@ -149,13 +148,13 @@ namespace Stormpath.Owin.Middleware
             }
 
             // Failed on both counts. Delete access and refresh token cookies if necessary
-            if (cookieParser.Contains(this.configuration.Web.AccessTokenCookie.Name))
+            if (cookieParser.Contains(this.Configuration.Web.AccessTokenCookie.Name))
             {
-                Cookies.DeleteTokenCookie(context, this.configuration.Web.AccessTokenCookie, logger);
+                Cookies.DeleteTokenCookie(context, this.Configuration.Web.AccessTokenCookie, logger);
             }
-            if (cookieParser.Contains(this.configuration.Web.RefreshTokenCookie.Name))
+            if (cookieParser.Contains(this.Configuration.Web.RefreshTokenCookie.Name))
             {
-                Cookies.DeleteTokenCookie(context, this.configuration.Web.RefreshTokenCookie, logger);
+                Cookies.DeleteTokenCookie(context, this.Configuration.Web.RefreshTokenCookie, logger);
             }
 
             logger.Info("No access or refresh token cookies found", nameof(TryCookieAuthenticationAsync));
@@ -168,9 +167,9 @@ namespace Stormpath.Owin.Middleware
                 .SetJwt(accessTokenJwt)
                 .Build();
 
-            var application = await client.GetApplicationAsync(this.configuration.Application.Href, context.CancellationToken);
+            var application = await client.GetApplicationAsync(this.Configuration.Application.Href, context.CancellationToken);
             var authenticator = application.NewJwtAuthenticator();
-            if (this.configuration.Web.Oauth2.Password.ValidationStrategy == WebOauth2TokenValidationStrategy.Local)
+            if (this.Configuration.Web.Oauth2.Password.ValidationStrategy == WebOauth2TokenValidationStrategy.Local)
             {
                 authenticator.WithLocalValidation();
             }
@@ -212,7 +211,7 @@ namespace Stormpath.Owin.Middleware
                 .SetRefreshToken(refreshTokenJwt)
                 .Build();
 
-            var application = await client.GetApplicationAsync(this.configuration.Application.Href, context.CancellationToken);
+            var application = await client.GetApplicationAsync(this.Configuration.Application.Href, context.CancellationToken);
             var authenticator = application.NewRefreshGrantAuthenticator();
 
             IOauthGrantAuthenticationResult grantResult = null;
@@ -255,7 +254,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             logger.Trace("Access token refreshed using Refresh token. Adding cookies to response", nameof(RefreshAccessTokenAsync));
-            Cookies.AddTokenCookiesToResponse(context, client, grantResult, this.configuration, logger);
+            Cookies.AddTokenCookiesToResponse(context, client, grantResult, this.Configuration, logger);
 
             return account;
         }
