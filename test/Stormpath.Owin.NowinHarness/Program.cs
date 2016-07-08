@@ -20,6 +20,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
 using Owin;
+using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.Owin.Views.Precompiled;
 
@@ -83,6 +84,17 @@ namespace Stormpath.Owin.NowinHarness
                     using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
                     {
                         await writer.WriteAsync("<h1>Hello from OWIN!</h1>");
+
+                        if (env[OwinKeys.StormpathUser] != null)
+                        {
+                            await writer.WriteAsync(@"
+<form action=""/logout"" method=""post"" id=""logout_form"">
+  <a onclick=""document.getElementById('logout_form').submit();"" style=""cursor: pointer;"">
+    Log Out
+  </a>
+</form>");
+                        }
+
                         await writer.FlushAsync();
                     }
                 }

@@ -19,9 +19,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Error;
 using Stormpath.SDK.Jwt;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -52,12 +53,12 @@ namespace Stormpath.Owin.Middleware.Route
             context.Request.Headers.TryGetValue("Cookie", out rawCookies);
             var cookieParser = new CookieParser(rawCookies, _logger);
 
-            await RevokeTokens(context, client, cookieParser, cancellationToken);
+            await RevokeTokens(client, cookieParser, cancellationToken);
             
             DeleteCookies(context, cookieParser);
         }
 
-        private async Task RevokeTokens(IOwinEnvironment context, IClient client, CookieParser cookieParser, CancellationToken cancellationToken)
+        private async Task RevokeTokens(IClient client, CookieParser cookieParser, CancellationToken cancellationToken)
         {
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
@@ -65,23 +66,44 @@ namespace Stormpath.Owin.Middleware.Route
             var deleteAccessTokenTask = Task.FromResult(false);
             var deleteRefreshTokenTask = Task.FromResult(false);
 
-            string jti = string.Empty;
+            string jti;
             if (IsValidJwt(accessToken, client, out jti))
             {
-                var accessTokenResource = await client.GetAccessTokenAsync($"/accessTokens/{jti}", cancellationToken);
-                deleteAccessTokenTask = accessTokenResource.DeleteAsync(cancellationToken);
+                try
+                {
+                    var accessTokenResource = await client.GetAccessTokenAsync($"/accessTokens/{jti}", cancellationToken);
+                    deleteAccessTokenTask = accessTokenResource.DeleteAsync(cancellationToken);
+                }
+                catch (ResourceException rex)
+                {
+                    _logger.Info(rex.DeveloperMessage, source: nameof(RevokeTokens));
+                }
             }
 
             if (IsValidJwt(refreshToken, client, out jti))
             {
-                var refreshTokenResource = await client.GetRefreshTokenAsync($"/refreshTokens/{jti}", cancellationToken);
-                deleteRefreshTokenTask = refreshTokenResource.DeleteAsync(cancellationToken);
+                try
+                {
+                    var refreshTokenResource = await client.GetRefreshTokenAsync($"/refreshTokens/{jti}", cancellationToken);
+                    deleteRefreshTokenTask = refreshTokenResource.DeleteAsync(cancellationToken);
+                }
+                catch (ResourceException rex)
+                {
+                    _logger.Info(rex.DeveloperMessage, source: nameof(RevokeTokens));
+                }
             }
 
-            await Task.WhenAll(deleteAccessTokenTask, deleteRefreshTokenTask);
+            try
+            {
+                await Task.WhenAll(deleteAccessTokenTask, deleteRefreshTokenTask);
+            }
+            catch (ResourceException rex)
+            {
+                _logger.Info(rex.DeveloperMessage, source: nameof(RevokeTokens));
+            }
         }
 
-        private bool IsValidJwt(string jwt, IClient client, out string jti)
+        private static bool IsValidJwt(string jwt, IClient client, out string jti)
         {
             jti = null;
 
