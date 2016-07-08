@@ -86,7 +86,7 @@ namespace Stormpath.Owin.Middleware.Internal
         };
 
         private static void ParseDelimited(
-            string text, 
+            string text,
             char[] delimiters,
             Action<string, string, IDictionary<string, string>> callback,
             IDictionary<string, string> state,
@@ -132,11 +132,19 @@ namespace Stormpath.Owin.Middleware.Internal
                         logger.Error(ex, $"Error parsing cookie content '{text}'", "CookieParser.ParseDelimited");
                     }
 
-                    equalIndex = text.IndexOf('=', equalIndex + 1);
-                    if (equalIndex == -1)
+                    if (delimiterIndex + 1 < textLength)
                     {
-                        equalIndex = textLength;
+                        equalIndex = text.IndexOf('=', delimiterIndex + 1);
+                        if (equalIndex == -1)
+                        {
+                            equalIndex = textLength;
+                        }
                     }
+                    else
+                    {
+                        equalIndex = text.Length;
+                    }
+
                 }
                 scanIndex = delimiterIndex + 1;
             }

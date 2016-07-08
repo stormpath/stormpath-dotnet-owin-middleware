@@ -10,10 +10,10 @@ namespace Stormpath.Owin.UnitTest
         public static IEnumerable<object[]> EmptyTestCases()
         {
             yield return new object[] { new string[] { null } };
-            yield return new object[] { new string[] { string.Empty } };
-            yield return new object[] { new string[] { " " } };
-            yield return new object[] { new string[] { " ," } };
-            yield return new object[] { new string[] { " ;" } };
+            yield return new object[] { new[] { string.Empty } };
+            yield return new object[] { new[] { " " } };
+            yield return new object[] { new[] { " ," } };
+            yield return new object[] { new[] { " ;" } };
         }
 
         [Theory]
@@ -27,9 +27,10 @@ namespace Stormpath.Owin.UnitTest
 
         public static IEnumerable<object[]> TestCases()
         {
-            yield return new object[] { new string[] { "access_token=eyJra.eyJqd.hGdm; foo=bar; baz=qux" } };
-            yield return new object[] { new string[] { "access_token=eyJra.eyJqd.hGdm, foo=bar; baz=qux" } };
-            yield return new object[] { new string[] { "  access_token=eyJra.eyJqd.hGdm;     foo=bar;; " } };
+            yield return new object[] { new[] { "access_token=eyJra.eyJqd.hGdm; foo=bar; baz=qux" } };
+            yield return new object[] { new[] { "access_token=eyJra.eyJqd.hGdm, foo=bar; baz=qux" } };
+            yield return new object[] { new[] { "  access_token=eyJra.eyJqd.hGdm;     foo=bar;; " } };
+            yield return new object[] { new[] { "tricky=base_domain=foo.bar; access_token=eyJra.eyJqd.hGdm;" } };
         }
 
         [Theory]
