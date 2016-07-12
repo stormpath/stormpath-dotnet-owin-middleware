@@ -61,10 +61,6 @@ namespace Stormpath.Owin.NowinHarness
                 ViewRenderer = new PrecompiledViewRenderer(logger),
                 Configuration = new StormpathConfiguration
                 {
-                    Application = new ApplicationConfiguration
-                    {
-                        Name = "My Application"
-                    },
                     Web = new WebConfiguration()
                     {
                         ServerUri = "http://localhost:8080"

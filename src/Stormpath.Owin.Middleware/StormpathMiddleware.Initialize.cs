@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
@@ -27,15 +26,22 @@ using Stormpath.SDK.Application;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Directory;
 using Stormpath.SDK.Http;
-using Stormpath.SDK.Serialization;
-using Stormpath.SDK.Sync;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Provider;
+using Stormpath.SDK.Serialization;
+using Stormpath.SDK.Sync;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
+        private static readonly string[] NonSocialProviderIds =
+        {
+            "stormpath",
+            "ad",
+            "ldap"
+        };
+
         public static StormpathMiddleware Create(StormpathOwinOptions options)
         {
             if (string.IsNullOrEmpty(options.LibraryUserAgent))
@@ -51,10 +57,14 @@ namespace Stormpath.Owin.Middleware
             // Construct the framework User-Agent
             IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(options.LibraryUserAgent);
 
+            options.Logger.Info("Stormpath middleware starting up", source: nameof(StormpathMiddleware));
+
             // Initialize and warm up SDK
-            var clientFactory = InitializeClient(options.Configuration, options.ConfigurationFileRoot);
+            options.Logger.Trace("Initializing and warming up SDK...", nameof(StormpathMiddleware));
+            var clientFactory = InitializeClient(options.Configuration, options.ConfigurationFileRoot, options.Logger);
 
             // Scope a client for our resolution steps below
+            options.Logger.Trace("Creating scoped ClientFactory...", nameof(StormpathMiddleware));
             var client = clientFactory.Create(new ScopedClientOptions()
             {
                 UserAgent = userAgentBuilder.GetUserAgent()
@@ -62,26 +72,25 @@ namespace Stormpath.Owin.Middleware
 
             // Resolve application href, if necessary
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
-            var updatedConfiguration = ResolveApplication(client);
+            options.Logger.Trace("Resolving application...", nameof(StormpathMiddleware));
+            var updatedConfiguration = ResolveApplication(client, options.Logger);
 
             // Pull some configuration from the tenant environment
-            var integrationConfiguration = GetIntegrationConfiguration(client, updatedConfiguration);
-
-            // Ensure that the application exists
-            EnsureApplication(client, integrationConfiguration);
-            options.Logger.Info($"Using Stormpath application {integrationConfiguration.Application.Href}",
-                "Initialize.Create");
+            options.Logger.Trace("Examining tenant environment...", nameof(StormpathMiddleware));
+            var integrationConfiguration = GetIntegrationConfiguration(client, updatedConfiguration, options.Logger);
 
             // Validate Account Store configuration
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
-            EnsureAccountStores(client, integrationConfiguration);
+            options.Logger.Trace("Ensuring the Account Store configuration is valid...", nameof(StormpathMiddleware));
+            EnsureAccountStores(client, integrationConfiguration, options.Logger);
 
-            options.Logger.Trace("Stormpath middleware ready!", "Initialize.Create");
+            options.Logger.Trace("Stormpath middleware ready!", nameof(StormpathMiddleware));
+
             return new StormpathMiddleware(options.ViewRenderer, options.Logger, userAgentBuilder, clientFactory,
                 integrationConfiguration);
         }
 
-        private static IScopedClientFactory InitializeClient(object initialConfiguration, string configurationFileRoot)
+        private static IScopedClientFactory InitializeClient(object initialConfiguration, string configurationFileRoot, ILogger logger)
         {
             // Construct base client
             var baseClient = Clients.Builder()
@@ -93,12 +102,19 @@ namespace Stormpath.Owin.Middleware
                 .SetSerializer(Serializers.Create().JsonNetSerializer())
                 .SetConfiguration(initialConfiguration)
                 .SetConfigurationFileRoot(configurationFileRoot)
+                .SetLogger(logger)
                 .Build();
 
             // Attempt to connect and prime the cache with ITenant
             try
             {
                 var tenant = baseClient.GetCurrentTenant();
+                if (string.IsNullOrEmpty(tenant?.Href))
+                {
+                    throw new InitializationException("Could not connect to Stormpath. No tenant could be found.");
+                }
+
+                logger.Info($"Using tenant {tenant.Key}", source: nameof(InitializeClient));
             }
             catch (Exception ex)
             {
@@ -110,19 +126,27 @@ namespace Stormpath.Owin.Middleware
             return new ScopedClientFactory(baseClient);
         }
 
-        private static StormpathConfiguration ResolveApplication(IClient client)
+        private static StormpathConfiguration ResolveApplication(IClient client, ILogger logger)
         {
             var originalConfiguration = client.Configuration;
+
+            StormpathConfiguration newConfiguration = null;
+            bool configurationReady = false;
 
             // If href is specified, no need to resolve
             if (!string.IsNullOrEmpty(originalConfiguration.Application.Href))
             {
-                return originalConfiguration;
+                logger.Trace($"Using provided application href {originalConfiguration.Application.Href}", nameof(ResolveApplication));
+
+                newConfiguration = originalConfiguration;
+                configurationReady = true;
             }
 
             // If name is specified, look up by name
-            if (!string.IsNullOrEmpty(originalConfiguration.Application.Name))
+            if (!configurationReady && !string.IsNullOrEmpty(originalConfiguration.Application.Name))
             {
+                logger.Trace($"Looking up provided application name '{originalConfiguration.Application.Name}'", nameof(ResolveApplication));
+
                 try
                 {
                     var foundApplication = client.GetApplications()
@@ -130,16 +154,13 @@ namespace Stormpath.Owin.Middleware
                         .Synchronously()
                         .Single();
 
-                    if (string.IsNullOrEmpty(foundApplication.Href))
-                    {
-                        throw new Exception("The application href is empty.");
-                            // Becomes the innerException of the InitializationException
-                    }
+                    logger.Trace($"Application '{foundApplication.Name}' exists at ({foundApplication.Href})", nameof(ResolveApplication));
 
-                    return new StormpathConfiguration(
+                    newConfiguration = new StormpathConfiguration(
                         originalConfiguration.Client,
-                        new ApplicationConfiguration(href: foundApplication.Href),
+                        new ApplicationConfiguration(href: foundApplication?.Href),
                         originalConfiguration.Web);
+                    configurationReady = true;
                 }
                 catch (Exception ex)
                 {
@@ -150,41 +171,71 @@ namespace Stormpath.Owin.Middleware
             }
 
             // If neither, try to get the single application in the tenant
+            if (!configurationReady)
+            {
+                logger.Trace("No application specified, checking to see if a single application exists", nameof(ResolveApplication));
+
+                try
+                {
+                    var singleApplication = client.GetApplications()
+                        .Synchronously()
+                        .Take(3)
+                        .ToList()
+                        .Single(app => app.Name != "Stormpath");
+
+                    logger.Trace($"Using single application '{singleApplication.Name}' at ({singleApplication.Href})", nameof(ResolveApplication));
+
+                    newConfiguration = new StormpathConfiguration(
+                        originalConfiguration.Client,
+                        new ApplicationConfiguration(href: singleApplication?.Href),
+                        originalConfiguration.Web);
+                }
+                catch (Exception ex)
+                {
+                    throw new InitializationException(
+                        $"Could not automatically resolve a Stormpath Application. Please specify your Stormpath Application in your configuration.",
+                        ex);
+                }
+            }
+
+            // Attempt to cache the application
+            logger.Trace("Ensuring application exists...", nameof(ResolveApplication));
+            EnsureApplication(client, newConfiguration, logger);
+
+            return newConfiguration;
+        }
+
+        private static void EnsureApplication(IClient client, StormpathConfiguration updatedConfiguration, ILogger logger)
+        {
+            if (string.IsNullOrEmpty(updatedConfiguration?.Application?.Href))
+            {
+                throw new InitializationException("The application href is empty.");
+            }
+
+            logger.Trace($"Looking up Stormpath application at {updatedConfiguration.Application.Href}");
+
             try
             {
-                var singleApplication = client.GetApplications()
-                    .Synchronously()
-                    .Take(3)
-                    .ToList()
-                    .Where(app => app.Name != "Stormpath")
-                    .Single();
-
-                if (string.IsNullOrEmpty(singleApplication.Href))
-                {
-                    throw new Exception("The application href is empty.");
-                        // Becomes the innerException of the InitializationException
-                }
-
-                return new StormpathConfiguration(
-                    originalConfiguration.Client,
-                    new ApplicationConfiguration(href: singleApplication.Href),
-                    originalConfiguration.Web);
+                var resolvedApplication = client.GetApplication(updatedConfiguration.Application.Href);
+                logger.Info($"Using Stormpath application '{resolvedApplication.Name}' ({resolvedApplication.Href})", nameof(EnsureApplication));
             }
             catch (Exception ex)
             {
-                throw new InitializationException(
-                    $"Could not automatically resolve a Stormpath Application. Please specify your Stormpath Application in your configuration.",
-                    ex);
+                throw new InitializationException($"An error occurred when loading the Stormpath application details.", ex);
             }
         }
 
-        private static IntegrationConfiguration GetIntegrationConfiguration(IClient client,
-            StormpathConfiguration updatedConfiguration)
+        private static IntegrationConfiguration GetIntegrationConfiguration(
+            IClient client,
+            StormpathConfiguration updatedConfiguration,
+            ILogger logger)
         {
             var application = client.GetApplication(updatedConfiguration.Application.Href);
 
             var defaultAccountStore = application.GetDefaultAccountStore();
             var defaultAccountStoreHref = defaultAccountStore?.Href;
+
+            logger.Trace("Default account store href: " + (string.IsNullOrEmpty(defaultAccountStoreHref) ? "<null>" : defaultAccountStoreHref), source: nameof(GetIntegrationConfiguration));
 
             var defaultAccountStoreDirectory = defaultAccountStore as IDirectory;
 
@@ -195,13 +246,19 @@ namespace Stormpath.Owin.Middleware
             {
                 var accountCreationPolicy = defaultAccountStoreDirectory.GetAccountCreationPolicy();
                 emailVerificationEnabled = accountCreationPolicy.VerificationEmailStatus == SDK.Mail.EmailStatus.Enabled;
+                logger.Trace($"Got AccountCreationPolicy. Email workflow enabled: {emailVerificationEnabled}", source: nameof(GetIntegrationConfiguration));
 
                 var passwordPolicy = defaultAccountStoreDirectory.GetPasswordPolicy();
                 passwordResetEnabled = passwordPolicy.ResetEmailStatus == SDK.Mail.EmailStatus.Enabled;
+                logger.Trace($"Got PasswordPolicy. Reset workflow enabled: {passwordResetEnabled}", source: nameof(GetIntegrationConfiguration));
             }
 
-            var socialProviders = GetSocialProviders(application, updatedConfiguration.Web)
+            logger.Trace("Getting social providers from tenant...", nameof(GetIntegrationConfiguration));
+
+            var socialProviders = GetSocialProviders(application, updatedConfiguration.Web, logger)
                 .ToList();
+
+            logger.Trace($"Found {socialProviders.Count} social providers", nameof(GetIntegrationConfiguration));
 
             return new IntegrationConfiguration(
                 updatedConfiguration,
@@ -209,36 +266,41 @@ namespace Stormpath.Owin.Middleware
                 socialProviders);
         }
 
-        private static readonly string[] NonSocialProviderIds =
-        {
-            "stormpath",
-            "ad",
-            "ldap"
-        };
-
-        private static IEnumerable<KeyValuePair<string, ProviderConfiguration>> GetSocialProviders(IApplication application, WebConfiguration webConfig)
+        private static IEnumerable<KeyValuePair<string, ProviderConfiguration>> GetSocialProviders(IApplication application, WebConfiguration webConfig, ILogger logger)
         {
             var accountStores = application.GetAccountStoreMappings()
                 .Synchronously()
                 .ToList()
                 .Select(mapping => mapping.GetAccountStore())
-                .OfType<IDirectory>()
                 .ToList();
+
+            logger.Trace($"Application has {accountStores.Count} Account Stores", nameof(GetSocialProviders));
 
             foreach (var accountStore in accountStores)
             {
-                if (!accountStore.Href.Contains("directories"))
+                if (accountStore == null)
                 {
+                    logger.Trace("Skipping a null mapped Account Store", nameof(GetSocialProviders));
                     continue;
                 }
 
-                var provider = accountStore.GetProvider();
+                var asDirectory = accountStore as IDirectory;
+                if (asDirectory == null)
+                {
+                    logger.Trace($"Account Store is not a directory: {accountStore.Href}", nameof(GetSocialProviders));
+                    continue;
+                }
+
+                var provider = asDirectory.GetProvider();
                 if (NonSocialProviderIds.Any(x => provider.ProviderId.Contains(x)))
                 {
+                    logger.Trace($"Skipping Account Store {accountStore.Href} with provider ID '{provider.ProviderId}'", nameof(GetSocialProviders));
                     continue;
                 }
 
-                var providerConfiguration = GetProviderConfiguration(provider, webConfig);
+                logger.Trace($"Getting social provider configuration for Account Store {accountStore.Href}", nameof(GetSocialProviders));
+                var providerConfiguration = GetProviderConfiguration(provider, webConfig, logger);
+
                 if (providerConfiguration != null)
                 {
                     yield return new KeyValuePair<string, ProviderConfiguration>(
@@ -247,16 +309,19 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
-        private static ProviderConfiguration GetProviderConfiguration(IProvider provider, WebConfiguration webConfig)
+        private static ProviderConfiguration GetProviderConfiguration(IProvider provider, WebConfiguration webConfig, ILogger logger)
         {
             var asFacebookProvider = provider as IFacebookProvider;
             if (asFacebookProvider != null)
             {
                 WebSocialProviderConfiguration fbConfiguration;
-                if (!webConfig.Social.TryGetValue("facebook", out fbConfiguration))
+                if (webConfig.Social.TryGetValue("facebook", out fbConfiguration))
                 {
+                    logger.Trace("Found a Facebook directory, but no stormpath.web.social.facebook configuration exists. Skipping", source: nameof(GetProviderConfiguration));
                     return null;
                 }
+
+                logger.Trace($"Facebook directory at {asFacebookProvider.Href}", source: nameof(GetProviderConfiguration));
 
                 return new ProviderConfiguration(
                     asFacebookProvider.ClientId,
@@ -272,8 +337,11 @@ namespace Stormpath.Owin.Middleware
                 WebSocialProviderConfiguration googleConfiguration;
                 if (!webConfig.Social.TryGetValue("google", out googleConfiguration))
                 {
+                    logger.Trace("Found a Google directory, but no stormpath.web.social.google configuration exists. Skipping", source: nameof(GetProviderConfiguration));
                     return null;
                 }
+
+                logger.Trace($"Google directory at {asGoogleProvider.Href}", source: nameof(GetProviderConfiguration));
 
                 if (string.IsNullOrEmpty(webConfig.ServerUri))
                 {
@@ -296,8 +364,11 @@ namespace Stormpath.Owin.Middleware
                 WebSocialProviderConfiguration githubConfiguration;
                 if (!webConfig.Social.TryGetValue("github", out githubConfiguration))
                 {
+                    logger.Trace("Found a Github directory, but no stormpath.web.social.github configuration exists. Skipping", source: nameof(GetProviderConfiguration));
                     return null;
                 }
+
+                logger.Trace($"Github directory at {asGithubProvider.Href}", source: nameof(GetProviderConfiguration));
 
                 if (string.IsNullOrEmpty(webConfig.ServerUri))
                 {
@@ -320,8 +391,11 @@ namespace Stormpath.Owin.Middleware
                 WebSocialProviderConfiguration linkedinConfiguration;
                 if (!webConfig.Social.TryGetValue("linkedin", out linkedinConfiguration))
                 {
+                    logger.Trace("Found a LinkedIn directory, but no stormpath.web.social.linkedin configuration exists. Skipping", source: nameof(GetProviderConfiguration));
                     return null;
                 }
+
+                logger.Trace($"LinkedIn directory at {asLinkedInProvider.Href}", source: nameof(GetProviderConfiguration));
 
                 if (string.IsNullOrEmpty(webConfig.ServerUri))
                 {
@@ -338,27 +412,11 @@ namespace Stormpath.Owin.Middleware
                     scope: linkedinConfiguration.Scope);
             }
 
+            logger.Trace($"Provider {provider.Href} has unknown provider ID {provider.ProviderId}. Skipping", source: nameof(GetProviderConfiguration));
             return null;
         }
 
-        private static void EnsureApplication(IClient client, StormpathConfiguration updatedConfiguration)
-        {
-            try
-            {
-                var application = client.GetApplication(updatedConfiguration.Application.Href);
-
-                if (string.IsNullOrEmpty(application.Href))
-                {
-                    throw new Exception("The application href is empty."); // Becomes the innerException of the InitializationException
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new InitializationException($"The provided application could not be found. The provided application href was: {updatedConfiguration.Application.Href}", ex);
-            }
-        }
-
-        private static void EnsureAccountStores(IClient client, IntegrationConfiguration integrationConfiguration)
+        private static void EnsureAccountStores(IClient client, IntegrationConfiguration integrationConfiguration, ILogger logger)
         {
             var application = client.GetApplication(integrationConfiguration.Application.Href);
 
@@ -370,7 +428,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             // If the registration route is enabled, we need a default Account Store
-            if (integrationConfiguration.Web.Register.Enabled == true)
+            if (integrationConfiguration.Web.Register.Enabled)
             {
                 var defaultAccountStore = application.GetDefaultAccountStore();
 
