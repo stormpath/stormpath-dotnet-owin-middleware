@@ -315,7 +315,7 @@ namespace Stormpath.Owin.Middleware
             if (asFacebookProvider != null)
             {
                 WebSocialProviderConfiguration fbConfiguration;
-                if (webConfig.Social.TryGetValue("facebook", out fbConfiguration))
+                if (!webConfig.Social.TryGetValue("facebook", out fbConfiguration))
                 {
                     logger.Trace("Found a Facebook directory, but no stormpath.web.social.facebook configuration exists. Skipping", source: nameof(GetProviderConfiguration));
                     return null;
