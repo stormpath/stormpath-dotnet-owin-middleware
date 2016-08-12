@@ -8,7 +8,9 @@ namespace Stormpath.Owin.Middleware
     {
         public HandlerConfiguration(
             Func<PreRegistrationContext, CancellationToken, Task> preRegistrationHandler,
-            Func<PostRegistrationContext, CancellationToken, Task> postRegistrationHandler)
+            Func<PostRegistrationContext, CancellationToken, Task> postRegistrationHandler,
+            Func<PreLoginContext, CancellationToken, Task> preLoginHandler,
+            Func<PostLoginContext, CancellationToken, Task> postLoginHandler)
         {
             if (preRegistrationHandler == null)
             {
@@ -22,10 +24,16 @@ namespace Stormpath.Owin.Middleware
 
             PreRegistrationHandler = preRegistrationHandler;
             PostRegistrationHandler = postRegistrationHandler;
+            PreLoginHandler = preLoginHandler;
+            PostLoginHandler = postLoginHandler;
         }
 
         public Func<PreRegistrationContext, CancellationToken, Task> PreRegistrationHandler { get; }
 
         public Func<PostRegistrationContext, CancellationToken, Task> PostRegistrationHandler { get; }
+
+        public Func<PreLoginContext, CancellationToken, Task> PreLoginHandler { get; }
+
+        public Func<PostLoginContext, CancellationToken, Task> PostLoginHandler { get; }
     }
 }

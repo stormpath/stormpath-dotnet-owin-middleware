@@ -35,9 +35,15 @@ namespace Stormpath.Owin.Middleware
         public IViewRenderer ViewRenderer { get; set; }
 
         public Func<PreRegistrationContext, CancellationToken, Task> PreRegistrationHandler { get; set; }
-            = (ctx, ct) => Task.FromResult(true);
+            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PostRegistrationContext, CancellationToken, Task> PostRegistrationHandler { get; set; }
-            = (ctx, ct) => Task.FromResult(true);
+            = (ctx, ct) => TaskConstants.CompletedTask;
+
+        public Func<PreLoginContext, CancellationToken, Task> PreLoginHandler { get; set; }
+            = (ctx, ct) => TaskConstants.CompletedTask;
+
+        public Func<PostLoginContext, CancellationToken, Task> PostLoginHandler { get; set; }
+            = (ctx, ct) => TaskConstants.CompletedTask;
     }
 }

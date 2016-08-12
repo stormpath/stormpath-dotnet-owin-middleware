@@ -86,7 +86,9 @@ namespace Stormpath.Owin.Middleware
 
             var handlerConfiguration = new HandlerConfiguration(
                 options.PreRegistrationHandler,
-                options.PostRegistrationHandler);
+                options.PostRegistrationHandler,
+                options.PreLoginHandler,
+                options.PostLoginHandler);
 
             options.Logger.Trace("Stormpath middleware ready!", "Initialize.Create");
             return new StormpathMiddleware(
