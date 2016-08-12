@@ -84,10 +84,18 @@ namespace Stormpath.Owin.Middleware
             options.Logger.Trace("Ensuring the Account Store configuration is valid...", nameof(StormpathMiddleware));
             EnsureAccountStores(client, integrationConfiguration, options.Logger);
 
-            options.Logger.Trace("Stormpath middleware ready!", nameof(StormpathMiddleware));
+            var handlerConfiguration = new HandlerConfiguration(
+                options.PreRegistrationHandler,
+                options.PostRegistrationHandler);
 
-            return new StormpathMiddleware(options.ViewRenderer, options.Logger, userAgentBuilder, clientFactory,
-                integrationConfiguration);
+            options.Logger.Trace("Stormpath middleware ready!", "Initialize.Create");
+            return new StormpathMiddleware(
+                options.ViewRenderer,
+                options.Logger,
+                userAgentBuilder,
+                clientFactory,
+                integrationConfiguration,
+                handlerConfiguration);
         }
 
         private static IScopedClientFactory InitializeClient(object initialConfiguration, string configurationFileRoot, ILogger logger)
@@ -443,12 +451,7 @@ namespace Stormpath.Owin.Middleware
             where T : AbstractRoute, new()
         {
             var route = new T();
-
-            route.Initialize(
-                this.Configuration,
-                this.viewRenderer,
-                this.logger,
-                client);
+            route.Initialize(Configuration, Handlers, viewRenderer, logger, client);
 
             return route;
         }

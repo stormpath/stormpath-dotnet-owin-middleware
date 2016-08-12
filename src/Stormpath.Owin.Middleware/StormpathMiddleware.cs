@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
@@ -44,18 +45,22 @@ namespace Stormpath.Owin.Middleware
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
             IScopedClientFactory clientFactory,
-            IntegrationConfiguration configuration)
+            IntegrationConfiguration configuration,
+            HandlerConfiguration handlers)
         {
             this.viewRenderer = viewRenderer;
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;
             this.clientFactory = clientFactory;
             this.Configuration = configuration;
+            this.Handlers = handlers;
 
             this.routingTable = this.BuildRoutingTable();
         }
 
         public IntegrationConfiguration Configuration { get; }
+
+        public HandlerConfiguration Handlers { get; }
 
         public void Initialize(AppFunc next)
         {

@@ -36,11 +36,14 @@ namespace Stormpath.Owin.Middleware.Route
         private static readonly string[] defaultFields = Configuration.Abstractions.Default.Configuration.Web.Register.Form.Fields.Select(kvp => kvp.Key).ToArray();
 
         private async Task<IAccount> HandleRegistration(
+            IOwinEnvironment environment,
             RegisterPostModel postData,
             IEnumerable<string> fieldNames,
             Dictionary<string, object> customFields,
             IClient client,
             Func<string, CancellationToken, Task> errorHandler,
+            Func<PreRegistrationContext, CancellationToken, Task> preRegistrationHandler,
+            Func<PostRegistrationContext, CancellationToken, Task> postRegistrationHandler,
             CancellationToken cancellationToken)
         {
             var viewModel = new RegisterViewModelBuilder(_configuration.Web.Register).Build();
@@ -121,7 +124,7 @@ namespace Stormpath.Owin.Middleware.Route
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var defaultAccountStore = await application.GetDefaultAccountStoreAsync(cancellationToken);
 
-            var preRegisterHandlerContext = new PreRegistrationHandlerContext(environment, newAccount)
+            var preRegisterHandlerContext = new PreRegistrationContext(environment, newAccount)
             {
                 AccountStore = defaultAccountStore as IDirectory
             };
@@ -137,11 +140,15 @@ namespace Stormpath.Owin.Middleware.Route
                     preRegisterHandlerContext.Options,
                     cancellationToken);
             }
+            else
+            {
+                createdAccount = await application.CreateAccountAsync(
+                    preRegisterHandlerContext.Account,
+                    preRegisterHandlerContext.Options,
+                    cancellationToken);
+            }
 
-            createdAccount = await application.CreateAccountAsync(preRegisterHandlerContext.Account, preRegisterHandlerContext.Options, cancellationToken);
-
-            var postRegistrationContext = new PostRegistrationHandlerContext(environment, createdAccount);
-
+            var postRegistrationContext = new PostRegistrationContext(environment, createdAccount);
             await postRegistrationHandler(postRegistrationContext, cancellationToken);
 
             return createdAccount;
@@ -182,7 +189,17 @@ namespace Stormpath.Owin.Middleware.Route
             IAccount newAccount = null;
             try
             {
-                newAccount = await this.HandleRegistration(model, allNonEmptyFieldNames, providedCustomFields, client, htmlErrorHandler, cancellationToken);
+                newAccount = await HandleRegistration(
+                    context,
+                    model,
+                    allNonEmptyFieldNames,
+                    providedCustomFields,
+                    client,
+                    htmlErrorHandler,
+                    _handlers.PreRegistrationHandler,
+                    _handlers.PostRegistrationHandler,
+                    cancellationToken);
+
                 if (newAccount == null)
                 {
                     return true; // Some error occurred and the handler was invoked
@@ -249,7 +266,17 @@ namespace Stormpath.Owin.Middleware.Route
                 return Error.Create(context, new BadRequest(message), ct);
             });
 
-            var newAccount = await this.HandleRegistration(model, allNonEmptyFieldNames, providedCustomFields, client, jsonErrorHandler, cancellationToken);
+            var newAccount = await this.HandleRegistration(
+                context,
+                model,
+                allNonEmptyFieldNames,
+                providedCustomFields,
+                client,
+                jsonErrorHandler,
+                _handlers.PreRegistrationHandler,
+                _handlers.PostRegistrationHandler,
+                cancellationToken);
+
             if (newAccount == null)
             {
                 return true; // Some error occurred and the handler was invoked

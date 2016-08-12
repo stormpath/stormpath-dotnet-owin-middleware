@@ -4,9 +4,9 @@ using Stormpath.SDK.Directory;
 
 namespace Stormpath.Owin.Middleware
 {
-    public class PreRegistrationHandlerContext : HandlerContext
+    public class PreRegistrationContext : HandlerContext
     {
-        public PreRegistrationHandlerContext(IOwinEnvironment environment, IAccount account)
+        public PreRegistrationContext(IOwinEnvironment environment, IAccount account)
             : base(environment)
         {
             Account = account;

@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Stormpath.SDK.Logging;
 using Stormpath.Owin.Abstractions;
 
@@ -30,5 +33,11 @@ namespace Stormpath.Owin.Middleware
         public string LibraryUserAgent { get; set; }
 
         public IViewRenderer ViewRenderer { get; set; }
+
+        public Func<PreRegistrationContext, CancellationToken, Task> PreRegistrationHandler { get; set; }
+            = (ctx, ct) => Task.FromResult(true);
+
+        public Func<PostRegistrationContext, CancellationToken, Task> PostRegistrationHandler { get; set; }
+            = (ctx, ct) => Task.FromResult(true);
     }
 }
