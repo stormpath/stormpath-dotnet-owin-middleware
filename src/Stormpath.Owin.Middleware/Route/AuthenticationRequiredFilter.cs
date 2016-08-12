@@ -54,7 +54,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (handler.IsAuthenticated(authenticationScheme, RouteProtector.AnyScheme, authenticatedUser))
             {
-                return Task.FromResult(true); ; // Authentication check succeeded
+                return TaskConstants.CompletedTask; // Authentication check succeeded
             }
 
             logger.Info("User attempted to access a protected endpoint with invalid credentials.");

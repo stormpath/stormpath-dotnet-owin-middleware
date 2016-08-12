@@ -32,7 +32,7 @@ namespace Stormpath.Owin.Middleware.Route
         protected override Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             context.Response.StatusCode = 405;
-            return Task.FromResult(true);
+            return TaskConstants.CompletedTask;
         }
 
         protected override async Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
