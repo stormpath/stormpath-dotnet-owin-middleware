@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
@@ -59,11 +60,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var options = new Action<IRetrievalOptions<IAccount>>(opt =>
             {
-                if (expansionOptions.Any(e => e.Key.Equals("applications", StringComparison.OrdinalIgnoreCase) && e.Value))
-                {
-                    opt.Expand(acct => acct.GetApplications());
-                }
-
+                // TODO retrieve collections when collection caching is in SDK: applications, groupMemberships, groups
                 if (expansionOptions.Any(e => e.Key.Equals("customData", StringComparison.OrdinalIgnoreCase) && e.Value))
                 {
                     opt.Expand(acct => acct.GetCustomData());
@@ -72,16 +69,6 @@ namespace Stormpath.Owin.Middleware.Route
                 if (expansionOptions.Any(e => e.Key.Equals("directory", StringComparison.OrdinalIgnoreCase) && e.Value))
                 {
                     opt.Expand(acct => acct.GetDirectory());
-                }
-
-                if (expansionOptions.Any(e => e.Key.Equals("groupMemberships", StringComparison.OrdinalIgnoreCase) && e.Value))
-                {
-                    opt.Expand(acct => acct.GetGroupMemberships());
-                }
-
-                if (expansionOptions.Any(e => e.Key.Equals("groups", StringComparison.OrdinalIgnoreCase) && e.Value))
-                {
-                    opt.Expand(acct => acct.GetGroups());
                 }
 
                 if (expansionOptions.Any(e => e.Key.Equals("providerData", StringComparison.OrdinalIgnoreCase) && e.Value))
@@ -98,60 +85,148 @@ namespace Stormpath.Owin.Middleware.Route
             return await client.GetAccountAsync(href, options, cancellationToken);
         }
 
-        private static async Task<AccountResponseModel> SanitizeExpandedAccount(
+        private static async Task<MeResponseModel> SanitizeExpandedAccount(
             IAccount account,
             IReadOnlyDictionary<string, bool> expansionOptions,
             CancellationToken cancellationToken)
         {
-            var sanitizedModel = new AccountResponseModel
+            var sanitizedModel = new MeResponseModel
             {
                 Href = account.Href,
                 Email = account.Email,
+                Username = account.Username,
                 GivenName = account.GivenName,
                 MiddleName = account.MiddleName,
                 Surname = account.Surname,
                 FullName = account.FullName,
                 CreatedAt = account.CreatedAt,
                 ModifiedAt = account.ModifiedAt,
-                Status = account.Status.ToString()
+                Status = account.Status.ToString(),
+                PasswordModifiedAt = account.PasswordModifiedAt,
+                EmailVerificationToken = account.EmailVerificationToken?.GetValue()
             };
+
+            if (!expansionOptions.Any(e => e.Value))
+            {
+                return sanitizedModel;
+            }
+
+            // TODO might be able to simply return the interface objects directly after explicit interfaces are removed
 
             if (expansionOptions.Any(e => e.Key.Equals("applications", StringComparison.OrdinalIgnoreCase) && e.Value))
             {
                 // TODO replace with ToArrayAsync
-                sanitizedModel.Applications = await account.GetApplications().ToListAsync(cancellationToken);
+                var applications = await account.GetApplications().ToListAsync(cancellationToken);
+                sanitizedModel.Applications = new
+                {
+                    size = applications.Count,
+                    items = applications.Select(a => new
+                    {
+                        href = a.Href,
+                        name = a.Name,
+                        description = a.Description,
+                        status = a.Status.ToString(),
+                        createdAt = a.CreatedAt,
+                        modifiedAt = a.ModifiedAt,
+                    })
+                };
+            }
+
+            if (expansionOptions.Any(e => e.Key.Equals("apiKeys", StringComparison.OrdinalIgnoreCase) && e.Value))
+            {
+                // TODO replace with ToArrayAsync
+                var apiKeys = await account.GetApiKeys().ToListAsync(cancellationToken);
+                sanitizedModel.ApiKeys = new
+                {
+                    size = apiKeys.Count,
+                    items = apiKeys.Select(k => new
+                    {
+                        href = k.Href,
+                        name = k.Name,
+                        description = k.Description,
+                        id = k.Id,
+                        status = k.Status.ToString(),
+                    })
+                };
             }
 
             if (expansionOptions.Any(e => e.Key.Equals("customData", StringComparison.OrdinalIgnoreCase) && e.Value))
             {
-                sanitizedModel.CustomData = await account.GetCustomDataAsync(cancellationToken);
+                sanitizedModel.CustomData = (await account.GetCustomDataAsync(cancellationToken))
+                    .ToDictionary(cd => cd.Key, cd => cd.Value);
             }
 
             if (expansionOptions.Any(e => e.Key.Equals("directory", StringComparison.OrdinalIgnoreCase) && e.Value))
             {
-                sanitizedModel.Directory = await account.GetDirectoryAsync(cancellationToken);
+                var directory = await account.GetDirectoryAsync(cancellationToken);
+                sanitizedModel.Directory = new
+                {
+                    href = directory.Href,
+                    name = directory.Name,
+                    description = directory.Description,
+                    status = directory.Status.ToString(),
+                    createdAt = directory.CreatedAt,
+                    modifiedAt = directory.ModifiedAt,
+                };
             }
 
             if (expansionOptions.Any(e => e.Key.Equals("groupMemberships", StringComparison.OrdinalIgnoreCase) && e.Value))
             {
                 // TODO replace with ToArrayAsync
-                sanitizedModel.GroupMemberships = await account.GetGroupMemberships().ToListAsync(cancellationToken);
+                var groupMemberships = await account.GetGroupMemberships().ToListAsync(cancellationToken);
+                sanitizedModel.GroupMemberships = new
+                {
+                    size = groupMemberships.Count,
+                    items = groupMemberships.Select(gm => new
+                    {
+                        href = gm.Href
+                    })
+                };
             }
 
             if (expansionOptions.Any(e => e.Key.Equals("groups", StringComparison.OrdinalIgnoreCase) && e.Value))
             {
                 // TODO replace with ToArrayAsync
-                sanitizedModel.Groups = await account.GetGroups().ToListAsync(cancellationToken);
+                var groups = await account.GetGroups().ToListAsync(cancellationToken);
+                sanitizedModel.Groups = new
+                {
+                    // TODO add href if available on IAsyncQueryable
+                    size = groups.Count,
+                    items = groups.Select(g => new
+                    {
+                        href = g.Href,
+                        name = g.Name,
+                        description = g.Description,
+                        status = g.Status.ToString(),
+                        createdAt = g.CreatedAt,
+                        modifiedAt = g.ModifiedAt,
+                    })
+                };
             }
 
             if (expansionOptions.Any(e => e.Key.Equals("providerData", StringComparison.OrdinalIgnoreCase) && e.Value))
             {
-                sanitizedModel.ProviderData = await account.GetProviderDataAsync(cancellationToken);
+                var providerData = await account.GetProviderDataAsync(cancellationToken);
+                sanitizedModel.ProviderData = new
+                {
+                    href = providerData.Href,
+                    createdAt = providerData.CreatedAt,
+                    modifiedAt = providerData.ModifiedAt,
+                    providerId = providerData.ProviderId
+                };
             }
 
             if (expansionOptions.Any(e => e.Key.Equals("tenant", StringComparison.OrdinalIgnoreCase) && e.Value))
             {
-                sanitizedModel.Tenant = await account.GetTenantAsync(cancellationToken);
+                var tenant = await account.GetTenantAsync(cancellationToken);
+                sanitizedModel.Tenant = new
+                {
+                    href = tenant.Href,
+                    name = tenant.Name,
+                    key = tenant.Key,
+                    createdAt = tenant.CreatedAt,
+                    modifiedAt = tenant.ModifiedAt
+                };
             }
 
             return sanitizedModel;
