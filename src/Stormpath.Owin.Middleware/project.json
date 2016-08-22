@@ -34,7 +34,7 @@
     }
   },
   "packOptions": {
-    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
+    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-dotnet/master/icon.png",
     "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
     "owners": [ "Stormpath, Inc." ],
     "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
