@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using Stormpath.SDK.Account;
 using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Internal
@@ -23,12 +24,34 @@ namespace Stormpath.Owin.Middleware.Internal
     {
         public object Sanitize(T model)
         {
+            if (typeof(T) == typeof(IAccount))
+            {
+                return SanitizeAccount((IAccount)model);
+            }
+
             if (typeof(T) == typeof(IOauthGrantAuthenticationResult))
             {
                 return SanitizeToken((IOauthGrantAuthenticationResult)model);
             }
 
             throw new NotImplementedException($"Cannot sanitize type '{typeof(T).Name}'");
+        }
+
+        private object SanitizeAccount(IAccount account)
+        {
+            return new
+            {
+                Href = account.Href,
+                Username = account.Username,
+                ModifiedAt = account.ModifiedAt,
+                Status = account.Status.ToString(),
+                CreatedAt = account.CreatedAt,
+                Email = account.Email,
+                MiddleName = account.MiddleName,
+                Surname = account.Surname,
+                GivenName = account.GivenName,
+                FullName = account.FullName
+            };
         }
 
         private static object SanitizeToken(IOauthGrantAuthenticationResult tokenResult)
