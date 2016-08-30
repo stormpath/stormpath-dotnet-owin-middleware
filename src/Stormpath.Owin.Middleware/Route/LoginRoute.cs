@@ -86,7 +86,7 @@ namespace Stormpath.Owin.Middleware.Route
             await preLoginHandler(preLoginHandlerContext, cancellationToken);
 
             var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
-                .SetLogin(login)
+                .SetLogin(preLoginHandlerContext.Login)
                 .SetPassword(password);
 
             if (preLoginHandlerContext.AccountStore != null)

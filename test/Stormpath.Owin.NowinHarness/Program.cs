@@ -66,7 +66,25 @@ namespace Stormpath.Owin.NowinHarness
                         ServerUri = "http://localhost:8080"
                     }
                 },
-                Logger = logger
+                Logger = logger,
+                PreRegistrationHandler = (ctx, ct) =>
+                {
+                    ctx.Account.CustomData["source"] = "Nowin";
+                    return Task.FromResult(true);
+                },
+                PostRegistrationHandler = async (ctx, ct) =>
+                {
+                    var customData = await ctx.Account.GetCustomDataAsync(ct);
+                },
+                PreLoginHandler = (ctx, ct) =>
+                {
+                    ctx.Login = ctx.Login + ".foo";
+                    return Task.FromResult(true);
+                },
+                PostLoginHandler = async (ctx, ct) =>
+                {
+                    var customData = await ctx.Account.GetCustomDataAsync(ct);
+                }
             });
 
             // Insert it into the OWIN pipeline
