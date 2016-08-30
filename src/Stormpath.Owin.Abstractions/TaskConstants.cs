@@ -4,6 +4,6 @@ namespace Stormpath.Owin.Abstractions
 {
     public static class TaskConstants
     {
-        public static Task CompletedTask = Task.FromResult(true);
+        public static Task<bool> CompletedTask = Task.FromResult(true);
     }
 }
