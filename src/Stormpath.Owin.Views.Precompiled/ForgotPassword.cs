@@ -540,7 +540,7 @@ WriteAttributeValue("", 3096, Model.ForgotPasswordUri, 3096, 24, false);
                             <div class=""form-group group-email"">
                                 <label class=""col-sm-4"">Email</label>
                                 <div class=""col-sm-8"">
-                                    <input placeholder=""Email"" required name=""email"" type=""text"" class=""form-control"">
+                                    <input placeholder=""Email"" required name=""email"" type=""email"" class=""form-control"">
                                 </div>
                             </div>
                             <div>
@@ -564,9 +564,9 @@ WriteAttributeValue("", 3096, Model.ForgotPasswordUri, 3096, 24, false);
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 3971, "\"", 3993, 1);
+            BeginWriteAttribute("href", " href=\"", 3972, "\"", 3994, 1);
 #line 84 "ForgotPassword.cshtml"
-WriteAttributeValue("", 3978, Model.LoginUri, 3978, 15, false);
+WriteAttributeValue("", 3979, Model.LoginUri, 3979, 15, false);
 
 #line default
 #line hidden
