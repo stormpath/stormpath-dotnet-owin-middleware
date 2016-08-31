@@ -78,7 +78,6 @@ namespace Stormpath.Owin.NowinHarness
                 },
                 PreLoginHandler = (ctx, ct) =>
                 {
-                    ctx.Login = ctx.Login + ".foo";
                     return Task.FromResult(true);
                 },
                 PostLoginHandler = async (ctx, ct) =>
