@@ -85,10 +85,16 @@ namespace Stormpath.Owin.Middleware
             EnsureAccountStores(client, integrationConfiguration, options.Logger);
 
             var handlerConfiguration = new HandlerConfiguration(
+                options.PreChangePasswordHandler,
+                options.PostChangePasswordHandler,
+                options.PreLoginHandler,
+                options.PostLoginHandler,
+                options.PreLogoutHandler,
+                options.PostLogoutHandler,
                 options.PreRegistrationHandler,
                 options.PostRegistrationHandler,
-                options.PreLoginHandler,
-                options.PostLoginHandler);
+                options.PreVerifyEmailHandler,
+                options.PostVerifyEmailHandler);
 
             options.Logger.Trace("Stormpath middleware ready!", "Initialize.Create");
             return new StormpathMiddleware(
