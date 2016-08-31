@@ -49,13 +49,6 @@ namespace Stormpath.Owin.Middleware.Route
             var viewModel = new RegisterViewModelBuilder(_configuration.Web.Register).Build();
             var suppliedFieldNames = fieldNames?.ToArray() ?? new string[] {};
 
-            bool missingEmailOrPassword = string.IsNullOrEmpty(postData.Email) || string.IsNullOrEmpty(postData.Password);
-            if (missingEmailOrPassword)
-            {
-                await errorHandler("Missing email or password.", cancellationToken);
-                return null;
-            }
-
             bool hasConfirmPasswordField = viewModel.Form.Fields.Where(f => f.Name == "confirmPassword").Any();
             if (hasConfirmPasswordField)
             {
@@ -70,7 +63,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 if (field.Required && !suppliedFieldNames.Contains(field.Name, StringComparer.Ordinal))
                 {
-                    await errorHandler($"{field.Label} is missing.", cancellationToken);
+                    await errorHandler($"{field.Label} is required.", cancellationToken);
                     return null;
                 }
             }
