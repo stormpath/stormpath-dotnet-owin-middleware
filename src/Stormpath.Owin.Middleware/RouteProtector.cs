@@ -29,34 +29,42 @@ namespace Stormpath.Owin.Middleware
     {
         public static string AnyScheme = "*";
 
+        private readonly ApplicationConfiguration appConfiguration;
         private readonly WebConfiguration webConfiguration;
         private readonly ILogger logger;
 
         private readonly Action<WebCookieConfiguration> deleteCookie;
         private readonly Action<int> setStatusCode;
+        private readonly Action<string, string> setHeader;
         private readonly Action<string> redirect;
 
         /// <summary>
         /// Creates a new instance of the <see cref="RouteProtector"/> class.
         /// </summary>
+        /// <param name="appConfiguration">The active Stormpath <see cref="ApplicationConfiguration">application configuration</see>.</param>
         /// <param name="webConfiguration">The active Stormpath <see cref="WebConfiguration">web configuration</see>.</param>
-        /// <param name="deleteCookieAction">The routine to run to delete cookies in the response.</param>
-        /// <param name="setStatusCodeAction">The routine to run to set the response status code.</param>
-        /// <param name="redirectAction">The routine to run to set the response Location header.</param>
+        /// <param name="deleteCookieAction">Delegate to delete cookies in the response.</param>
+        /// <param name="setStatusCodeAction">Delegate to set the response status code.</param>
+        /// <param name="setHeaderAction">Delegate to set a header in the response.</param>
+        /// <param name="redirectAction">Delegate to set the response Location header.</param>
         /// <param name="logger">The <see cref="ILogger"/> to use.</param>
         public RouteProtector(
+            ApplicationConfiguration appConfiguration,
             WebConfiguration webConfiguration,
             Action<WebCookieConfiguration> deleteCookieAction,
             Action<int> setStatusCodeAction,
+            Action<string, string> setHeaderAction,
             Action<string> redirectAction,
             ILogger logger)
         {
+            this.appConfiguration = appConfiguration;
             this.webConfiguration = webConfiguration;
             this.logger = logger;
 
-            this.deleteCookie = deleteCookieAction;
-            this.setStatusCode = setStatusCodeAction;
-            this.redirect = redirectAction;
+            deleteCookie = deleteCookieAction;
+            setStatusCode = setStatusCodeAction;
+            setHeader = setHeaderAction;
+            redirect = redirectAction;
         }
 
         /// <summary>
@@ -110,6 +118,7 @@ namespace Stormpath.Owin.Middleware
             else
             {
                 setStatusCode(401);
+                setHeader("WWW-Authenticate", $"Bearer realm=\"{appConfiguration.Name}\"");
             }
         }
     }
