@@ -10,11 +10,11 @@ using Stormpath.SDK.Sync;
 
 namespace Stormpath.Owin.Middleware
 {
-    public sealed class RequiredGroupsFilter : IAuthorizationFilter
+    public sealed class RequireGroupsFilter : IAuthorizationFilter
     {
         private readonly string[] _allowedGroups;
 
-        public RequiredGroupsFilter(IEnumerable<string> allowedGroupNamesOrHrefs)
+        public RequireGroupsFilter(IEnumerable<string> allowedGroupNamesOrHrefs)
         {
             _allowedGroups = allowedGroupNamesOrHrefs.ToArray();
 
