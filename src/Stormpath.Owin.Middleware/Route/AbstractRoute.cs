@@ -30,12 +30,14 @@ namespace Stormpath.Owin.Middleware.Route
     {
         private bool _initialized;
         protected IntegrationConfiguration _configuration;
+        protected HandlerConfiguration _handlers;
         private IViewRenderer _viewRenderer;
         protected ILogger _logger;
         private IClient _client;
 
         public void Initialize(
             IntegrationConfiguration configuration,
+            HandlerConfiguration handlers,
             IViewRenderer viewRenderer,
             ILogger logger,
             IClient client)
@@ -55,11 +57,16 @@ namespace Stormpath.Owin.Middleware.Route
                 throw new ArgumentNullException(nameof(client));
             }
 
+            if (handlers == null)
+            {
+                throw new ArgumentNullException(nameof(handlers));
+            }
 
             _configuration = configuration;
             _viewRenderer = viewRenderer;
             _logger = logger;
             _client = client;
+            _handlers = handlers;
 
             _initialized = true;
         }

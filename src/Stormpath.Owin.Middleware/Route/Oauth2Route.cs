@@ -31,8 +31,8 @@ namespace Stormpath.Owin.Middleware.Route
     {
         protected override Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
-            context.Response.StatusCode = 405;
-            return Task.FromResult(true);
+            context.Response.StatusCode = 405; // Method not allowed
+            return TaskConstants.CompletedTask;
         }
 
         protected override async Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
@@ -100,15 +100,32 @@ namespace Stormpath.Owin.Middleware.Route
 
         private async Task ExecutePasswordFlow(IOwinEnvironment context, IClient client, string username, string password, CancellationToken cancellationToken)
         {
+            var preLoginContext = new PreLoginContext(context)
+            {
+                Login = username
+            };
+            await _handlers.PreLoginHandler(preLoginContext, cancellationToken);
+
+            var passwordGrantRequestBuilder = OauthRequests.NewPasswordGrantRequest()
+                .SetLogin(preLoginContext.Login)
+                .SetPassword(password);
+
+            if (preLoginContext.AccountStore != null)
+            {
+                passwordGrantRequestBuilder.SetAccountStore(preLoginContext.AccountStore);
+            }
+
+            var passwordGrantRequest = passwordGrantRequestBuilder.Build();
+
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
-            var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
-                .SetLogin(username)
-                .SetPassword(password)
-                .Build();
-
             var tokenResult = await application.NewPasswordGrantAuthenticator()
                 .AuthenticateAsync(passwordGrantRequest, cancellationToken);
+
+            var accessToken = await tokenResult.GetAccessTokenAsync(cancellationToken);
+            var account = await accessToken.GetAccountAsync(cancellationToken);
+
+            var postLoginContext = new PostLoginContext(context, account);
+            await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
 
             var sanitizer = new ResponseSanitizer<IOauthGrantAuthenticationResult>();
             var responseModel = sanitizer.Sanitize(tokenResult);

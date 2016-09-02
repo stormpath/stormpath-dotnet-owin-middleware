@@ -84,10 +84,26 @@ namespace Stormpath.Owin.Middleware
             options.Logger.Trace("Ensuring the Account Store configuration is valid...", nameof(StormpathMiddleware));
             EnsureAccountStores(client, integrationConfiguration, options.Logger);
 
-            options.Logger.Trace("Stormpath middleware ready!", nameof(StormpathMiddleware));
+            var handlerConfiguration = new HandlerConfiguration(
+                options.PreChangePasswordHandler,
+                options.PostChangePasswordHandler,
+                options.PreLoginHandler,
+                options.PostLoginHandler,
+                options.PreLogoutHandler,
+                options.PostLogoutHandler,
+                options.PreRegistrationHandler,
+                options.PostRegistrationHandler,
+                options.PreVerifyEmailHandler,
+                options.PostVerifyEmailHandler);
 
-            return new StormpathMiddleware(options.ViewRenderer, options.Logger, userAgentBuilder, clientFactory,
-                integrationConfiguration);
+            options.Logger.Trace("Stormpath middleware ready!", "Initialize.Create");
+            return new StormpathMiddleware(
+                options.ViewRenderer,
+                options.Logger,
+                userAgentBuilder,
+                clientFactory,
+                integrationConfiguration,
+                handlerConfiguration);
         }
 
         private static IScopedClientFactory InitializeClient(object initialConfiguration, string configurationFileRoot, ILogger logger)
@@ -129,44 +145,46 @@ namespace Stormpath.Owin.Middleware
         private static StormpathConfiguration ResolveApplication(IClient client, ILogger logger)
         {
             var originalConfiguration = client.Configuration;
+            var configurationReady = false;
 
-            StormpathConfiguration newConfiguration = null;
-            bool configurationReady = false;
+            IApplication foundApplication = null;
 
             // If href is specified, no need to resolve
             if (!string.IsNullOrEmpty(originalConfiguration.Application.Href))
             {
-                logger.Trace($"Using provided application href {originalConfiguration.Application.Href}", nameof(ResolveApplication));
+                logger.Trace($"Looking up Application by href '{originalConfiguration.Application.Href}'", nameof(ResolveApplication));
 
-                newConfiguration = originalConfiguration;
-                configurationReady = true;
+                try
+                {
+                    foundApplication = client.GetApplication(originalConfiguration.Application.Href);
+                    logger.Trace("Found Application by href", nameof(ResolveApplication));
+                    configurationReady = true;
+                }
+                catch (Exception ex)
+                {
+                    throw new InitializationException($"The provided application could not be found. The provided href was: {originalConfiguration.Application.Href}", ex);
+                }
             }
 
             // If name is specified, look up by name
             if (!configurationReady && !string.IsNullOrEmpty(originalConfiguration.Application.Name))
             {
-                logger.Trace($"Looking up provided application name '{originalConfiguration.Application.Name}'", nameof(ResolveApplication));
+                logger.Trace($"Looking up Application by name '{originalConfiguration.Application.Name}'", nameof(ResolveApplication));
 
                 try
                 {
-                    var foundApplication = client.GetApplications()
+                    foundApplication = client.GetApplications()
                         .Where(app => app.Name == originalConfiguration.Application.Name)
                         .Synchronously()
                         .Single();
 
-                    logger.Trace($"Application '{foundApplication.Name}' exists at ({foundApplication.Href})", nameof(ResolveApplication));
-
-                    newConfiguration = new StormpathConfiguration(
-                        originalConfiguration.Client,
-                        new ApplicationConfiguration(href: foundApplication?.Href),
-                        originalConfiguration.Web);
+                    logger.Trace("Found Application by name", nameof(ResolveApplication));
                     configurationReady = true;
                 }
                 catch (Exception ex)
                 {
                     throw new InitializationException(
-                        $"The provided application could not be found. The provided application name was: {originalConfiguration.Application.Name}",
-                        ex);
+                        $"The provided application could not be found. The provided name was: {originalConfiguration.Application.Name}",ex);
                 }
             }
 
@@ -177,52 +195,34 @@ namespace Stormpath.Owin.Middleware
 
                 try
                 {
-                    var singleApplication = client.GetApplications()
+                    foundApplication = client.GetApplications()
                         .Synchronously()
                         .Take(3)
-                        .ToList()
+                        .ToArray()
                         .Single(app => app.Name != "Stormpath");
 
-                    logger.Trace($"Using single application '{singleApplication.Name}' at ({singleApplication.Href})", nameof(ResolveApplication));
-
-                    newConfiguration = new StormpathConfiguration(
-                        originalConfiguration.Client,
-                        new ApplicationConfiguration(href: singleApplication?.Href),
-                        originalConfiguration.Web);
+                    logger.Trace("Found single application in tenant", nameof(ResolveApplication));
                 }
                 catch (Exception ex)
                 {
                     throw new InitializationException(
-                        $"Could not automatically resolve a Stormpath Application. Please specify your Stormpath Application in your configuration.",
-                        ex);
+                        "Could not automatically resolve a Stormpath Application. Please specify your Stormpath Application in your configuration.", ex);
                 }
             }
 
-            // Attempt to cache the application
-            logger.Trace("Ensuring application exists...", nameof(ResolveApplication));
-            EnsureApplication(client, newConfiguration, logger);
+            if (foundApplication == null)
+            {
+                throw new InitializationException("The resolved application was null. Please specify your Stormpath Application in your configuration.");
+            }
+
+            logger.Info($"Using Stormpath application '{foundApplication.Name}' ({foundApplication.Href})", nameof(ResolveApplication));
+
+            var newConfiguration = new StormpathConfiguration(
+                originalConfiguration.Client,
+                new ApplicationConfiguration(foundApplication.Name, foundApplication.Href),
+                originalConfiguration.Web);
 
             return newConfiguration;
-        }
-
-        private static void EnsureApplication(IClient client, StormpathConfiguration updatedConfiguration, ILogger logger)
-        {
-            if (string.IsNullOrEmpty(updatedConfiguration?.Application?.Href))
-            {
-                throw new InitializationException("The application href is empty.");
-            }
-
-            logger.Trace($"Looking up Stormpath application at {updatedConfiguration.Application.Href}");
-
-            try
-            {
-                var resolvedApplication = client.GetApplication(updatedConfiguration.Application.Href);
-                logger.Info($"Using Stormpath application '{resolvedApplication.Name}' ({resolvedApplication.Href})", nameof(EnsureApplication));
-            }
-            catch (Exception ex)
-            {
-                throw new InitializationException($"An error occurred when loading the Stormpath application details.", ex);
-            }
         }
 
         private static IntegrationConfiguration GetIntegrationConfiguration(
@@ -443,12 +443,7 @@ namespace Stormpath.Owin.Middleware
             where T : AbstractRoute, new()
         {
             var route = new T();
-
-            route.Initialize(
-                this.Configuration,
-                this.viewRenderer,
-                this.logger,
-                client);
+            route.Initialize(Configuration, Handlers, viewRenderer, logger, client);
 
             return route;
         }

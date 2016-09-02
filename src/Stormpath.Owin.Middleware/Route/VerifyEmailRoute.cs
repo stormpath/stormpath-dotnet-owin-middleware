@@ -38,10 +38,17 @@ namespace Stormpath.Owin.Middleware.Route
         private async Task<bool> ResendVerification(
             string email,
             IClient client,
+            IOwinEnvironment environment,
             Func<ResourceException, CancellationToken, Task<bool>> errorHandler,
             Func<CancellationToken, Task<bool>> successHandler,
             CancellationToken cancellationToken)
         {
+            var preVerifyEmailContext = new PreVerifyEmailContext(environment)
+            {
+                Email = email
+            };
+            await _handlers.PreVerifyEmailHandler(preVerifyEmailContext, cancellationToken);
+
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             try
@@ -54,6 +61,7 @@ namespace Stormpath.Owin.Middleware.Route
                 // address.  We don't want to leak information about the account
                 // list, so allow this continue without error.
                 _logger.Info($"A user tried to resend their account verification email, but failed: {rex.DeveloperMessage}");
+                return await successHandler(cancellationToken);
             }
             catch (ResourceException rex) when (errorHandler != null)
             {
@@ -79,7 +87,10 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+                var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+
+                var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
+                await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
 
                 return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=verified");
             }
@@ -110,14 +121,12 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             });
 
-            var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(ct =>
-            {
-                return HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=unverified");
-            });
+            var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(ct => HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=unverified"));
 
             return await ResendVerification(
                 model.Email,
                 client,
+                context,
                 htmlErrorHandler,
                 htmlSuccessHandler,
                 cancellationToken);
@@ -133,8 +142,11 @@ namespace Stormpath.Owin.Middleware.Route
                 return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
             }
 
-            await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+            var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
             // Errors are caught in AbstractRouteMiddleware
+
+            var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
+            await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
 
             return await JsonResponse.Ok(context);
         }
@@ -143,14 +155,12 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
 
-            var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct =>
-            {
-                return JsonResponse.Ok(context);
-            });
+            var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct => JsonResponse.Ok(context));
 
             return await ResendVerification(
                 email: model.Email,
                 client: client,
+                environment: context,
                 errorHandler: null, // Errors are caught in AbstractRouteMiddleware
                 successHandler: jsonSuccessHandler,
                 cancellationToken: cancellationToken);

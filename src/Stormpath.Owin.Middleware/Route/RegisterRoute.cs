@@ -26,6 +26,7 @@ using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Directory;
 using Stormpath.SDK.Error;
 
 namespace Stormpath.Owin.Middleware.Route
@@ -35,22 +36,18 @@ namespace Stormpath.Owin.Middleware.Route
         private static readonly string[] defaultFields = Configuration.Abstractions.Default.Configuration.Web.Register.Form.Fields.Select(kvp => kvp.Key).ToArray();
 
         private async Task<IAccount> HandleRegistration(
+            IOwinEnvironment environment,
             RegisterPostModel postData,
             IEnumerable<string> fieldNames,
             Dictionary<string, object> customFields,
             IClient client,
             Func<string, CancellationToken, Task> errorHandler,
+            Func<PreRegistrationContext, CancellationToken, Task> preRegistrationHandler,
+            Func<PostRegistrationContext, CancellationToken, Task> postRegistrationHandler,
             CancellationToken cancellationToken)
         {
             var viewModel = new RegisterViewModelBuilder(_configuration.Web.Register).Build();
             var suppliedFieldNames = fieldNames?.ToArray() ?? new string[] {};
-
-            bool missingEmailOrPassword = string.IsNullOrEmpty(postData.Email) || string.IsNullOrEmpty(postData.Password);
-            if (missingEmailOrPassword)
-            {
-                await errorHandler("Missing email or password.", cancellationToken);
-                return null;
-            }
 
             bool hasConfirmPasswordField = viewModel.Form.Fields.Where(f => f.Name == "confirmPassword").Any();
             if (hasConfirmPasswordField)
@@ -66,7 +63,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 if (field.Required && !suppliedFieldNames.Contains(field.Name, StringComparer.Ordinal))
                 {
-                    await errorHandler($"{field.Label} is missing.", cancellationToken);
+                    await errorHandler($"{field.Label} is required.", cancellationToken);
                     return null;
                 }
             }
@@ -80,8 +77,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var surnameField = viewModel.Form.Fields.Where(f => f.Name == "surname").SingleOrDefault();
             bool isSurnameRequired = surnameField?.Required ?? false;
-            bool surnameIsNotRequired = surnameField == null || !surnameField.Required;
-            if (string.IsNullOrEmpty(postData.Surname) && !surnameIsNotRequired)
+            if (string.IsNullOrEmpty(postData.Surname) && !isSurnameRequired)
             {
                 postData.Surname = "UNKNOWN";
             }
@@ -119,8 +115,36 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var defaultAccountStore = await application.GetDefaultAccountStoreAsync(cancellationToken);
 
-            return await application.CreateAccountAsync(newAccount, cancellationToken);
+            var preRegisterHandlerContext = new PreRegistrationContext(environment, newAccount)
+            {
+                AccountStore = defaultAccountStore as IDirectory
+            };
+
+            await preRegistrationHandler(preRegisterHandlerContext, cancellationToken);
+
+            IAccount createdAccount;
+
+            if (preRegisterHandlerContext.AccountStore != null)
+            {
+                createdAccount = await preRegisterHandlerContext.AccountStore.CreateAccountAsync(
+                    preRegisterHandlerContext.Account,
+                    preRegisterHandlerContext.Options,
+                    cancellationToken);
+            }
+            else
+            {
+                createdAccount = await application.CreateAccountAsync(
+                    preRegisterHandlerContext.Account,
+                    preRegisterHandlerContext.Options,
+                    cancellationToken);
+            }
+
+            var postRegistrationContext = new PostRegistrationContext(environment, createdAccount);
+            await postRegistrationHandler(postRegistrationContext, cancellationToken);
+
+            return createdAccount;
         }
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -158,7 +182,17 @@ namespace Stormpath.Owin.Middleware.Route
             IAccount newAccount = null;
             try
             {
-                newAccount = await this.HandleRegistration(model, allNonEmptyFieldNames, providedCustomFields, client, htmlErrorHandler, cancellationToken);
+                newAccount = await HandleRegistration(
+                    context,
+                    model,
+                    allNonEmptyFieldNames,
+                    providedCustomFields,
+                    client,
+                    htmlErrorHandler,
+                    _handlers.PreRegistrationHandler,
+                    _handlers.PostRegistrationHandler,
+                    cancellationToken);
+
                 if (newAccount == null)
                 {
                     return true; // Some error occurred and the handler was invoked
@@ -225,7 +259,17 @@ namespace Stormpath.Owin.Middleware.Route
                 return Error.Create(context, new BadRequest(message), ct);
             });
 
-            var newAccount = await this.HandleRegistration(model, allNonEmptyFieldNames, providedCustomFields, client, jsonErrorHandler, cancellationToken);
+            var newAccount = await this.HandleRegistration(
+                context,
+                model,
+                allNonEmptyFieldNames,
+                providedCustomFields,
+                client,
+                jsonErrorHandler,
+                _handlers.PreRegistrationHandler,
+                _handlers.PostRegistrationHandler,
+                cancellationToken);
+
             if (newAccount == null)
             {
                 return true; // Some error occurred and the handler was invoked

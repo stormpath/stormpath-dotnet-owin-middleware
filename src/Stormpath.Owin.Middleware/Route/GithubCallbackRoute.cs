@@ -97,6 +97,15 @@ namespace Stormpath.Owin.Middleware.Route
                 return await HttpResponse.Redirect(context, GetErrorUri());
             }
 
+            if (isNewAccount)
+            {
+                var postRegistrationContext = new PostRegistrationContext(context, account);
+                await _handlers.PostRegistrationHandler(postRegistrationContext, cancellationToken);
+            }
+
+            var postLoginContext = new PostLoginContext(context, account);
+            await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
+
             var nextUri = isNewAccount
                 ? _configuration.Web.Register.NextUri
                 : _configuration.Web.Login.NextUri;

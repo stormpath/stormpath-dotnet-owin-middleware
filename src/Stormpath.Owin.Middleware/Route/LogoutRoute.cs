@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
 using Stormpath.SDK.Jwt;
@@ -46,6 +47,11 @@ namespace Stormpath.Owin.Middleware.Route
 
         private async Task HandleLogout(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
+            var account = context.Request[OwinKeys.StormpathUser] as IAccount;
+
+            var preLogoutContext = new PreLogoutContext(context, account);
+            await _handlers.PreLogoutHandler(preLogoutContext, cancellationToken);
+
             // Remove user from request
             context.Request[OwinKeys.StormpathUser] = null;
 
@@ -56,6 +62,9 @@ namespace Stormpath.Owin.Middleware.Route
             await RevokeTokens(client, cookieParser, cancellationToken);
             
             DeleteCookies(context, cookieParser);
+
+            var postLogoutContext = new PostLogoutContext(context, account);
+            await _handlers.PostLogoutHandler(postLogoutContext, cancellationToken);
         }
 
         private async Task RevokeTokens(IClient client, CookieParser cookieParser, CancellationToken cancellationToken)

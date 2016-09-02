@@ -23,7 +23,7 @@ using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Logging;
 
-namespace Stormpath.Owin.Middleware.Route
+namespace Stormpath.Owin.Middleware
 {
     public sealed class AuthenticationRequiredFilter
     {
@@ -43,18 +43,21 @@ namespace Stormpath.Owin.Middleware.Route
 
             var deleteCookieAction = new Action<WebCookieConfiguration>(cookie => Cookies.DeleteTokenCookie(context, cookie, logger));
             var setStatusCodeAction = new Action<int>(code => context.Response.StatusCode = code);
+            var setHeaderAction = new Action<string, string>((name, value) => context.Response.Headers.SetString(name, value));
             var redirectAction = new Action<string>(location => context.Response.Headers.SetString("Location", location));
 
             var handler = new RouteProtector(
+                configuration.Application,
                 configuration.Web,
                 deleteCookieAction,
                 setStatusCodeAction,
+                setHeaderAction,
                 redirectAction,
                 logger);
 
             if (handler.IsAuthenticated(authenticationScheme, RouteProtector.AnyScheme, authenticatedUser))
             {
-                return Task.FromResult(true); ; // Authentication check succeeded
+                return TaskConstants.CompletedTask; // Authentication check succeeded
             }
 
             logger.Info("User attempted to access a protected endpoint with invalid credentials.");

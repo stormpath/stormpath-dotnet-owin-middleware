@@ -67,19 +67,42 @@ namespace Stormpath.Owin.Middleware.Route
             return true;
         }
 
-        private async Task<IOauthGrantAuthenticationResult> HandleLogin(IClient client, string login, string password, CancellationToken cancellationToken)
+        private async Task<IOauthGrantAuthenticationResult> HandleLogin(
+            IOwinEnvironment environment,
+            IClient client,
+            string login,
+            string password,
+            Func<PreLoginContext, CancellationToken, Task> preLoginHandler,
+            Func<PostLoginContext, CancellationToken, Task> postLoginHandler,
+            CancellationToken cancellationToken)
         {
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
+            var preLoginHandlerContext = new PreLoginContext(environment)
+            {
+                Login = login
+            };
+
+            await preLoginHandler(preLoginHandlerContext, cancellationToken);
+
             var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
-                .SetLogin(login)
-                .SetPassword(password)
-                .Build();
+                .SetLogin(preLoginHandlerContext.Login)
+                .SetPassword(password);
+
+            if (preLoginHandlerContext.AccountStore != null)
+            {
+                passwordGrantRequest.SetAccountStore(preLoginHandlerContext.AccountStore);
+            }
 
             var passwordGrantAuthenticator = application.NewPasswordGrantAuthenticator();
-
             var grantResult = await passwordGrantAuthenticator
-                .AuthenticateAsync(passwordGrantRequest, cancellationToken);
+                .AuthenticateAsync(passwordGrantRequest.Build(), cancellationToken);
+
+            var accessToken = await grantResult.GetAccessTokenAsync(cancellationToken);
+            var account = await accessToken.GetAccountAsync(cancellationToken);
+
+            var postLoginHandlerContext = new PostLoginContext(environment, account);
+            await postLoginHandler(postLoginHandlerContext, cancellationToken);
 
             return grantResult;
         }
@@ -105,7 +128,14 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var grantResult = await HandleLogin(client, model.Login, model.Password, cancellationToken);
+                var grantResult = await HandleLogin(
+                    context,
+                    client,
+                    model.Login,
+                    model.Password,
+                    _handlers.PreLoginHandler,
+                    _handlers.PostLoginHandler,
+                    cancellationToken);
 
                 Cookies.AddTokenCookiesToResponse(context, client, grantResult, _configuration, _logger);
             }
@@ -151,7 +181,14 @@ namespace Stormpath.Owin.Middleware.Route
                 return await Error.Create(context, new BadRequest("Missing login or password."), cancellationToken);
             }
 
-            var grantResult = await HandleLogin(client, model.Login, model.Password, cancellationToken);
+            var grantResult = await HandleLogin(
+                context,
+                client,
+                model.Login,
+                model.Password,
+                _handlers.PreLoginHandler,
+                _handlers.PostLoginHandler,
+                cancellationToken);
             // Errors will be caught up in AbstractRouteMiddleware
 
             Cookies.AddTokenCookiesToResponse(context, client, grantResult, _configuration, _logger);

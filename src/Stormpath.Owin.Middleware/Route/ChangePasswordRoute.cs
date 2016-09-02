@@ -23,6 +23,7 @@ using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
+using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
 
@@ -79,17 +80,20 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var spToken = queryString.GetString("sptoken");
-
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
+            IAccount account;
             try
             {
-                await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+                account = await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
             }
             catch (ResourceException)
             {
                 return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
             }
+
+            var preChangePasswordContext = new PreChangePasswordContext(context, account);
+            await _handlers.PreChangePasswordHandler(preChangePasswordContext, cancellationToken);
 
             try
             {
@@ -104,6 +108,9 @@ namespace Stormpath.Owin.Middleware.Route
                 await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
                 return true;
             }
+
+            var postChangePasswordContext = new PostChangePasswordContext(context, account);
+            await _handlers.PostChangePasswordHandler(postChangePasswordContext, cancellationToken);
 
             // TODO autologin
 
@@ -130,14 +137,19 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
-            await application.VerifyPasswordResetTokenAsync(model.SpToken, cancellationToken);
+            var account = await application.VerifyPasswordResetTokenAsync(model.SpToken, cancellationToken);
             // Errors are caught in AbstractRouteMiddleware
 
+            var preChangePasswordContext = new PreChangePasswordContext(context, account);
+            await _handlers.PreChangePasswordHandler(preChangePasswordContext, cancellationToken);
+
             await application.ResetPasswordAsync(model.SpToken, model.Password, cancellationToken);
+
+            var postChangePasswordContext = new PostChangePasswordContext(context, account);
+            await _handlers.PostChangePasswordHandler(postChangePasswordContext, cancellationToken);
 
             // TODO autologin
 

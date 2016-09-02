@@ -26,7 +26,7 @@ namespace Stormpath.Owin.Middleware.Internal
             context.Response.StatusCode = 302;
             context.Response.Headers.SetString("Location", uri);
 
-            return Task.FromResult(true);
+            return TaskConstants.CompletedTask;
         }
     }
 }
