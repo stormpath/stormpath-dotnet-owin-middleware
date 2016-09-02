@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.SDK;
 using Stormpath.SDK.Account;
+using Stormpath.SDK.Sync;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -23,7 +24,7 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
-        public async Task<bool> IsAuthorized(IAccount account, CancellationToken cancellationToken)
+        public bool IsAuthorized(IAccount account)
         {
             if (account == null)
             {
@@ -32,10 +33,33 @@ namespace Stormpath.Owin.Middleware
 
             var matchedGroup = false;
 
-            await account.GetGroups().ForEachAsync(item =>
+            foreach (var group in account.GetGroups().Synchronously())
+            {
+                matchedGroup = _allowedGroups.Contains(group.Name, StringComparer.Ordinal)
+                    || _allowedGroups.Contains(group.Href, StringComparer.Ordinal);
+
+                if (matchedGroup)
                 {
-                    matchedGroup = _allowedGroups.Contains(item.Name, StringComparer.Ordinal)
-                                   || _allowedGroups.Contains(item.Href, StringComparer.Ordinal);
+                    break;
+                }
+            }
+
+            return matchedGroup;
+        }
+
+        public async Task<bool> IsAuthorizedAsync(IAccount account, CancellationToken cancellationToken)
+        {
+            if (account == null)
+            {
+                return false;
+            }
+
+            var matchedGroup = false;
+
+            await account.GetGroups().ForEachAsync(group =>
+                {
+                    matchedGroup = _allowedGroups.Contains(group.Name, StringComparer.Ordinal)
+                                   || _allowedGroups.Contains(group.Href, StringComparer.Ordinal);
                     return matchedGroup;
                 },
                 cancellationToken).ConfigureAwait(false);

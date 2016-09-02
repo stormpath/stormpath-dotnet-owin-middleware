@@ -6,6 +6,8 @@ namespace Stormpath.Owin.Abstractions
 {
     public interface IAuthorizationFilter
     {
-        Task<bool> IsAuthorized(IAccount account, CancellationToken cancellationToken);
+        bool IsAuthorized(IAccount account);
+
+        Task<bool> IsAuthorizedAsync(IAccount account, CancellationToken cancellationToken);
     }
 }
