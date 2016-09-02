@@ -19,6 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.SDK.Logging;
 using Stormpath.Owin.Abstractions;
+using Stormpath.SDK.Cache;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -33,6 +34,8 @@ namespace Stormpath.Owin.Middleware
         public string LibraryUserAgent { get; set; }
 
         public IViewRenderer ViewRenderer { get; set; }
+
+        public ICacheProviderBuilder CacheProvider { get; set; }
 
         public Func<PreChangePasswordContext, CancellationToken, Task> PreChangePasswordHandler { get; set; }
             = (ctx, ct) => TaskConstants.CompletedTask;

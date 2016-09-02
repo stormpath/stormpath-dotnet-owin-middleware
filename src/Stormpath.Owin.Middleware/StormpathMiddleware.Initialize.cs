@@ -23,6 +23,7 @@ using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
 using Stormpath.SDK;
 using Stormpath.SDK.Application;
+using Stormpath.SDK.Cache;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Directory;
 using Stormpath.SDK.Http;
@@ -61,7 +62,7 @@ namespace Stormpath.Owin.Middleware
 
             // Initialize and warm up SDK
             options.Logger.Trace("Initializing and warming up SDK...", nameof(StormpathMiddleware));
-            var clientFactory = InitializeClient(options.Configuration, options.ConfigurationFileRoot, options.Logger);
+            var clientFactory = InitializeClient(options.Configuration, options.ConfigurationFileRoot, options.CacheProvider, options.Logger);
 
             // Scope a client for our resolution steps below
             options.Logger.Trace("Creating scoped ClientFactory...", nameof(StormpathMiddleware));
@@ -106,10 +107,10 @@ namespace Stormpath.Owin.Middleware
                 handlerConfiguration);
         }
 
-        private static IScopedClientFactory InitializeClient(object initialConfiguration, string configurationFileRoot, ILogger logger)
+        private static IScopedClientFactory InitializeClient(object initialConfiguration, string configurationFileRoot, ICacheProviderBuilder cacheProviderBuilder,  ILogger logger)
         {
             // Construct base client
-            var baseClient = Clients.Builder()
+            var clientBuilder = Clients.Builder()
 #if NET45
                 .SetHttpClient(HttpClients.Create().RestSharpClient())
 #else
@@ -118,8 +119,14 @@ namespace Stormpath.Owin.Middleware
                 .SetSerializer(Serializers.Create().JsonNetSerializer())
                 .SetConfiguration(initialConfiguration)
                 .SetConfigurationFileRoot(configurationFileRoot)
-                .SetLogger(logger)
-                .Build();
+                .SetLogger(logger);
+
+            if (cacheProviderBuilder != null)
+            {
+                clientBuilder.SetCacheProviderBuilder(cacheProviderBuilder);
+            }
+
+            var baseClient = clientBuilder.Build();
 
             // Attempt to connect and prime the cache with ITenant
             try
