@@ -46,7 +46,7 @@ Task("Test")
 {
     new List<string>
     {
-        "Stormpath.SDK.UnitTest"
+        "Stormpath.Owin.UnitTest"
     }.ForEach(name =>
     {
         DotNetCoreTest("./test/" + name + "/project.json");
