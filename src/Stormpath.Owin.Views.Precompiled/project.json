@@ -11,9 +11,9 @@
   "dependencies": {
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.5.0-beta1"
+      "version": "1.5.0-beta2"
     },
-    "Stormpath.SDK.Abstractions": "0.93.0"
+    "Stormpath.SDK.Abstractions": "0.94.0-beta1"
   },
   "description": "Precompiled views for the Stormpath OWIN middleware library.",
   "frameworks": {
