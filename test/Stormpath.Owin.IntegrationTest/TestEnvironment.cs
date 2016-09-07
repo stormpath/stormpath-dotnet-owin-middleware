@@ -17,7 +17,7 @@ namespace Stormpath.Owin.IntegrationTest
         private readonly List<IDeletable> _cleanupList;
         private readonly Action<string> _log;
 
-        public TestEnvironment(IClient client, Func<IClient, Task<IDeletable[]>> setupAction, Action<string> logAction = null)
+        public TestEnvironment(IClient client, Func<IClient, Task<IResource[]>> setupAction, Action<string> logAction = null)
         {
             if (logAction == null)
             {
@@ -30,7 +30,7 @@ namespace Stormpath.Owin.IntegrationTest
 
             _client.GetCurrentTenant();
             var resources = setupAction(_client).Result;
-            _cleanupList.AddRange(resources);
+            _cleanupList.AddRange(resources.OfType<IDeletable>());
         }
 
         public void MarkForDeletion(IDeletable resource)

@@ -36,7 +36,7 @@ namespace Stormpath.Owin.IntegrationTest
             using (new TestEnvironment(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
-                return new IDeletable[] {testAccount};
+                return new IResource[] {testAccount};
             }))
             {
                 var filter = new RequireCustomDataFilter("foobar", true);
@@ -52,7 +52,7 @@ namespace Stormpath.Owin.IntegrationTest
             using (new TestEnvironment(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
-                return new IDeletable[] {testAccount};
+                return new IResource[] {testAccount};
             }))
             {
                 var filter = new RequireCustomDataFilter("foobar", true);
@@ -70,8 +70,7 @@ namespace Stormpath.Owin.IntegrationTest
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = false;
                 await testAccount.SaveAsync();
-
-                return new IDeletable[] { testAccount };
+                return new IResource[] { testAccount };
             }))
             {
                 var filter = new RequireCustomDataFilter("foobar", true);
@@ -89,8 +88,7 @@ namespace Stormpath.Owin.IntegrationTest
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = false;
                 await testAccount.SaveAsync();
-
-                return new IDeletable[] { testAccount };
+                return new IResource[] { testAccount };
             }))
             {
                 var filter = new RequireCustomDataFilter("foobar", true);
@@ -116,8 +114,7 @@ namespace Stormpath.Owin.IntegrationTest
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = data;
                 await testAccount.SaveAsync();
-
-                return new IDeletable[] { testAccount };
+                return new IResource[] { testAccount };
             }))
             {
                 var filter = new RequireCustomDataFilter("foobar", data);
@@ -136,8 +133,7 @@ namespace Stormpath.Owin.IntegrationTest
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = data;
                 await testAccount.SaveAsync();
-
-                return new IDeletable[] { testAccount };
+                return new IResource[] { testAccount };
             }))
             {
                 var filter = new RequireCustomDataFilter("foobar", data);

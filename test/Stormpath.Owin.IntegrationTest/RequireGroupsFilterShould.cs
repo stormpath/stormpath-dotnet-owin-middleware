@@ -36,7 +36,7 @@ namespace Stormpath.Owin.IntegrationTest
             using (new TestEnvironment(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
-                return new IDeletable[] {testAccount};
+                return new IResource[] {testAccount};
             }))
             {
                 var filter = new RequireGroupsFilter(new[] {"testGroup"});
@@ -52,7 +52,7 @@ namespace Stormpath.Owin.IntegrationTest
             using (new TestEnvironment(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
-                return new IDeletable[] { testAccount };
+                return new IResource[] { testAccount };
             }))
             {
                 var filter = new RequireGroupsFilter(new[] { "testGroup" });
@@ -72,7 +72,7 @@ namespace Stormpath.Owin.IntegrationTest
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 var group1 = await _fixture.TestDirectory.CreateGroupAsync(group1Name, $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
                 var group2 = await _fixture.TestDirectory.CreateGroupAsync(group2Name, $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
-                return new IDeletable[] { testAccount, group1, group2 };
+                return new IResource[] { testAccount, group1, group2 };
             }))
             {
                 var filter1 = new RequireGroupsFilter(new[] { group1Name });
@@ -98,7 +98,7 @@ namespace Stormpath.Owin.IntegrationTest
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 var group1 = await _fixture.TestDirectory.CreateGroupAsync(group1Name, $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
                 var group2 = await _fixture.TestDirectory.CreateGroupAsync(group2Name, $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
-                return new IDeletable[] { testAccount, group1, group2 };
+                return new IResource[] { testAccount, group1, group2 };
             }))
             {
                 var filter1 = new RequireGroupsFilter(new[] { group1Name });
@@ -125,7 +125,7 @@ namespace Stormpath.Owin.IntegrationTest
                 var group2 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
                 group1Href = group1.Href;
                 group2Href = group2.Href;
-                return new IDeletable[] { testAccount, group1, group2 };
+                return new IResource[] { testAccount, group1, group2 };
             }))
             {
                 var filter1 = new RequireGroupsFilter(new[] { group1Href });
@@ -152,7 +152,7 @@ namespace Stormpath.Owin.IntegrationTest
                 var group2 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
                 group1Href = group1.Href;
                 group2Href = group2.Href;
-                return new IDeletable[] { testAccount, group1, group2 };
+                return new IResource[] { testAccount, group1, group2 };
             }))
             {
                 var filter1 = new RequireGroupsFilter(new[] { group1Href });

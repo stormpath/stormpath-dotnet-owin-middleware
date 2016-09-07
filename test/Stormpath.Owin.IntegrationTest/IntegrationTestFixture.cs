@@ -26,7 +26,7 @@ namespace Stormpath.Owin.IntegrationTest
             {
                 TestApplication = await client.CreateApplicationAsync($"Stormpath.Owin IT {TestInstanceKey}", true);
                 TestDirectory = await TestApplication.GetDefaultAccountStoreAsync() as IDirectory;
-                return new IDeletable[] {TestApplication, TestDirectory};
+                return new IResource[] {TestApplication, TestDirectory};
             });
         }
 
