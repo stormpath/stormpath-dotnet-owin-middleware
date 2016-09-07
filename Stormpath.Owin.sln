@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.Middleware", "src\Stormpath.Owin.Middleware\Stormpath.Owin.Middleware.xproj", "{BFBC0BAE-281E-40E9-9BCA-6EFBF6DBBCF6}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.Views", "src\Stormpath.Owin.Views\Stormpath.Owin.Views.xproj", "{237B0525-BE8F-43EC-92EF-D8E43352368D}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.Views.Precompiled", "src\Stormpath.Owin.Views.Precompiled\Stormpath.Owin.Views.Precompiled.xproj", "{763034BD-D324-4E12-B503-6C1F9E560DC1}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.IntegrationTest", "test\Stormpath.Owin.IntegrationTest\Stormpath.Owin.IntegrationTest.xproj", "{2E00EC4B-A29F-4037-97AB-E1C9AF7EB6A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{763034BD-D324-4E12-B503-6C1F9E560DC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{763034BD-D324-4E12-B503-6C1F9E560DC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{763034BD-D324-4E12-B503-6C1F9E560DC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E00EC4B-A29F-4037-97AB-E1C9AF7EB6A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E00EC4B-A29F-4037-97AB-E1C9AF7EB6A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E00EC4B-A29F-4037-97AB-E1C9AF7EB6A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E00EC4B-A29F-4037-97AB-E1C9AF7EB6A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,5 +73,6 @@ Global
 		{3615FE0D-5B58-4A37-AD9C-9FC32DFD84CD} = {213BB7A9-5C1C-4917-BC65-0C20F0627CF2}
 		{237B0525-BE8F-43EC-92EF-D8E43352368D} = {213BB7A9-5C1C-4917-BC65-0C20F0627CF2}
 		{763034BD-D324-4E12-B503-6C1F9E560DC1} = {213BB7A9-5C1C-4917-BC65-0C20F0627CF2}
+		{2E00EC4B-A29F-4037-97AB-E1C9AF7EB6A7} = {B26DCAB1-697E-47B3-9BD2-74B4B7839248}
 	EndGlobalSection
 EndGlobal
