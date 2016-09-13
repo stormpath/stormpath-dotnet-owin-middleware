@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.SDK.Account;
@@ -10,40 +11,34 @@ namespace Stormpath.Owin.Middleware
     {
         private readonly string _key;
         private readonly object _value;
+        private readonly IEqualityComparer<object> _comparer;
 
         public RequireCustomDataFilter(string key, object value)
+            : this(key, value, new DefaultSmartComparer())
+        {
+        }
+
+        public RequireCustomDataFilter(string key, object value, IEqualityComparer<object> comparer)
         {
             _key = key;
             _value = value;
+            _comparer = comparer;
         }
 
         public bool IsAuthorized(IAccount account)
         {
             var customData = account?.GetCustomData();
 
-            if (customData?[_key] == null)
-            {
-                return false;
-            }
-
-            return customData[_key].Equals(_value);
+            return _comparer.Equals(customData?[_key], _value);
         }
 
         public async Task<bool> IsAuthorizedAsync(IAccount account, CancellationToken cancellationToken)
         {
-            if (account == null)
-            {
-                return false;
-            }
+            var customData = account == null
+                ? null
+                : await account.GetCustomDataAsync(cancellationToken).ConfigureAwait(false);
 
-            var customData = await account.GetCustomDataAsync(cancellationToken).ConfigureAwait(false);
-
-            if (customData?[_key] == null)
-            {
-                return false;
-            }
-
-            return customData[_key].Equals(_value);
+            return _comparer.Equals(customData?[_key], _value);
         }
     }
 }
