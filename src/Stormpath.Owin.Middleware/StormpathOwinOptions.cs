@@ -38,33 +38,23 @@ namespace Stormpath.Owin.Middleware
         public ICacheProviderBuilder CacheProvider { get; set; }
 
         public Func<PreChangePasswordContext, CancellationToken, Task> PreChangePasswordHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PostChangePasswordContext, CancellationToken, Task> PostChangePasswordHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PreLoginContext, CancellationToken, Task> PreLoginHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PostLoginContext, CancellationToken, Task> PostLoginHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PreLogoutContext, CancellationToken, Task> PreLogoutHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PostLogoutContext, CancellationToken, Task> PostLogoutHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PreRegistrationContext, CancellationToken, Task> PreRegistrationHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PostRegistrationContext, CancellationToken, Task> PostRegistrationHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PreVerifyEmailContext, CancellationToken, Task> PreVerifyEmailHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
 
         public Func<PostVerifyEmailContext, CancellationToken, Task> PostVerifyEmailHandler { get; set; }
-            = (ctx, ct) => TaskConstants.CompletedTask;
     }
 }
