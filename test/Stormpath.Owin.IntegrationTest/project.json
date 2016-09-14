@@ -9,9 +9,9 @@
     },
     "Stormpath.Owin.Middleware": {
       "target": "project",
-      "version": "2.0.0-beta5"
+      "version": "2.0.0"
     },
-    "Stormpath.SDK": "0.94.0",
+    "Stormpath.SDK": "0.94.1",
     "xunit": "2.1.0"
   },
   "description": "Integration tests for Stormpath OWIN middleware.",
@@ -32,5 +32,5 @@
     }
   },
   "testRunner": "xunit",
-  "version": "2.0.0-beta3"
+  "version": "2.0.0"
 }
