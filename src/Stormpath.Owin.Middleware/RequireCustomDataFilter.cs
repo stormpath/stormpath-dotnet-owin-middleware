@@ -22,7 +22,7 @@ namespace Stormpath.Owin.Middleware
         {
             _key = key;
             _value = value;
-            _comparer = comparer;
+            _comparer = comparer ?? new DefaultSmartComparer();
         }
 
         public bool IsAuthorized(IAccount account)
