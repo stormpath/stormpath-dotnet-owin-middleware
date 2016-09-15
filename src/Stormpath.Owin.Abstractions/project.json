@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "Stormpath.Configuration.Abstractions": "6.0.0",
-    "Stormpath.SDK.Abstractions": "0.94.0" 
+    "Stormpath.SDK.Abstractions": "0.94.1" 
   },
   "description": "Common components for the Stormpath OWIN middleware library.",
   "frameworks": {
@@ -34,5 +34,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Abstractions"
   },
-  "version": "1.5.0"
+  "version": "1.6.0-beta1"
 }
