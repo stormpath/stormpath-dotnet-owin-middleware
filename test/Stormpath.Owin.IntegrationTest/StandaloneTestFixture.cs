@@ -9,30 +9,34 @@ using Stormpath.SDK.Serialization;
 
 namespace Stormpath.Owin.IntegrationTest
 {
-    public class IntegrationTestFixture : IDisposable
+    public class StandaloneTestFixture : IDisposable
     {
-        private readonly TestEnvironment _environment;
+        private readonly AutoCleanup _environment;
 
-        public IntegrationTestFixture()
-        {
-            Client = Clients.Builder()
+        public StandaloneTestFixture()
+            : this(Clients.Builder()
                 .SetHttpClient(HttpClients.Create().SystemNetHttpClient())
                 .SetSerializer(Serializers.Create().JsonNetSerializer())
-                .Build();
+                .Build())
+        {
+        }
 
-            TestInstanceKey = Guid.NewGuid().ToString();
+        public StandaloneTestFixture(IClient client)
+        {
+            Client = client;
+            TestKey = Guid.NewGuid().ToString();
 
-            _environment = new TestEnvironment(Client, async client =>
+            _environment = new AutoCleanup(Client, async c =>
             {
-                TestApplication = await client.CreateApplicationAsync($"Stormpath.Owin IT {TestInstanceKey}", true);
+                TestApplication = await c.CreateApplicationAsync($"Stormpath.Owin IT {TestKey}", true);
                 TestDirectory = await TestApplication.GetDefaultAccountStoreAsync() as IDirectory;
-                return new IResource[] {TestApplication, TestDirectory};
+                return new IResource[] { TestApplication, TestDirectory };
             });
         }
 
         public IClient Client { get; }
 
-        public string TestInstanceKey { get; }
+        public string TestKey { get; }
 
         public IApplication TestApplication { get; private set; }
 
