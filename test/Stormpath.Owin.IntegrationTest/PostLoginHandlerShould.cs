@@ -9,20 +9,20 @@ using Xunit;
 
 namespace Stormpath.Owin.IntegrationTest
 {
-    public class PreLoginHandlerShould
+    public class PostLoginHandlerShould
     {
         [Fact]
-        public async Task AlterLogin()
+        public async Task AccessAccountAfterLogin()
         {
             // Arrange
             var fixture = new OwinTestFixture
             {
                 Options = new StormpathOwinOptions
                 {
-                    PreLoginHandler = (ctx, ct) =>
+                    PostLoginHandler = async (ctx, ct) =>
                     {
-                        ctx.Login = ctx.Login + ".com";
-                        return Task.FromResult(0);
+                        ctx.Account.CustomData["THX"] = "1138";
+                        await ctx.Account.SaveAsync();
                     }
                 }
             };
@@ -31,16 +31,17 @@ namespace Stormpath.Owin.IntegrationTest
             using (var cleanup = new AutoCleanup(fixture.Client))
             {
                 var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
+                var email = $"its-{fixture.TestKey}@example.com";
                 var account = await application.CreateAccountAsync(
-                    nameof(AlterLogin),
-                    nameof(PreLoginHandlerShould),
-                    $"its-{fixture.TestKey}@example.com",
+                    nameof(AccessAccountAfterLogin), 
+                    nameof(PostLoginHandlerShould),
+                    email,
                     "Changeme123!!");
                 cleanup.MarkForDeletion(account);
 
                 var payload = new
                 {
-                    login = $"its-{fixture.TestKey}@example", // missing ".com"
+                    login = email,
                     password = "Changeme123!!"
                 };
 
@@ -49,7 +50,8 @@ namespace Stormpath.Owin.IntegrationTest
                 response.EnsureSuccessStatusCode();
 
                 // Assert
-                response.IsSuccessStatusCode.Should().BeTrue();
+                var customData = await account.GetCustomDataAsync();
+                customData["THX"].Should().Be("1138");
             }
         }
     }

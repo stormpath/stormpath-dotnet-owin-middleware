@@ -5,23 +5,24 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json;
 using Stormpath.Owin.Middleware;
+using Stormpath.SDK;
 using Xunit;
 
 namespace Stormpath.Owin.IntegrationTest
 {
-    public class PreLoginHandlerShould
+    public class PreRegistrationHandlerShould
     {
         [Fact]
-        public async Task AlterLogin()
+        public async Task ModifyAccountBeforeRegistration()
         {
             // Arrange
             var fixture = new OwinTestFixture
             {
                 Options = new StormpathOwinOptions
                 {
-                    PreLoginHandler = (ctx, ct) =>
+                    PreRegistrationHandler = (ctx, ct) =>
                     {
-                        ctx.Login = ctx.Login + ".com";
+                        ctx.Account.SetMiddleName("the");
                         return Task.FromResult(0);
                     }
                 }
@@ -31,25 +32,25 @@ namespace Stormpath.Owin.IntegrationTest
             using (var cleanup = new AutoCleanup(fixture.Client))
             {
                 var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
-                var account = await application.CreateAccountAsync(
-                    nameof(AlterLogin),
-                    nameof(PreLoginHandlerShould),
-                    $"its-{fixture.TestKey}@example.com",
-                    "Changeme123!!");
-                cleanup.MarkForDeletion(account);
-
-                var payload = new
-                {
-                    login = $"its-{fixture.TestKey}@example", // missing ".com"
-                    password = "Changeme123!!"
-                };
 
                 // Act
-                var response = await server.PostAsync("/login", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+                var email = $"its-{fixture.TestKey}@example.com";
+                var payload = new
+                {
+                    email,
+                    password = "Changeme123!!",
+                    givenName = "Chewbacca",
+                    surname = "Wookiee"
+                };
+
+                var response = await server.PostAsync("/register", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
                 response.EnsureSuccessStatusCode();
 
+                var account = await application.GetAccounts().Where(a => a.Email == email).SingleAsync();
+                cleanup.MarkForDeletion(account);
+
                 // Assert
-                response.IsSuccessStatusCode.Should().BeTrue();
+                account.FullName.Should().Be("Chewbacca the Wookiee");
             }
         }
     }
