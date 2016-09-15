@@ -14,7 +14,7 @@ namespace Stormpath.Owin.IntegrationTest
     public class PreLogoutHandlerShould
     {
         [Fact]
-        public async Task ModifyAccountBeforeLogout()
+        public async Task AccessAccount()
         {
             // Arrange
             var fixture = new OwinTestFixture
@@ -34,7 +34,7 @@ namespace Stormpath.Owin.IntegrationTest
             {
                 var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
                 var account = await application.CreateAccountAsync(
-                    nameof(ModifyAccountBeforeLogout),
+                    nameof(AccessAccount),
                     nameof(PreLogoutHandlerShould),
                     $"its-{fixture.TestKey}@example.com",
                     "Changeme123!!");

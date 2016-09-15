@@ -13,7 +13,7 @@ namespace Stormpath.Owin.IntegrationTest
     public class PreRegistrationHandlerShould
     {
         [Fact]
-        public async Task ModifyAccountBeforeRegistration()
+        public async Task AccessAccount()
         {
             // Arrange
             var fixture = new OwinTestFixture

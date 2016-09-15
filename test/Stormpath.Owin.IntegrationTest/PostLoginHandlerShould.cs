@@ -12,7 +12,7 @@ namespace Stormpath.Owin.IntegrationTest
     public class PostLoginHandlerShould
     {
         [Fact]
-        public async Task AccessAccountAfterLogin()
+        public async Task AccessAccount()
         {
             // Arrange
             var fixture = new OwinTestFixture
@@ -33,7 +33,7 @@ namespace Stormpath.Owin.IntegrationTest
                 var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
                 var email = $"its-{fixture.TestKey}@example.com";
                 var account = await application.CreateAccountAsync(
-                    nameof(AccessAccountAfterLogin), 
+                    nameof(AccessAccount), 
                     nameof(PostLoginHandlerShould),
                     email,
                     "Changeme123!!");

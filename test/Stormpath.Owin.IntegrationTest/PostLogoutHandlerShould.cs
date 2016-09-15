@@ -14,7 +14,7 @@ namespace Stormpath.Owin.IntegrationTest
     public class PostLogoutHandlerShould
     {
         [Fact]
-        public async Task ModifyAccountAfterLogout()
+        public async Task AccessAccount()
         {
             // Arrange
             var fixture = new OwinTestFixture
@@ -34,8 +34,8 @@ namespace Stormpath.Owin.IntegrationTest
             {
                 var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
                 var account = await application.CreateAccountAsync(
-                    nameof(ModifyAccountAfterLogout),
-                    nameof(PreLogoutHandlerShould),
+                    nameof(AccessAccount),
+                    nameof(PostLogoutHandlerShould),
                     $"its-{fixture.TestKey}@example.com",
                     "Changeme123!!");
                 cleanup.MarkForDeletion(account);

@@ -13,7 +13,7 @@ namespace Stormpath.Owin.IntegrationTest
     public class PostRegistrationHandlerShould
     {
         [Fact]
-        public async Task AccessAccountAfterRegistration()
+        public async Task AccessAccount()
         {
             // Arrange
             var fixture = new OwinTestFixture
