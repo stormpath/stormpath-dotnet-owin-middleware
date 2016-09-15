@@ -9,20 +9,20 @@ using Xunit;
 
 namespace Stormpath.Owin.IntegrationTest
 {
-    public class PreLoginHandlerShould
+    public class PostChangePasswordHandlerShould
     {
         [Fact]
-        public async Task AlterLogin()
+        public async Task AccessAccount()
         {
             // Arrange
             var fixture = new OwinTestFixture
             {
                 Options = new StormpathOwinOptions
                 {
-                    PreLoginHandler = (ctx, ct) =>
+                    PreChangePasswordHandler = async (ctx, ct) =>
                     {
-                        ctx.Login = ctx.Login + ".com";
-                        return Task.FromResult(0);
+                        ctx.Account.CustomData["favoriteDroid"] = "C-3PO";
+                        await ctx.Account.SaveAsync();
                     }
                 }
             };
@@ -31,24 +31,29 @@ namespace Stormpath.Owin.IntegrationTest
             using (var cleanup = new AutoCleanup(fixture.Client))
             {
                 var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
+                var email = $"its-{fixture.TestKey}@example.com";
                 var account = await application.CreateAccountAsync(
-                    nameof(AlterLogin),
-                    nameof(PreLoginHandlerShould),
-                    $"its-{fixture.TestKey}@example.com",
+                    nameof(AccessAccount), 
+                    nameof(PostChangePasswordHandlerShould),
+                    email,
                     "Changeme123!!");
                 cleanup.MarkForDeletion(account);
 
+                var token = await application.SendPasswordResetEmailAsync(email);
+
                 var payload = new
                 {
-                    login = $"its-{fixture.TestKey}@example", // missing ".com"
-                    password = "Changeme123!!"
+                    sptoken = token.GetValue(),
+                    password = "Changeme456$$"
                 };
 
                 // Act
-                var response = await server.PostAsync("/login", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+                var response = await server.PostAsync("/change", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+                response.EnsureSuccessStatusCode();
 
                 // Assert
-                response.IsSuccessStatusCode.Should().BeTrue();
+                var customData = await account.GetCustomDataAsync();
+                customData["favoriteDroid"].Should().Be("C-3PO");
             }
         }
     }
