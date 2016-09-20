@@ -14,9 +14,9 @@ namespace Stormpath.Owin.IntegrationTest
     [Collection(nameof(IntegrationTestCollection))]
     public class RequireCustomDataFilterShould
     {
-        private readonly IntegrationTestFixture _fixture;
+        private readonly StandaloneTestFixture _fixture;
 
-        public RequireCustomDataFilterShould(IntegrationTestFixture fixture)
+        public RequireCustomDataFilterShould(StandaloneTestFixture fixture)
         {
             _fixture = fixture;
         }
@@ -33,7 +33,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 return new IResource[] {testAccount};
@@ -49,7 +49,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 return new IResource[] {testAccount};
@@ -65,7 +65,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = false;
@@ -83,7 +83,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = false;
@@ -112,7 +112,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = data;
@@ -131,7 +131,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = data;
@@ -149,7 +149,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = 123.456f;
@@ -167,7 +167,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 testAccount.CustomData["foobar"] = 123.456f;

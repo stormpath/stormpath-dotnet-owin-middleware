@@ -127,6 +127,8 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
+        public IClient GetClient() => CreateScopedClient(null);
+
         private static string GetRequestPathOrThrow(IOwinEnvironment context)
         {
             var requestPath = context.Request.Path;
@@ -175,9 +177,14 @@ namespace Stormpath.Owin.Middleware
 
         private string CreateFullUserAgent(IOwinEnvironment context)
         {
-            var callingAgent = string
+            var callingAgent = string.Empty;
+
+            if (context != null)
+            {
+                callingAgent = string
                 .Join(" ", context.Request.Headers.Get("X-Stormpath-Agent") ?? new string[0])
                 .Trim();
+            }
 
             return string
                 .Join(" ", callingAgent, userAgentBuilder.GetUserAgent())

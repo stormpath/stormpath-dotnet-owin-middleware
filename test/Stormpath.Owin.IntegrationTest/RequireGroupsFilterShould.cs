@@ -14,9 +14,9 @@ namespace Stormpath.Owin.IntegrationTest
     [Collection(nameof(IntegrationTestCollection))]
     public class RequireGroupsFilterShould
     {
-        private readonly IntegrationTestFixture _fixture;
+        private readonly StandaloneTestFixture _fixture;
 
-        public RequireGroupsFilterShould(IntegrationTestFixture fixture)
+        public RequireGroupsFilterShould(StandaloneTestFixture fixture)
         {
             _fixture = fixture;
         }
@@ -33,7 +33,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 return new IResource[] {testAccount};
@@ -49,7 +49,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             IAccount testAccount = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
                 return new IResource[] { testAccount };
@@ -64,14 +64,14 @@ namespace Stormpath.Owin.IntegrationTest
         public async Task ReturnTrueForGroupByNameAsync()
         {
             IAccount testAccount = null;
-            var group1Name = $"group1-{_fixture.TestInstanceKey}";
-            var group2Name = $"group2-{_fixture.TestInstanceKey}";
+            var group1Name = $"group1-{_fixture.TestKey}";
+            var group2Name = $"group2-{_fixture.TestKey}";
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
-                var group1 = await _fixture.TestDirectory.CreateGroupAsync(group1Name, $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
-                var group2 = await _fixture.TestDirectory.CreateGroupAsync(group2Name, $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
+                var group1 = await _fixture.TestDirectory.CreateGroupAsync(group1Name, $"Stormpath.Owin IT {_fixture.TestKey}");
+                var group2 = await _fixture.TestDirectory.CreateGroupAsync(group2Name, $"Stormpath.Owin IT {_fixture.TestKey}");
                 await testAccount.AddGroupAsync(group1);
                 await testAccount.AddGroupAsync(group2);
                 return new IResource[] { testAccount, group1, group2 };
@@ -92,14 +92,14 @@ namespace Stormpath.Owin.IntegrationTest
         public void ReturnTrueForGroupByName()
         {
             IAccount testAccount = null;
-            var group1Name = $"group1-{_fixture.TestInstanceKey}";
-            var group2Name = $"group2-{_fixture.TestInstanceKey}";
+            var group1Name = $"group1-{_fixture.TestKey}";
+            var group2Name = $"group2-{_fixture.TestKey}";
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
-                var group1 = await _fixture.TestDirectory.CreateGroupAsync(group1Name, $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
-                var group2 = await _fixture.TestDirectory.CreateGroupAsync(group2Name, $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
+                var group1 = await _fixture.TestDirectory.CreateGroupAsync(group1Name, $"Stormpath.Owin IT {_fixture.TestKey}");
+                var group2 = await _fixture.TestDirectory.CreateGroupAsync(group2Name, $"Stormpath.Owin IT {_fixture.TestKey}");
                 await testAccount.AddGroupAsync(group1);
                 await testAccount.AddGroupAsync(group2);
                 return new IResource[] { testAccount, group1, group2 };
@@ -122,11 +122,11 @@ namespace Stormpath.Owin.IntegrationTest
             IAccount testAccount = null;
             string group1Href = null, group2Href = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
-                var group1 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
-                var group2 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
+                var group1 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestKey}");
+                var group2 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestKey}");
                 await testAccount.AddGroupAsync(group1);
                 await testAccount.AddGroupAsync(group2);
                 group1Href = group1.Href;
@@ -151,11 +151,11 @@ namespace Stormpath.Owin.IntegrationTest
             IAccount testAccount = null;
             string group1Href = null, group2Href = null;
 
-            using (new TestEnvironment(_fixture.Client, async c =>
+            using (new AutoCleanup(_fixture.Client, async c =>
             {
                 testAccount = await _fixture.TestDirectory.CreateAccountAsync(NewTestAccount(c));
-                var group1 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
-                var group2 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestInstanceKey}");
+                var group1 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestKey}");
+                var group2 = await _fixture.TestDirectory.CreateGroupAsync($"group1-{Guid.NewGuid()}", $"Stormpath.Owin IT {_fixture.TestKey}");
                 await testAccount.AddGroupAsync(group1);
                 await testAccount.AddGroupAsync(group2);
                 group1Href = group1.Href;
