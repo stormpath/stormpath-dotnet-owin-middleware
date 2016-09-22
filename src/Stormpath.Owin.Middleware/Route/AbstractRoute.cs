@@ -89,7 +89,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                return await DispatchAsync(owinContext, _client, contentNegotiationResult, owinContext.CancellationToken);
+                return await HandleRequestAsync(owinContext, _client, contentNegotiationResult, owinContext.CancellationToken);
             }
             catch (ResourceException rex)
             {
@@ -123,7 +123,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        private Task<bool> DispatchAsync(IOwinEnvironment context, IClient scopedClient, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        private Task<bool> HandleRequestAsync(IOwinEnvironment context, IClient scopedClient, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             var method = context.Request.Method;
 
@@ -138,7 +138,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             // Do nothing and pass on to next middleware.
-            _logger.Trace("Request method was not GET or POST", nameof(DispatchAsync));
+            _logger.Trace("Request method was not GET or POST", nameof(HandleRequestAsync));
             return Task.FromResult(false);
         }
 

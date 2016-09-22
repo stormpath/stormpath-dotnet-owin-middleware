@@ -58,7 +58,7 @@ namespace Stormpath.Owin.Middleware
             // Construct the framework User-Agent
             IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(options.LibraryUserAgent);
 
-            options.Logger.Info("Stormpath middleware starting up", source: nameof(StormpathMiddleware));
+            options.Logger.Info("Stormpath middleware starting up", nameof(StormpathMiddleware));
 
             // Initialize and warm up SDK
             options.Logger.Trace("Initializing and warming up SDK...", nameof(StormpathMiddleware));
@@ -97,7 +97,7 @@ namespace Stormpath.Owin.Middleware
                 options.PreVerifyEmailHandler ?? DefaultHandlers.PreVerifyEmailHandler,
                 options.PostVerifyEmailHandler ?? DefaultHandlers.PostVerifyEmailHandler);
 
-            options.Logger.Trace("Stormpath middleware ready!", "Initialize.Create");
+            options.Logger.Trace("Stormpath middleware ready!", nameof(StormpathMiddleware));
             return new StormpathMiddleware(
                 options.ViewRenderer,
                 options.Logger,
@@ -137,7 +137,7 @@ namespace Stormpath.Owin.Middleware
                     throw new InitializationException("Could not connect to Stormpath. No tenant could be found.");
                 }
 
-                logger.Info($"Using tenant {tenant.Key}", source: nameof(InitializeClient));
+                logger.Info($"Using tenant {tenant.Key}", nameof(InitializeClient));
             }
             catch (Exception ex)
             {
@@ -242,7 +242,7 @@ namespace Stormpath.Owin.Middleware
             var defaultAccountStore = application.GetDefaultAccountStore();
             var defaultAccountStoreHref = defaultAccountStore?.Href;
 
-            logger.Trace("Default account store href: " + (string.IsNullOrEmpty(defaultAccountStoreHref) ? "<null>" : defaultAccountStoreHref), source: nameof(GetIntegrationConfiguration));
+            logger.Trace("Default account store href: " + (string.IsNullOrEmpty(defaultAccountStoreHref) ? "<null>" : defaultAccountStoreHref), nameof(GetIntegrationConfiguration));
 
             var defaultAccountStoreDirectory = defaultAccountStore as IDirectory;
 
@@ -253,11 +253,11 @@ namespace Stormpath.Owin.Middleware
             {
                 var accountCreationPolicy = defaultAccountStoreDirectory.GetAccountCreationPolicy();
                 emailVerificationEnabled = accountCreationPolicy.VerificationEmailStatus == SDK.Mail.EmailStatus.Enabled;
-                logger.Trace($"Got AccountCreationPolicy. Email workflow enabled: {emailVerificationEnabled}", source: nameof(GetIntegrationConfiguration));
+                logger.Trace($"Got AccountCreationPolicy. Email workflow enabled: {emailVerificationEnabled}", nameof(GetIntegrationConfiguration));
 
                 var passwordPolicy = defaultAccountStoreDirectory.GetPasswordPolicy();
                 passwordResetEnabled = passwordPolicy.ResetEmailStatus == SDK.Mail.EmailStatus.Enabled;
-                logger.Trace($"Got PasswordPolicy. Reset workflow enabled: {passwordResetEnabled}", source: nameof(GetIntegrationConfiguration));
+                logger.Trace($"Got PasswordPolicy. Reset workflow enabled: {passwordResetEnabled}", nameof(GetIntegrationConfiguration));
             }
 
             logger.Trace("Getting social providers from tenant...", nameof(GetIntegrationConfiguration));
@@ -324,11 +324,11 @@ namespace Stormpath.Owin.Middleware
                 WebSocialProviderConfiguration fbConfiguration;
                 if (!webConfig.Social.TryGetValue("facebook", out fbConfiguration))
                 {
-                    logger.Trace("Found a Facebook directory, but no stormpath.web.social.facebook configuration exists. Skipping", source: nameof(GetProviderConfiguration));
+                    logger.Trace("Found a Facebook directory, but no stormpath.web.social.facebook configuration exists. Skipping", nameof(GetProviderConfiguration));
                     return null;
                 }
 
-                logger.Trace($"Facebook directory at {asFacebookProvider.Href}", source: nameof(GetProviderConfiguration));
+                logger.Trace($"Facebook directory at {asFacebookProvider.Href}", nameof(GetProviderConfiguration));
 
                 return new ProviderConfiguration(
                     asFacebookProvider.ClientId,
@@ -344,11 +344,11 @@ namespace Stormpath.Owin.Middleware
                 WebSocialProviderConfiguration googleConfiguration;
                 if (!webConfig.Social.TryGetValue("google", out googleConfiguration))
                 {
-                    logger.Trace("Found a Google directory, but no stormpath.web.social.google configuration exists. Skipping", source: nameof(GetProviderConfiguration));
+                    logger.Trace("Found a Google directory, but no stormpath.web.social.google configuration exists. Skipping", nameof(GetProviderConfiguration));
                     return null;
                 }
 
-                logger.Trace($"Google directory at {asGoogleProvider.Href}", source: nameof(GetProviderConfiguration));
+                logger.Trace($"Google directory at {asGoogleProvider.Href}", nameof(GetProviderConfiguration));
 
                 if (string.IsNullOrEmpty(webConfig.ServerUri))
                 {
@@ -371,11 +371,11 @@ namespace Stormpath.Owin.Middleware
                 WebSocialProviderConfiguration githubConfiguration;
                 if (!webConfig.Social.TryGetValue("github", out githubConfiguration))
                 {
-                    logger.Trace("Found a Github directory, but no stormpath.web.social.github configuration exists. Skipping", source: nameof(GetProviderConfiguration));
+                    logger.Trace("Found a Github directory, but no stormpath.web.social.github configuration exists. Skipping", nameof(GetProviderConfiguration));
                     return null;
                 }
 
-                logger.Trace($"Github directory at {asGithubProvider.Href}", source: nameof(GetProviderConfiguration));
+                logger.Trace($"Github directory at {asGithubProvider.Href}", nameof(GetProviderConfiguration));
 
                 if (string.IsNullOrEmpty(webConfig.ServerUri))
                 {
@@ -398,11 +398,11 @@ namespace Stormpath.Owin.Middleware
                 WebSocialProviderConfiguration linkedinConfiguration;
                 if (!webConfig.Social.TryGetValue("linkedin", out linkedinConfiguration))
                 {
-                    logger.Trace("Found a LinkedIn directory, but no stormpath.web.social.linkedin configuration exists. Skipping", source: nameof(GetProviderConfiguration));
+                    logger.Trace("Found a LinkedIn directory, but no stormpath.web.social.linkedin configuration exists. Skipping", nameof(GetProviderConfiguration));
                     return null;
                 }
 
-                logger.Trace($"LinkedIn directory at {asLinkedInProvider.Href}", source: nameof(GetProviderConfiguration));
+                logger.Trace($"LinkedIn directory at {asLinkedInProvider.Href}", nameof(GetProviderConfiguration));
 
                 if (string.IsNullOrEmpty(webConfig.ServerUri))
                 {
@@ -419,7 +419,7 @@ namespace Stormpath.Owin.Middleware
                     scope: linkedinConfiguration.Scope);
             }
 
-            logger.Trace($"Provider {provider.Href} has unknown provider ID {provider.ProviderId}. Skipping", source: nameof(GetProviderConfiguration));
+            logger.Trace($"Provider {provider.Href} has unknown provider ID {provider.ProviderId}. Skipping", nameof(GetProviderConfiguration));
             return null;
         }
 
@@ -466,9 +466,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     this.Configuration.Web.Oauth2.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<Oauth2Route>(client).InvokeAsync)
+                    new RouteHandler(client => InitializeRoute<Oauth2Route>(client).InvokeAsync, false)
                     );
             }
 
@@ -479,9 +477,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     this.Configuration.Web.Register.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<RegisterRoute>(client).InvokeAsync)
+                    new RouteHandler(client => InitializeRoute<RegisterRoute>(client).InvokeAsync, false)
                     );
             }
 
@@ -492,9 +488,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     this.Configuration.Web.Login.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<LoginRoute>(client).InvokeAsync)
+                    new RouteHandler(client => InitializeRoute<LoginRoute>(client).InvokeAsync, false)
                     );
             }
 
@@ -505,9 +499,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     this.Configuration.Web.Me.Uri,
-                    new RouteHandler(
-                        authenticationRequired: true,
-                        handler: client => InitializeRoute<MeRoute>(client).InvokeAsync)
+                    new RouteHandler(client => InitializeRoute<MeRoute>(client).InvokeAsync, true)
                     );
             }
 
@@ -518,9 +510,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     this.Configuration.Web.Logout.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<LogoutRoute>(client).InvokeAsync)
+                    new RouteHandler(client => InitializeRoute<LogoutRoute>(client).InvokeAsync, false)
                     );
             }
 
@@ -531,9 +521,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     this.Configuration.Web.ForgotPassword.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync)
+                    new RouteHandler(client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync, false)
                     );
             }
 
@@ -544,9 +532,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     this.Configuration.Web.ChangePassword.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync)
+                    new RouteHandler(client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync, false)
                     );
             }
 
@@ -557,9 +543,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     this.Configuration.Web.VerifyEmail.Uri,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync)
+                    new RouteHandler(client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync, false)
                     );
             }
 
@@ -574,9 +558,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     facebookProvider.CallbackPath,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync));
+                    new RouteHandler(client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync, false));
             }
 
             // /callbacks/google
@@ -590,9 +572,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     googleProvider.CallbackPath,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync));
+                    new RouteHandler(client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync, false));
             }
 
             // /callbacks/github
@@ -606,9 +586,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     githubProvider.CallbackPath,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync));
+                    new RouteHandler(client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync, false));
             }
 
             // /callbacks/linkedin
@@ -622,9 +600,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     linkedInProvider.CallbackPath,
-                    new RouteHandler(
-                        authenticationRequired: false,
-                        handler: client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync));
+                    new RouteHandler(client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync, false));
             }
 
             return routing;
