@@ -110,7 +110,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var viewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login);
+            var viewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login, _configuration.Providers);
             var loginViewModel = viewModelBuilder.Build();
 
             return JsonResponse.Ok(context, loginViewModel);
