@@ -145,12 +145,14 @@ namespace Stormpath.Owin.Middleware.Route
                 registerViewModel.Errors.Add(message);
 
                 return RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
-            });
+            });S
 
-            IAccount newAccount = null;
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
+
             try
             {
-                newAccount = await InstantiateLocalAccount(
+                var newAccount = await InstantiateLocalAccount(
                     context,
                     model,
                     allNonEmptyFieldNames,
@@ -163,21 +165,17 @@ namespace Stormpath.Owin.Middleware.Route
                 {
                     return true; // Some error occurred and the handler was invoked
                 }
+
+                var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, cancellationToken);
+                await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
+
+                return await executor.HandleRedirectAsync(context, createdAccount);
             }
             catch (ResourceException rex)
             {
                 await htmlErrorHandler(rex.Message, cancellationToken);
                 return true;
             }
-
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
-
-            var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, cancellationToken);
-
-            await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
-
-            return await executor.HandleRedirectAsync(context, createdAccount);
         }
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
