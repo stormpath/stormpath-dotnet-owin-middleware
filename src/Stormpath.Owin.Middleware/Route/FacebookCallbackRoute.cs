@@ -35,84 +35,28 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("facebook")
                && configuration.Providers.Any(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase));
 
-        private async Task<bool> LoginWithAccessToken(
-            string accessToken,
-            IOwinEnvironment context,
-            IClient client,
-            CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                _logger.Warn("Facebook access_token was empty", nameof(FacebookCallbackRoute));
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
-            IAccount account;
-            var isNewAccount = false;
-            try
-            {
-                var request = client.Providers()
-                    .Facebook()
-                    .Account()
-                    .SetAccessToken(accessToken)
-                    .Build();
-                var result = await application.GetAccountAsync(request, cancellationToken);
-                account = result.Account;
-                isNewAccount = result.IsNewAccount;
-            }
-            catch (ResourceException rex)
-            {
-                _logger.Warn(rex, source: nameof(FacebookCallbackRoute));
-                account = null;
-            }
-
-            if (account == null)
-            {
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            var tokenExchanger = new StormpathTokenExchanger(client, application, _configuration, _logger);
-            var exchangeResult = await tokenExchanger.ExchangeAsync(account, cancellationToken);
-
-            if (exchangeResult == null)
-            {
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            if (isNewAccount)
-            {
-                var postRegistrationContext = new PostRegistrationContext(context, account);
-                await _handlers.PostRegistrationHandler(postRegistrationContext, cancellationToken);
-            }
-
-            var postLoginContext = new PostLoginContext(context, account);
-            await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
-
-            var nextUri = isNewAccount
-                ? _configuration.Web.Register.NextUri
-                : _configuration.Web.Login.NextUri;
-
-            Cookies.AddTokenCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
-            return await HttpResponse.Redirect(context, nextUri);
-        }
-
-        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            if (queryString.ContainsKey("access_token"))
+            if (!queryString.ContainsKey("access_token"))
             {
-                return LoginWithAccessToken(queryString.GetString("access_token"), context, client, cancellationToken);
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
             }
 
-            return HttpResponse.Redirect(context, GetErrorUri());
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
+
+            var accessToken = queryString.GetString("access_token");
+            var loginResult = await socialExecutor.FacebookLoginWithAccessTokenAsync(context, accessToken, cancellationToken);
+
+            return await socialExecutor.HandleLoginResultAsync(
+                context,
+                application,
+                loginResult,
+                cancellationToken);
         }
 
-        private string GetErrorUri()
-        {
-            return $"{_configuration.Web.Login.Uri}?status=social_failed";
-        }
+
     }
 }

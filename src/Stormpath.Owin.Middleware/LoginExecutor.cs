@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.SDK.Account;
 using Stormpath.SDK.Application;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
@@ -74,6 +75,16 @@ namespace Stormpath.Owin.Middleware
                 .AuthenticateAsync(passwordGrantRequest.Build(), cancellationToken);
 
             return grantResult;
+        }
+
+        public async Task<IOauthGrantAuthenticationResult> TokenExchangeGrantAsync(
+            IOwinEnvironment environment,
+            IApplication application,
+            IAccount account,
+            CancellationToken cancellationToken)
+        {
+            var tokenExchanger = new StormpathTokenExchanger(_client, application, _configuration, _logger);
+            return await tokenExchanger.ExchangeAsync(account, cancellationToken);
         }
 
         public async Task HandlePostLoginAsync(
