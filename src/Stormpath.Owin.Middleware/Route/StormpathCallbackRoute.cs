@@ -10,6 +10,7 @@ using Stormpath.SDK.Application;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
 using Stormpath.SDK.Jwt;
+using Stormpath.SDK.Logging;
 using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Route
@@ -48,7 +49,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await HandleActionAsync(context, client, application, stormpathToken, queryString, status, cancellationToken);
         }
 
-        private async Task<bool> HandleActionAsync(
+        private Task<bool> HandleActionAsync(
             IOwinEnvironment context,
             IClient client,
             IApplication application,
@@ -57,45 +58,45 @@ namespace Stormpath.Owin.Middleware.Route
             string status,
             CancellationToken cancellationToken)
         {
-            if (status.Equals("registered", StringComparison.OrdinalIgnoreCase))
-            {
-                // TODO register logic
-                throw new NotImplementedException();
-            }
+            //if (status.Equals("registered", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    // TODO register logic
+            //    throw new NotImplementedException();
+            //}
 
-            if (status.Equals("authenticated", StringComparison.OrdinalIgnoreCase))
-            {
-                IOauthGrantAuthenticationResult grantResult;
-                try
-                {
-                    var tokenExchangeAttempt = OauthRequests.NewIdSiteTokenAuthenticationRequest()
-                        .SetJwt(token)
-                        .Build();
+            //if (status.Equals("authenticated", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    IOauthGrantAuthenticationResult grantResult;
+            //    try
+            //    {
+            //        var tokenExchangeAttempt = OauthRequests.NewIdSiteTokenAuthenticationRequest()
+            //            .SetJwt(token)
+            //            .Build();
 
-                    grantResult = await application.NewIdSiteTokenAuthenticator()
-                        .AuthenticateAsync(tokenExchangeAttempt, cancellationToken);
-                }
-                catch (ResourceException rex)
-                {
-                    _logger.Warn(rex, source: nameof(StormpathCallbackRoute));
-                    throw; // json response
-                }
+            //        grantResult = await application.NewIdSiteTokenAuthenticator()
+            //            .AuthenticateAsync(tokenExchangeAttempt, cancellationToken);
+            //    }
+            //    catch (ResourceException rex)
+            //    {
+            //        _logger.Warn(rex, source: nameof(StormpathCallbackRoute));
+            //        throw; // json response
+            //    }
 
-                var postLoginExecutor = new LoginExecutor(client, _configuration, _logger);
+            //    var postLoginExecutor = new LoginExecutor(client, _configuration, _logger);
 
-                await postLoginExecutor.HandlePostLoginAsync(context, grantResult, cancellationToken);
-                await postLoginExecutor.HandleRedirectAsync(context, queryString);
-                return true;
-            }
+            //    await postLoginExecutor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+            //    await postLoginExecutor.HandleRedirectAsync(context, queryString);
+            //    return true;
+            //}
 
-            if (status.Equals("logout", StringComparison.OrdinalIgnoreCase))
-            {
-                var logoutExecutor = new PostLogoutExecutor(client, _configuration, _logger);
+            //if (status.Equals("logout", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    var logoutExecutor = new PostLogoutExecutor(client, _configuration, _logger);
 
-                await logoutExecutor.HandleLogoutAsync(context, client, cancellationToken);
-                await logoutExecutor.HandleRedirectAsync(context);
-                return true;
-            }
+            //    await logoutExecutor.HandleLogoutAsync(context, client, cancellationToken);
+            //    await logoutExecutor.HandleRedirectAsync(context);
+            //    return true;
+            //}
 
             // json response: 'Unknown ID site result status: ' + status
             throw new ArgumentException();

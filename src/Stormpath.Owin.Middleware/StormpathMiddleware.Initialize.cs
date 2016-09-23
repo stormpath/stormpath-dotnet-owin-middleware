@@ -85,6 +85,12 @@ namespace Stormpath.Owin.Middleware
             options.Logger.Trace("Ensuring the Account Store configuration is valid...", nameof(StormpathMiddleware));
             EnsureAccountStores(client, integrationConfiguration, options.Logger);
 
+            // Validate any remaining configuration
+            options.Logger.Trace("Ensuring the integration configuration is valid...", nameof(StormpathMiddleware));
+            EnsureIntegrationConfiguration(integrationConfiguration, options.Logger);
+
+            options.Logger.Trace("Stormpath middleware ready!", nameof(StormpathMiddleware));
+
             var handlerConfiguration = new HandlerConfiguration(
                 options.PreChangePasswordHandler ?? DefaultHandlers.PreChangePasswordHandler,
                 options.PostChangePasswordHandler ?? DefaultHandlers.PostChangePasswordHandler,
@@ -97,7 +103,6 @@ namespace Stormpath.Owin.Middleware
                 options.PreVerifyEmailHandler ?? DefaultHandlers.PreVerifyEmailHandler,
                 options.PostVerifyEmailHandler ?? DefaultHandlers.PostVerifyEmailHandler);
 
-            options.Logger.Trace("Stormpath middleware ready!", nameof(StormpathMiddleware));
             return new StormpathMiddleware(
                 options.ViewRenderer,
                 options.Logger,
@@ -423,7 +428,10 @@ namespace Stormpath.Owin.Middleware
             return null;
         }
 
-        private static void EnsureAccountStores(IClient client, IntegrationConfiguration integrationConfiguration, ILogger logger)
+        private static void EnsureAccountStores(
+            IClient client,
+            IntegrationConfiguration integrationConfiguration,
+            ILogger logger)
         {
             var application = client.GetApplication(integrationConfiguration.Application.Href);
 
@@ -445,6 +453,22 @@ namespace Stormpath.Owin.Middleware
                 }
             }
         }
+
+        private static void EnsureIntegrationConfiguration(
+            IntegrationConfiguration configuration,
+            ILogger logger)
+        {
+            //if (configuration.Web.IdSite.Enabled && string.IsNullOrEmpty(configuration.Web.ServerUri))
+            //{
+            //    throw new InitializationException("The stormpath.web.serverUri property must be set when using ID Site.");
+            //}
+
+            if (configuration.Web.Callback.Enabled && string.IsNullOrEmpty(configuration.Web.Callback.Uri))
+            {
+                logger.Warn("The Stormpath callback route is enabled, but the URI is not valid. ID Site, SAML, and other redirects will fail.", nameof(EnsureIntegrationConfiguration));
+            }
+        }
+
 
         private AbstractRoute InitializeRoute<T>(IClient client)
             where T : AbstractRoute, new()
@@ -468,6 +492,16 @@ namespace Stormpath.Owin.Middleware
                     this.Configuration.Web.Oauth2.Uri,
                     new RouteHandler(client => InitializeRoute<Oauth2Route>(client).InvokeAsync, false)
                     );
+            }
+
+            // /stormpathCallback
+            if (Configuration.Web.Callback.Enabled)
+            {
+                logger.Info($"Stormpath callback enabled on {Configuration.Web.Callback.Uri}", nameof(BuildRoutingTable));
+
+                routing.Add(
+                    Configuration.Web.Callback.Uri,
+                    new RouteHandler(client => InitializeRoute<StormpathCallbackRoute>(client).InvokeAsync));
             }
 
             // /register

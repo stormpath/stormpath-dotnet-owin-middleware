@@ -23,7 +23,7 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class RouteHandler
     {
-        public RouteHandler(Func<IClient, Func<IOwinEnvironment, Task<bool>>> handler, bool authenticationRequired)
+        public RouteHandler(Func<IClient, Func<IOwinEnvironment, Task<bool>>> handler, bool authenticationRequired = false)
         {
             AuthenticationRequired = authenticationRequired;
             Handler = handler;

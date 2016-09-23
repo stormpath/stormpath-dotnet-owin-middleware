@@ -23,6 +23,7 @@ using Owin;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.Owin.Views.Precompiled;
+using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.NowinHarness
 {
@@ -89,7 +90,7 @@ namespace Stormpath.Owin.NowinHarness
             // Insert it into the OWIN pipeline
             app.Use(stormpath);
 
-            // Add a sample middleware that responds to GET /foo
+            // Add a sample middleware that responds to GET /
             app.Use(new Func<AppFunc, AppFunc>(next => (async env =>
             {
                 if (env["owin.RequestPath"] as string == "/")
@@ -110,6 +111,36 @@ namespace Stormpath.Owin.NowinHarness
 
                         await writer.FlushAsync();
                     }
+                }
+
+                await next.Invoke(env);
+            })));
+
+            // Add a sample middleware that responds to GET /saml
+            app.Use(new Func<AppFunc, AppFunc>(next => (async env =>
+            {
+                if (env["owin.RequestPath"] as string == "/saml")
+                {
+                    var client = env[OwinKeys.StormpathClient] as IClient;
+                    var config = env[OwinKeys.StormpathConfiguration] as Configuration.Abstractions.Immutable.StormpathConfiguration;
+                    var spApp = await client.GetApplicationAsync(config.Application.Href);
+                    //var spApp = await client.GetApplicationAsync("https://api.stormpath.com/v1/applications/7AFTVp0qBlS5W7tftYyTuc");
+
+                    var samlUrlBuilder = await spApp.NewSamlIdpUrlBuilderAsync();
+                    var redirectUrl = samlUrlBuilder
+                        .SetCallbackUri("http://localhost:8080/stormpathCallback")
+                        //.SetCallbackUri("http://localhost:61571/LoginRedirect")
+                        //.SetAccountStore("https://api.stormpath.com/v1/directories/30ZrLZt9gIBv9XNatyPWXq")
+                        .Build();
+
+                    //HttpContext.Response.Headers.Add("Cache-control", "no-cache, no-store");
+                    //HttpContext.Response.Headers.Add("Pragma", "no-cache");
+                    //HttpContext.Response.Headers.Add("Expires", "-1");
+
+                    var headers = env["owin.ResponseHeaders"] as IDictionary<string, string[]>;
+                    headers.Add("Location", new []{redirectUrl});
+                    env["owin.ResponseStatusCode"] = 302;
+                    return;
                 }
 
                 await next.Invoke(env);
