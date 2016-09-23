@@ -26,7 +26,6 @@ using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
-using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -67,46 +66,6 @@ namespace Stormpath.Owin.Middleware.Route
             return true;
         }
 
-        private async Task<IOauthGrantAuthenticationResult> HandleLogin(
-            IOwinEnvironment environment,
-            IClient client,
-            string login,
-            string password,
-            Func<PreLoginContext, CancellationToken, Task> preLoginHandler,
-            Func<PostLoginContext, CancellationToken, Task> postLoginHandler,
-            CancellationToken cancellationToken)
-        {
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
-            var preLoginHandlerContext = new PreLoginContext(environment)
-            {
-                Login = login
-            };
-
-            await preLoginHandler(preLoginHandlerContext, cancellationToken);
-
-            var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
-                .SetLogin(preLoginHandlerContext.Login)
-                .SetPassword(password);
-
-            if (preLoginHandlerContext.AccountStore != null)
-            {
-                passwordGrantRequest.SetAccountStore(preLoginHandlerContext.AccountStore);
-            }
-
-            var passwordGrantAuthenticator = application.NewPasswordGrantAuthenticator();
-            var grantResult = await passwordGrantAuthenticator
-                .AuthenticateAsync(passwordGrantRequest.Build(), cancellationToken);
-
-            var accessToken = await grantResult.GetAccessTokenAsync(cancellationToken);
-            var account = await accessToken.GetAccountAsync(cancellationToken);
-
-            var postLoginHandlerContext = new PostLoginContext(environment, account);
-            await postLoginHandler(postLoginHandlerContext, cancellationToken);
-
-            return grantResult;
-        }
-
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
@@ -126,18 +85,14 @@ namespace Stormpath.Owin.Middleware.Route
                     errors: new[] { "The login and password fields are required." });
             }
 
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
+
             try
             {
-                var grantResult = await HandleLogin(
-                    context,
-                    client,
-                    model.Login,
-                    model.Password,
-                    _handlers.PreLoginHandler,
-                    _handlers.PostLoginHandler,
-                    cancellationToken);
+                var grantResult = await executor.PasswordGrantAsync(context, application, model.Login, model.Password, cancellationToken);
 
-                Cookies.AddTokenCookiesToResponse(context, client, grantResult, _configuration, _logger);
+                await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
             }
             catch (ResourceException rex)
             {
@@ -155,12 +110,7 @@ namespace Stormpath.Owin.Middleware.Route
                 ? new Uri(_configuration.Web.Login.NextUri, UriKind.Relative)
                 : new Uri(nextUriFromQueryString, UriKind.RelativeOrAbsolute);
 
-            // Ensure this is a relative URI
-            var nextLocation = parsedNextUri.IsAbsoluteUri
-                ? parsedNextUri.PathAndQuery
-                : parsedNextUri.OriginalString;
-            
-            return await HttpResponse.Redirect(context, nextLocation);
+            return await executor.HandleRedirectAsync(context, parsedNextUri);
         }
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
@@ -181,17 +131,14 @@ namespace Stormpath.Owin.Middleware.Route
                 return await Error.Create(context, new BadRequest("Missing login or password."), cancellationToken);
             }
 
-            var grantResult = await HandleLogin(
-                context,
-                client,
-                model.Login,
-                model.Password,
-                _handlers.PreLoginHandler,
-                _handlers.PostLoginHandler,
-                cancellationToken);
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
+
+            var grantResult =
+                await executor.PasswordGrantAsync(context, application, model.Login, model.Password, cancellationToken);
             // Errors will be caught up in AbstractRouteMiddleware
 
-            Cookies.AddTokenCookiesToResponse(context, client, grantResult, _configuration, _logger);
+            await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
             var token = await grantResult.GetAccessTokenAsync(cancellationToken);
             var account = await token.GetAccountAsync(cancellationToken);
