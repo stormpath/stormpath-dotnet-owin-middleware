@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,23 +78,24 @@ namespace Stormpath.Owin.Middleware.Route
                 var account = await (await grantResult.GetAccessTokenAsync(cancellationToken)).GetAccountAsync(cancellationToken);
                 await registrationExecutor.HandlePostRegistrationAsync(context, account, cancellationToken);
 
-                var loginExecutor = new LoginExecutor(client, _configuration, _handlers, _logger);
-                await loginExecutor.HandlePostLoginAsync(context, grantResult, cancellationToken);
-                await loginExecutor.HandleRedirectAsync(context); // TODO: support deep link redirection
-
-                return true;
+                return await LoginAndRedirectAsync(
+                    context,
+                    client,
+                    grantResult,
+                    jwt.Body.GetClaim("state")?.ToString(),
+                    cancellationToken);
             }
 
             if (isLogin)
             {
                 var grantResult = await ExchangeTokenAsync(application, jwt, cancellationToken);
 
-                var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
-
-                await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
-                await executor.HandleRedirectAsync(context); // TODO: support deep link redirection
-
-                return true;
+                return await LoginAndRedirectAsync(
+                    context,
+                    client,
+                    grantResult,
+                    jwt.Body.GetClaim("state")?.ToString(),
+                    cancellationToken);
             }
 
             if (isLogout)
@@ -107,8 +107,26 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            // json response: 'Unknown ID site result status: ' + status
+            // json response
             throw new ArgumentException($"Unknown assertion status '{status}'");
+        }
+
+        private async Task<bool> LoginAndRedirectAsync(
+            IOwinEnvironment context,
+            IClient client,
+            IOauthGrantAuthenticationResult grantResult,
+            string state,
+            CancellationToken cancellationToken)
+        {
+            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
+            await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+
+            Uri nextUri;
+            Uri.TryCreate(state, UriKind.Relative, out nextUri);
+
+            await executor.HandleRedirectAsync(context, nextUri?.OriginalString);
+
+            return true;
         }
 
         private async Task<IOauthGrantAuthenticationResult> ExchangeTokenAsync(IApplication application, IJwt jwt, CancellationToken cancellationToken)

@@ -130,6 +130,7 @@ namespace Stormpath.Owin.NowinHarness
                         .SetCallbackUri("http://localhost:8080/stormpathCallback")
                         //.SetCallbackUri("http://localhost:61571/LoginRedirect")
                         .SetAccountStore("https://api.stormpath.com/v1/directories/30ZrLZt9gIBv9XNatyPWXq")
+                        .SetState("/foo?bar=true")
                         .Build();
 
                     //HttpContext.Response.Headers.Add("Cache-control", "no-cache, no-store");

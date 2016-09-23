@@ -93,6 +93,7 @@ namespace Stormpath.Owin.Middleware
 
         public Task<bool> HandleRedirectAsync(IOwinEnvironment context, string nextUri = null)
         {
+            // Use the provided next URI, or default to stormpath.web.login.nextUri
             var parsedNextUri = string.IsNullOrEmpty(nextUri)
                 ? new Uri(_configuration.Web.Login.NextUri, UriKind.Relative)
                 : new Uri(nextUri, UriKind.RelativeOrAbsolute);
