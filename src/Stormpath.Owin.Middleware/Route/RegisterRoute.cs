@@ -33,7 +33,7 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class RegisterRoute : AbstractRoute
     {
-        private static readonly string[] defaultFields = Configuration.Abstractions.Default.Configuration.Web.Register.Form.Fields.Select(kvp => kvp.Key).ToArray();
+        private static readonly string[] DefaultFields = Configuration.Abstractions.Default.Configuration.Web.Register.Form.Fields.Select(kvp => kvp.Key).ToArray();
 
         private async Task<IAccount> InstantiateLocalAccount(
             IOwinEnvironment environment,
@@ -133,7 +133,7 @@ namespace Stormpath.Owin.Middleware.Route
             var allNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value))).Select(f => f.Key).ToList();
 
             var providedCustomFields = new Dictionary<string, object>();
-            foreach (var item in formData.Where(f => !defaultFields.Contains(f.Key)))
+            foreach (var item in formData.Where(f => !DefaultFields.Contains(f.Key)))
             {
                 providedCustomFields.Add(item.Key, string.Join(",", item.Value));
             }
@@ -195,7 +195,7 @@ namespace Stormpath.Owin.Middleware.Route
             var allNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(f.Value.ToString())).Select(f => f.Key).ToList();
 
             var providedCustomFields = new Dictionary<string, object>();
-            foreach (var item in formData.Where(x => !defaultFields.Contains(x.Key)))
+            foreach (var item in formData.Where(x => !DefaultFields.Contains(x.Key)))
             {
                 providedCustomFields.Add(item.Key, item.Value);
             }
