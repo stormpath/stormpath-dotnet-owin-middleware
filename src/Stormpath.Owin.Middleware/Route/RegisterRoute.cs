@@ -145,7 +145,7 @@ namespace Stormpath.Owin.Middleware.Route
                 registerViewModel.Errors.Add(message);
 
                 return RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
-            });S
+            });
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
