@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -31,76 +30,105 @@ namespace Stormpath.Owin.Middleware.Route
 
             // TODO: Use StormpathAssertionAuthenticator at SDK level (when it's ready) to locally validate token
 
-            var status = string.Empty;
             try
             {
                 var parsedJwt = client.NewJwtParser()
                     .SetSigningKey(_configuration.Client.ApiKey.Secret, Encoding.UTF8)
                     .Parse(stormpathToken);
 
-                status = parsedJwt.Body.GetClaim("status").ToString();
+                object tokenType;
+                parsedJwt.Header.TryGetValue("stt", out tokenType);
+                if (tokenType == null || !tokenType.ToString().Equals("assertion"))
+                {
+                    throw new InvalidJwtException("The token is not of the correct type");
+                }
+
+                return await HandleCallbackAsync(context, client, application, parsedJwt, cancellationToken);
             }
-            catch (JwtSignatureException jse)
+            catch (InvalidJwtException ije)
             {
-                _logger.Error(jse, message: "JWT failed validation", source: nameof(StormpathCallbackRoute));
+                _logger.Error(ije, message: "JWT failed validation", source: nameof(StormpathCallbackRoute));
                 throw; // json response
             }
-
-            return await HandleActionAsync(context, client, application, stormpathToken, queryString, status, cancellationToken);
         }
 
-        private Task<bool> HandleActionAsync(
+        private async Task<bool> HandleCallbackAsync(
             IOwinEnvironment context,
             IClient client,
             IApplication application,
-            string token,
-            IDictionary<string, string[]> queryString,
-            string status,
+            IJwt jwt,
             CancellationToken cancellationToken)
         {
-            //if (status.Equals("registered", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    // TODO register logic
-            //    throw new NotImplementedException();
-            //}
+            var isNewSubscriber = false;
+            if (jwt.Body.ContainsClaim("isNewSub"))
+            {
+                isNewSubscriber = (bool) jwt.Body.GetClaim("isNewSub");
+            }
 
-            //if (status.Equals("authenticated", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    IOauthGrantAuthenticationResult grantResult;
-            //    try
-            //    {
-            //        var tokenExchangeAttempt = OauthRequests.NewIdSiteTokenAuthenticationRequest()
-            //            .SetJwt(token)
-            //            .Build();
+            var status = jwt.Body.GetClaim("status").ToString();
 
-            //        grantResult = await application.NewIdSiteTokenAuthenticator()
-            //            .AuthenticateAsync(tokenExchangeAttempt, cancellationToken);
-            //    }
-            //    catch (ResourceException rex)
-            //    {
-            //        _logger.Warn(rex, source: nameof(StormpathCallbackRoute));
-            //        throw; // json response
-            //    }
+            var isLogin = status.Equals("authenticated", StringComparison.OrdinalIgnoreCase);
+            var isLogout = status.Equals("logout", StringComparison.OrdinalIgnoreCase);
+            var isRegistration = isNewSubscriber || status.Equals("registered", StringComparison.OrdinalIgnoreCase);
 
-            //    var postLoginExecutor = new LoginExecutor(client, _configuration, _logger);
+            if (isRegistration)
+            {
+                var grantResult = await ExchangeTokenAsync(application, jwt, cancellationToken);
 
-            //    await postLoginExecutor.HandlePostLoginAsync(context, grantResult, cancellationToken);
-            //    await postLoginExecutor.HandleRedirectAsync(context, queryString);
-            //    return true;
-            //}
+                var registrationExecutor = new RegisterExecutor(client, _configuration, _handlers, _logger);
+                var account = await (await grantResult.GetAccessTokenAsync(cancellationToken)).GetAccountAsync(cancellationToken);
+                await registrationExecutor.HandlePostRegistrationAsync(context, account, cancellationToken);
 
-            //if (status.Equals("logout", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    var logoutExecutor = new PostLogoutExecutor(client, _configuration, _logger);
+                var loginExecutor = new LoginExecutor(client, _configuration, _handlers, _logger);
+                await loginExecutor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+                await loginExecutor.HandleRedirectAsync(context); // TODO: support deep link redirection
 
-            //    await logoutExecutor.HandleLogoutAsync(context, client, cancellationToken);
-            //    await logoutExecutor.HandleRedirectAsync(context);
-            //    return true;
-            //}
+                return true;
+            }
+
+            if (isLogin)
+            {
+                var grantResult = await ExchangeTokenAsync(application, jwt, cancellationToken);
+
+                var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
+
+                await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+                await executor.HandleRedirectAsync(context); // TODO: support deep link redirection
+
+                return true;
+            }
+
+            if (isLogout)
+            {
+                var executor = new LogoutExecutor(client, _configuration, _handlers, _logger);
+
+                await executor.HandleLogoutAsync(context, cancellationToken);
+                await executor.HandleRedirectAsync(context);
+                return true;
+            }
 
             // json response: 'Unknown ID site result status: ' + status
-            throw new ArgumentException();
+            throw new ArgumentException($"Unknown assertion status '{status}'");
+        }
+
+        private async Task<IOauthGrantAuthenticationResult> ExchangeTokenAsync(IApplication application, IJwt jwt, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var tokenExchangeAttempt = OauthRequests.NewIdSiteTokenAuthenticationRequest()
+                    .SetJwt(jwt.ToString())
+                    .Build();
+
+                var grantResult = await application.NewIdSiteTokenAuthenticator()
+                    .AuthenticateAsync(tokenExchangeAttempt, cancellationToken);
+
+                return grantResult;
+            }
+            catch (ResourceException rex)
+            {
+                _logger.Warn(rex, source: nameof(ExchangeTokenAsync));
+                throw; // json response
+            }
         }
     }
-
 }

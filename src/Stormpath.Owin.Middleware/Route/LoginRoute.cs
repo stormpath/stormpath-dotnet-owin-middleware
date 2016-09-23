@@ -105,12 +105,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
 
             var nextUriFromQueryString = queryString.GetString("next");
-
-            var parsedNextUri = string.IsNullOrEmpty(nextUriFromQueryString)
-                ? new Uri(_configuration.Web.Login.NextUri, UriKind.Relative)
-                : new Uri(nextUriFromQueryString, UriKind.RelativeOrAbsolute);
-
-            return await executor.HandleRedirectAsync(context, parsedNextUri);
+            return await executor.HandleRedirectAsync(context, nextUriFromQueryString);
         }
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)

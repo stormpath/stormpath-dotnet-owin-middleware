@@ -31,7 +31,7 @@ namespace Stormpath.Owin.Middleware
             _logger = logger;
         }
 
-        public async Task HandleLogout(IOwinEnvironment context, CancellationToken cancellationToken)
+        public async Task HandleLogoutAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var account = context.Request[OwinKeys.StormpathUser] as IAccount;
 

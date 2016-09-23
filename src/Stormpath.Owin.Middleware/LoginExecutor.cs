@@ -91,12 +91,16 @@ namespace Stormpath.Owin.Middleware
             Cookies.AddTokenCookiesToResponse(context, _client, grantResult, _configuration, _logger);
         }
 
-        public Task<bool> HandleRedirectAsync(IOwinEnvironment context, Uri nextUri)
+        public Task<bool> HandleRedirectAsync(IOwinEnvironment context, string nextUri = null)
         {
+            var parsedNextUri = string.IsNullOrEmpty(nextUri)
+                ? new Uri(_configuration.Web.Login.NextUri, UriKind.Relative)
+                : new Uri(nextUri, UriKind.RelativeOrAbsolute);
+
             // Ensure this is a relative URI
-            var nextLocation = nextUri.IsAbsoluteUri
-                ? nextUri.PathAndQuery
-                : nextUri.OriginalString;
+            var nextLocation = parsedNextUri.IsAbsoluteUri
+                ? parsedNextUri.PathAndQuery
+                : parsedNextUri.OriginalString;
 
             return HttpResponse.Redirect(context, nextLocation);
         }

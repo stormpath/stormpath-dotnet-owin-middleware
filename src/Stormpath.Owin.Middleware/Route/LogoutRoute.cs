@@ -27,7 +27,7 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var executor = new LogoutExecutor(client, _configuration, _handlers, _logger);
-            await executor.HandleLogout(context, cancellationToken);
+            await executor.HandleLogoutAsync(context, cancellationToken);
 
             return await executor.HandleRedirectAsync(context);
         }
@@ -35,7 +35,7 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var executor = new LogoutExecutor(client, _configuration, _handlers, _logger);
-            await executor.HandleLogout(context, cancellationToken);
+            await executor.HandleLogoutAsync(context, cancellationToken);
 
             await JsonResponse.Ok(context);
             return true;

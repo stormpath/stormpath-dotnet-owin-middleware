@@ -124,13 +124,12 @@ namespace Stormpath.Owin.NowinHarness
                     var client = env[OwinKeys.StormpathClient] as IClient;
                     var config = env[OwinKeys.StormpathConfiguration] as Configuration.Abstractions.Immutable.StormpathConfiguration;
                     var spApp = await client.GetApplicationAsync(config.Application.Href);
-                    //var spApp = await client.GetApplicationAsync("https://api.stormpath.com/v1/applications/7AFTVp0qBlS5W7tftYyTuc");
 
                     var samlUrlBuilder = await spApp.NewSamlIdpUrlBuilderAsync();
                     var redirectUrl = samlUrlBuilder
                         .SetCallbackUri("http://localhost:8080/stormpathCallback")
                         //.SetCallbackUri("http://localhost:61571/LoginRedirect")
-                        //.SetAccountStore("https://api.stormpath.com/v1/directories/30ZrLZt9gIBv9XNatyPWXq")
+                        .SetAccountStore("https://api.stormpath.com/v1/directories/30ZrLZt9gIBv9XNatyPWXq")
                         .Build();
 
                     //HttpContext.Response.Headers.Add("Cache-control", "no-cache, no-store");
