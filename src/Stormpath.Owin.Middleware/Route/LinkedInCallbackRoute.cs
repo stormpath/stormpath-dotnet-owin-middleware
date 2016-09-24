@@ -35,27 +35,60 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("linkedin")
                && configuration.Providers.Any(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase));
 
-        private async Task<bool> LoginWithAccessCode(
-            string code,
-            IOwinEnvironment context,
-            IClient client,
-            CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+
+            if (queryString.ContainsKey("error"))
+            {
+                _logger.Warn($"Error: '{queryString.GetString("error")}'", nameof(LinkedInCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+            }
+
+            var code = queryString.GetString("code");
+
             if (string.IsNullOrEmpty(code))
             {
-                return await HttpResponse.Redirect(context, GetErrorUri());
+                _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+            }
+
+            var accessToken = await ExchangeCodeAsync(context, code, cancellationToken);
+
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                _logger.Warn("Exchanged access token was null", source: nameof(LinkedInCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
+            var providerRequest = client.Providers()
+                .LinkedIn()
+                .Account()
+                .SetAccessToken(accessToken)
+                .Build();
+
+            var loginResult = await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+
+            return await socialExecutor.HandleLoginResultAsync(
+                context,
+                application,
+                loginResult,
+                cancellationToken);
+        }
+
+        private async Task<string> ExchangeCodeAsync(IOwinEnvironment context, string code, CancellationToken cancellationToken)
+        {
             var providerData = _configuration.Providers
                 .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
                 .Value;
 
             if (!Csrf.ConsumeOauthStateToken(context, _logger))
             {
-                _logger.Info("A user attempted to log in via LinkedIn OAuth with an invalid state token.", nameof(LinkedInCallbackRoute));
-                return await HttpResponse.Redirect(context, GetErrorUri());
+                _logger.Info("A user attempted to log in via LinkedIn OAuth with an invalid state token.", nameof(ExchangeCodeAsync));
+                return null;
             }
 
             var cookieParser = CookieParser.FromRequest(context, _logger);
@@ -63,85 +96,13 @@ namespace Stormpath.Owin.Middleware.Route
 
             var oauthCodeExchanger = new OauthCodeExchanger("https://www.linkedin.com/uas/oauth2/accessToken", _logger);
             var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
-                code, providerData.CallbackUri, providerData.ClientId, providerData.ClientSecret, oauthStateToken, cancellationToken);
-
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                _logger.Warn("Exchanged access token was null", source: nameof(LinkedInCallbackRoute));
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            IAccount account;
-            var isNewAccount = false;
-            try
-            {
-                var request = client.Providers()
-                    .LinkedIn()
-                    .Account()
-                    .SetAccessToken(accessToken)
-                    .Build();
-                var result = await application.GetAccountAsync(request, cancellationToken);
-                account = result.Account;
-                isNewAccount = result.IsNewAccount;
-            }
-            catch (ResourceException rex)
-            {
-                _logger.Warn(rex, source: nameof(LinkedInCallbackRoute));
-                account = null;
-            }
-
-            if (account == null)
-            {
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            var tokenExchanger = new StormpathTokenExchanger(client, application, _configuration, _logger);
-            var exchangeResult = await tokenExchanger.ExchangeAsync(account, cancellationToken);
-
-            if (exchangeResult == null)
-            {
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            if (isNewAccount)
-            {
-                var postRegistrationContext = new PostRegistrationContext(context, account);
-                await _handlers.PostRegistrationHandler(postRegistrationContext, cancellationToken);
-            }
-
-            var postLoginContext = new PostLoginContext(context, account);
-            await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
-
-            var nextUri = isNewAccount
-                ? _configuration.Web.Register.NextUri
-                : _configuration.Web.Login.NextUri;
-
-            Cookies.AddTokenCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
-            return await HttpResponse.Redirect(context, nextUri);
-        }
-
-        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
-        {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-
-            if (queryString.ContainsKey("error"))
-            {
-                _logger.Warn($"Error: '{queryString.GetString("error")}'", nameof(LinkedInCallbackRoute));
-                return HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            if (!queryString.ContainsKey("code"))
-            {
-                _logger.Warn("Missing code parameter", nameof(LinkedInCallbackRoute));
-                return HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            return LoginWithAccessCode(queryString.GetString("code"), context, client, cancellationToken);
-        }
-
-        private string GetErrorUri()
-        {
-            return $"{_configuration.Web.Login.Uri}?status=social_failed";
+                code, 
+                providerData.CallbackUri, 
+                providerData.ClientId, 
+                providerData.ClientSecret, 
+                oauthStateToken,
+                cancellationToken);
+            return accessToken;
         }
     }
 }
