@@ -39,12 +39,6 @@ namespace Stormpath.Owin.Middleware
             string accessToken,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                _logger.Warn("Facebook access_token was empty", nameof(FacebookLoginWithAccessTokenAsync));
-                return null;
-            }
-
             var application = await _client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
             IAccount account;

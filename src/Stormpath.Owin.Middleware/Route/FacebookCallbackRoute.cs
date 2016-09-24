@@ -22,6 +22,7 @@ using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -34,16 +35,16 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            var accessToken = queryString.GetString("access_token");
 
-            if (!queryString.ContainsKey("access_token"))
+            if (string.IsNullOrEmpty(accessToken))
             {
+                _logger.Warn("access_token was empty", nameof(FacebookCallbackRoute));
                 return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
-
-            var accessToken = queryString.GetString("access_token");
             var loginResult = await socialExecutor.FacebookLoginWithAccessTokenAsync(context, accessToken, cancellationToken);
 
             return await socialExecutor.HandleLoginResultAsync(
