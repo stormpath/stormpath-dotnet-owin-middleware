@@ -33,7 +33,8 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("facebook")
                && configuration.Providers.Any(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase));
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client,
+            CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var accessToken = queryString.GetString("access_token");
@@ -47,19 +48,29 @@ namespace Stormpath.Owin.Middleware.Route
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
-            var providerRequest = client.Providers()
-                .Facebook()
-                .Account()
-                .SetAccessToken(accessToken)
-                .Build();
+            try
+            {
+                var providerRequest = client.Providers()
+                    .Facebook()
+                    .Account()
+                    .SetAccessToken(accessToken)
+                    .Build();
 
-            var loginResult = await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+                var loginResult =
+                    await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
-            return await socialExecutor.HandleLoginResultAsync(
-                context,
-                application,
-                loginResult,
-                cancellationToken);
+                await socialExecutor.HandleLoginResultAsync(
+                    context,
+                    application,
+                    loginResult,
+                    cancellationToken);
+
+                return await socialExecutor.HandleRedirectAsync(context, loginResult, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+            }
         }
     }
 }

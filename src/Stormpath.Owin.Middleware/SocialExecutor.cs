@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
@@ -31,7 +32,7 @@ namespace Stormpath.Owin.Middleware
             _logger = logger;
         }
 
-        public static string GetErrorUri(WebLoginRouteConfiguration loginRouteConfiguration) 
+        public static string GetErrorUri(WebLoginRouteConfiguration loginRouteConfiguration)
             => $"{loginRouteConfiguration.Uri}?status=social_failed";
 
         public async Task<ExternalLoginResult> LoginWithProviderRequestAsync(
@@ -41,28 +42,16 @@ namespace Stormpath.Owin.Middleware
         {
             var application = await _client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
-            IAccount account;
-            var isNewAccount = false;
-            try
-            {
-                var result = await application.GetAccountAsync(providerRequest, cancellationToken);
-                account = result.Account;
-                isNewAccount = result.IsNewAccount;
-            }
-            catch (ResourceException rex)
-            {
-                _logger.Warn(rex, source: nameof(LoginWithProviderRequestAsync));
-                account = null;
-            }
+            var result = await application.GetAccountAsync(providerRequest, cancellationToken);
 
             return new ExternalLoginResult
             {
-                Account = account,
-                IsNewAccount = isNewAccount
+                Account = result.Account,
+                IsNewAccount = result.IsNewAccount
             };
         }
 
-        public async Task<bool> HandleLoginResultAsync(
+        public async Task HandleLoginResultAsync(
             IOwinEnvironment environment,
             IApplication application,
             ExternalLoginResult loginResult,
@@ -70,15 +59,16 @@ namespace Stormpath.Owin.Middleware
         {
             if (loginResult.Account == null)
             {
-                return await HttpResponse.Redirect(environment, GetErrorUri(_configuration.Web.Login));
+                throw new ArgumentNullException(nameof(loginResult.Account), "Login resulted in a null account");
             }
 
             var loginExecutor = new LoginExecutor(_client, _configuration, _handlers, _logger);
-            var exchangeResult = await loginExecutor.TokenExchangeGrantAsync(environment, application, loginResult.Account, cancellationToken);
+            var exchangeResult = await
+                loginExecutor.TokenExchangeGrantAsync(environment, application, loginResult.Account, cancellationToken);
 
             if (exchangeResult == null)
             {
-                return await HttpResponse.Redirect(environment, GetErrorUri(_configuration.Web.Login));
+                throw new InvalidOperationException("The token exchange failed");
             }
 
             if (loginResult.IsNewAccount)
@@ -88,6 +78,14 @@ namespace Stormpath.Owin.Middleware
             }
 
             await loginExecutor.HandlePostLoginAsync(environment, exchangeResult, cancellationToken);
+        }
+
+        public async Task<bool> HandleRedirectAsync(
+            IOwinEnvironment environment,
+            ExternalLoginResult loginResult,
+            CancellationToken cancellationToken)
+        {
+            var loginExecutor = new LoginExecutor(_client, _configuration, _handlers, _logger);
 
             // TODO: deep link redirection support
             var nextUri = loginResult.IsNewAccount

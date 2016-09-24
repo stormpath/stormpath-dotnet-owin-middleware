@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginPostModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LoginPostProviderModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +16,12 @@
 
 namespace Stormpath.Owin.Middleware.Model
 {
-    public class LoginPostModel
+    public sealed class LoginPostProviderModel
     {
-        public string Login { get; set; }
+        public string ProviderId { get; set; }
 
-        public string Password { get; set; }
+        public string AccessToken { get; set; }
 
-        public LoginPostProviderModel ProviderData { get; set; }
+        public string Code { get; set; }
     }
 }

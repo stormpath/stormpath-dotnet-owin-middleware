@@ -55,19 +55,29 @@ namespace Stormpath.Owin.Middleware.Route
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
-            var providerRequest = client.Providers()
-                .Github()
-                .Account()
-                .SetAccessToken(accessToken)
-                .Build();
+            try
+            {
+                var providerRequest = client.Providers()
+                    .Github()
+                    .Account()
+                    .SetAccessToken(accessToken)
+                    .Build();
 
-            var loginResult = await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+                var loginResult =
+                    await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
-            return await socialExecutor.HandleLoginResultAsync(
-                context,
-                application,
-                loginResult,
-                cancellationToken);
+                await socialExecutor.HandleLoginResultAsync(
+                    context,
+                    application,
+                    loginResult,
+                    cancellationToken);
+
+                return await socialExecutor.HandleRedirectAsync(context, loginResult, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+            }
         }
 
         private async Task<string> ExchangeCodeAsync(IOwinEnvironment context, string code, CancellationToken cancellationToken)
