@@ -34,12 +34,10 @@ namespace Stormpath.Owin.Middleware
         public static string GetErrorUri(WebLoginRouteConfiguration loginRouteConfiguration) 
             => $"{loginRouteConfiguration.Uri}?status=social_failed";
 
-        public async Task<ExternalLoginResult> LoginWithAccessTokenAsync<T>(
+        public async Task<ExternalLoginResult> LoginWithProviderRequestAsync(
             IOwinEnvironment environment,
-            IProviderAccountRequestBuilder<T> requestBuilder,
-            string accessToken,
+            IProviderAccountRequest providerRequest,
             CancellationToken cancellationToken)
-            where T : IProviderAccountRequestBuilder<T>
         {
             var application = await _client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
@@ -47,16 +45,13 @@ namespace Stormpath.Owin.Middleware
             var isNewAccount = false;
             try
             {
-                var request = requestBuilder
-                    .SetAccessToken(accessToken)
-                    .Build();
-                var result = await application.GetAccountAsync(request, cancellationToken);
+                var result = await application.GetAccountAsync(providerRequest, cancellationToken);
                 account = result.Account;
                 isNewAccount = result.IsNewAccount;
             }
             catch (ResourceException rex)
             {
-                _logger.Warn(rex, source: nameof(LoginWithAccessTokenAsync));
+                _logger.Warn(rex, source: nameof(LoginWithProviderRequestAsync));
                 account = null;
             }
 

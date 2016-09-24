@@ -54,8 +54,14 @@ namespace Stormpath.Owin.Middleware.Route
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
-            var provider = client.Providers().Github().Account();
-            var loginResult = await socialExecutor.LoginWithAccessTokenAsync(context, provider, accessToken, cancellationToken);
+
+            var providerRequest = client.Providers()
+                .Github()
+                .Account()
+                .SetAccessToken(accessToken)
+                .Build();
+
+            var loginResult = await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
             return await socialExecutor.HandleLoginResultAsync(
                 context,

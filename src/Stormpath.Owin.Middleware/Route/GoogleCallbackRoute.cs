@@ -21,9 +21,7 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Provider;
 
@@ -35,83 +33,33 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("google")
                && configuration.Providers.Any(p => p.Key.Equals("google", StringComparison.OrdinalIgnoreCase));
 
-        private async Task<bool> LoginWithAccessCode(
-            string code,
-            IOwinEnvironment context,
-            IClient client,
-            CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            var code = queryString.GetString("code");
+
             if (string.IsNullOrEmpty(code))
             {
-                return await HttpResponse.Redirect(context, GetErrorUri());
+                _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
-            IAccount account;
-            var isNewAccount = false;
-            try
-            {
-                var request = client.Providers()
-                    .Google()
-                    .Account()
-                    .SetCode(code)
-                    .Build();
-                var result = await application.GetAccountAsync(request, cancellationToken);
-                account = result.Account;
-                isNewAccount = result.IsNewAccount;
-            }
-            catch (ResourceException rex)
-            {
-                _logger.Warn(rex, source: nameof(GoogleCallbackRoute));
-                account = null;
-            }
+            var providerRequest = client.Providers()
+                .Google()
+                .Account()
+                .SetCode(code)
+                .Build();
 
-            if (account == null)
-            {
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
+            var loginResult = await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
-            var tokenExchanger = new StormpathTokenExchanger(client, application, _configuration, _logger);
-            var exchangeResult = await tokenExchanger.ExchangeAsync(account, cancellationToken);
-
-            if (exchangeResult == null)
-            {
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            if (isNewAccount)
-            {
-                var postRegistrationContext = new PostRegistrationContext(context, account);
-                await _handlers.PostRegistrationHandler(postRegistrationContext, cancellationToken);
-            }
-
-            var postLoginContext = new PostLoginContext(context, account);
-            await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
-
-            var nextUri = isNewAccount
-                ? _configuration.Web.Register.NextUri
-                : _configuration.Web.Login.NextUri;
-
-            Cookies.AddTokenCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
-            return await HttpResponse.Redirect(context, nextUri);
-        }
-
-        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
-        {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-
-            if (queryString.ContainsKey("code"))
-            {
-                return LoginWithAccessCode(queryString.GetString("code"), context, client, cancellationToken);
-            }
-
-            return HttpResponse.Redirect(context, GetErrorUri());
-        }
-
-        private string GetErrorUri()
-        {
-            return $"{_configuration.Web.Login.Uri}?status=social_failed";
+            return await socialExecutor.HandleLoginResultAsync(
+                context,
+                application,
+                loginResult,
+                cancellationToken);
         }
     }
 }
