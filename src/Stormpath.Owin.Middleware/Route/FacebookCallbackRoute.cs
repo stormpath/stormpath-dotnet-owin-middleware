@@ -23,6 +23,7 @@ using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
+using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -39,13 +40,14 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (string.IsNullOrEmpty(accessToken))
             {
-                _logger.Warn("access_token was empty", nameof(FacebookCallbackRoute));
+                _logger.Warn("Social access_token was empty", nameof(FacebookCallbackRoute));
                 return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
-            var loginResult = await socialExecutor.FacebookLoginWithAccessTokenAsync(context, accessToken, cancellationToken);
+            var provider = client.Providers().Facebook().Account();
+            var loginResult = await socialExecutor.LoginWithAccessTokenAsync(context, provider, accessToken, cancellationToken);
 
             return await socialExecutor.HandleLoginResultAsync(
                 context,

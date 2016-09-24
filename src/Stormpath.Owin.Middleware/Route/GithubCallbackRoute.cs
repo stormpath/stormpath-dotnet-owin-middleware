@@ -21,9 +21,7 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
 using Stormpath.SDK.Logging;
 using Stormpath.SDK.Provider;
 
@@ -35,19 +33,39 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("github")
                && configuration.Providers.Any(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase));
 
-        private async Task<bool> LoginWithAccessCode(
-            string code,
-            IOwinEnvironment context,
-            IClient client,
-            CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            var code = queryString.GetString("code");
+
             if (string.IsNullOrEmpty(code))
             {
-                return await HttpResponse.Redirect(context, GetErrorUri());
+                _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+            }
+
+            var accessToken = await ExchangeCodeAsync(context, code, cancellationToken);
+
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                _logger.Warn("Exchanged access token was null", source: nameof(GithubCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
+            var provider = client.Providers().Github().Account();
+            var loginResult = await socialExecutor.LoginWithAccessTokenAsync(context, provider, accessToken, cancellationToken);
 
+            return await socialExecutor.HandleLoginResultAsync(
+                context,
+                application,
+                loginResult,
+                cancellationToken);
+        }
+
+        private async Task<string> ExchangeCodeAsync(IOwinEnvironment context, string code, CancellationToken cancellationToken)
+        {
             var providerData = _configuration.Providers
                 .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
                 .Value;
@@ -57,78 +75,9 @@ namespace Stormpath.Owin.Middleware.Route
 
             var oauthCodeExchanger = new OauthCodeExchanger("https://github.com/login/oauth/access_token", _logger);
             var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
-                code, providerData.CallbackUri, providerData.ClientId, providerData.ClientSecret, oauthStateToken, cancellationToken);
-
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                _logger.Warn("Exchanged access token was null", source: nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            IAccount account;
-            var isNewAccount = false;
-            try
-            {
-                var request = client.Providers()
-                    .Github()
-                    .Account()
-                    .SetAccessToken(accessToken)
-                    .Build();
-                var result = await application.GetAccountAsync(request, cancellationToken);
-                account = result.Account;
-                isNewAccount = result.IsNewAccount;
-            }
-            catch (ResourceException rex)
-            {
-                _logger.Warn(rex, source: nameof(GithubCallbackRoute));
-                account = null;
-            }
-
-            if (account == null)
-            {
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            var tokenExchanger = new StormpathTokenExchanger(client, application, _configuration, _logger);
-            var exchangeResult = await tokenExchanger.ExchangeAsync(account, cancellationToken);
-
-            if (exchangeResult == null)
-            {
-                return await HttpResponse.Redirect(context, GetErrorUri());
-            }
-
-            if (isNewAccount)
-            {
-                var postRegistrationContext = new PostRegistrationContext(context, account);
-                await _handlers.PostRegistrationHandler(postRegistrationContext, cancellationToken);
-            }
-
-            var postLoginContext = new PostLoginContext(context, account);
-            await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
-
-            var nextUri = isNewAccount
-                ? _configuration.Web.Register.NextUri
-                : _configuration.Web.Login.NextUri;
-
-            Cookies.AddTokenCookiesToResponse(context, client, exchangeResult, _configuration, _logger);
-            return await HttpResponse.Redirect(context, nextUri);
-        }
-
-        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
-        {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-
-            if (queryString.ContainsKey("code"))
-            {
-                return LoginWithAccessCode(queryString.GetString("code"), context, client, cancellationToken);
-            }
-
-            return HttpResponse.Redirect(context, GetErrorUri());
-        }
-
-        private string GetErrorUri()
-        {
-            return $"{_configuration.Web.Login.Uri}?status=social_failed";
+                code, providerData.CallbackUri, providerData.ClientId, providerData.ClientSecret, oauthStateToken,
+                cancellationToken);
+            return accessToken;
         }
     }
 }
