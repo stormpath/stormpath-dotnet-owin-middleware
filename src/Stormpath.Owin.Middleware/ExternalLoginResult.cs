@@ -2,7 +2,7 @@
 
 namespace Stormpath.Owin.Middleware
 {
-    public class ExternalLoginResult
+    internal sealed class ExternalLoginResult
     {
         public IAccount Account { get; set; }
 
