@@ -21,11 +21,7 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
-using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -56,7 +52,5 @@ namespace Stormpath.Owin.Middleware.Route
                 loginResult,
                 cancellationToken);
         }
-
-
     }
 }
