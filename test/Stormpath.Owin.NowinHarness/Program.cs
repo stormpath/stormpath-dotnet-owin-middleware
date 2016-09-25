@@ -23,6 +23,7 @@ using Owin;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.Owin.Views.Precompiled;
+using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.NowinHarness
@@ -99,8 +100,16 @@ namespace Stormpath.Owin.NowinHarness
                     {
                         await writer.WriteAsync("<h1>Hello from OWIN!</h1>");
 
-                        if (env[OwinKeys.StormpathUser] != null)
+                        if (!env.ContainsKey(OwinKeys.StormpathUser))
                         {
+                            await writer.WriteAsync("<a href=\"/login\">Log in</a>");
+                        }
+                        else
+                        {
+                            var user = env[OwinKeys.StormpathUser] as IAccount;
+
+                            await writer.WriteAsync($"<p>Logged in as {user?.FullName} ({user?.Email})</p>");
+
                             await writer.WriteAsync(@"
 <form action=""/logout"" method=""post"" id=""logout_form"">
   <a onclick=""document.getElementById('logout_form').submit();"" style=""cursor: pointer;"">
