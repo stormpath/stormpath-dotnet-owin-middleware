@@ -18,7 +18,7 @@ using System;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Abstractions.Configuration;
+using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Application;
 using Stormpath.SDK.Client;
@@ -32,13 +32,13 @@ namespace Stormpath.Owin.Middleware.Internal
     {
         private readonly IClient _client;
         private readonly IApplication _application;
-        private readonly IntegrationConfiguration _configuration;
+        private readonly StormpathConfiguration _configuration;
         private readonly ILogger _logger;
 
         public StormpathTokenExchanger(
             IClient client,
             IApplication application,
-            IntegrationConfiguration configuration,
+            StormpathConfiguration configuration,
             ILogger logger)
         {
             _client = client;

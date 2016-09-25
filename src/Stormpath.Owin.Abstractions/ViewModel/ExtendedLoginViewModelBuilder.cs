@@ -25,13 +25,13 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class ExtendedLoginViewModelBuilder
     {
-        private readonly WebConfiguration webConfiguration;
-        private readonly IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> providerConfigurations;
-        private readonly bool forgotPasswordEnabled;
-        private readonly bool verifyEmailEnabled;
-        private readonly IDictionary<string, string[]> queryString;
-        private readonly IDictionary<string, string[]> previousFormData;
-        private readonly IEnumerable<string> errors;
+        private readonly WebConfiguration _webConfiguration;
+        private readonly IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> _providerConfigurations;
+        private readonly bool _forgotPasswordEnabled;
+        private readonly bool _verifyEmailEnabled;
+        private readonly IDictionary<string, string[]> _queryString;
+        private readonly IDictionary<string, string[]> _previousFormData;
+        private readonly IEnumerable<string> _errors;
 
         public ExtendedLoginViewModelBuilder(
             WebConfiguration webConfiguration,
@@ -42,33 +42,33 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             IDictionary<string, string[]> previousFormData,
             IEnumerable<string> errors)
         {
-            this.webConfiguration = webConfiguration;
-            this.providerConfigurations = providerConfigurations;
-            this.forgotPasswordEnabled = forgotPasswordEnabled;
-            this.verifyEmailEnabled = verifyEmailEnabled;
-            this.queryString = queryString ?? new Dictionary<string, string[]>();
-            this.previousFormData = previousFormData ?? new Dictionary<string, string[]>();
-            this.errors = errors ?? Enumerable.Empty<string>();
+            _webConfiguration = webConfiguration;
+            _providerConfigurations = providerConfigurations;
+            _forgotPasswordEnabled = forgotPasswordEnabled;
+            _verifyEmailEnabled = verifyEmailEnabled;
+            _queryString = queryString ?? new Dictionary<string, string[]>();
+            _previousFormData = previousFormData ?? new Dictionary<string, string[]>();
+            _errors = errors ?? Enumerable.Empty<string>();
         }
 
         public ExtendedLoginViewModel Build()
         {
-            var baseViewModelBuilder = new LoginViewModelBuilder(this.webConfiguration.Login);
+            var baseViewModelBuilder = new LoginViewModelBuilder(_webConfiguration.Login, _providerConfigurations);
             var result = new ExtendedLoginViewModel(baseViewModelBuilder.Build());
 
             // Copy values from configuration
-            result.ForgotPasswordEnabled = this.forgotPasswordEnabled;
-            result.ForgotPasswordUri = this.webConfiguration.ForgotPassword.Uri;
-            result.RegistrationEnabled = this.webConfiguration.Register.Enabled;
-            result.RegisterUri = this.webConfiguration.Register.Uri;
-            result.VerifyEmailEnabled = this.verifyEmailEnabled;
-            result.VerifyEmailUri = this.webConfiguration.VerifyEmail.Uri;
+            result.ForgotPasswordEnabled = _forgotPasswordEnabled;
+            result.ForgotPasswordUri = _webConfiguration.ForgotPassword.Uri;
+            result.RegistrationEnabled = _webConfiguration.Register.Enabled;
+            result.RegisterUri = _webConfiguration.Register.Uri;
+            result.VerifyEmailEnabled = _verifyEmailEnabled;
+            result.VerifyEmailUri = _webConfiguration.VerifyEmail.Uri;
 
             // Status parameter from queryString
-            result.Status = this.queryString.GetString("status");
+            result.Status = _queryString.GetString("status");
 
             // Error messages to render
-            foreach (var error in this.errors)
+            foreach (var error in _errors)
             {
                 result.Errors.Add(error);
             }
@@ -77,30 +77,17 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             result.OauthStateToken = Guid.NewGuid().ToString();
 
             // Previous form submission (if any)
-            if (this.previousFormData != null && this.previousFormData.Any())
+            if (_previousFormData != null && _previousFormData.Any())
             {
-                result.FormData = previousFormData
+                result.FormData = _previousFormData
                     .Where(kvp =>
                     {
-                        var definedField = this.webConfiguration.Login.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
+                        var definedField = _webConfiguration.Login.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
                         bool include = !definedField.Value?.Type.Equals("password", StringComparison.OrdinalIgnoreCase) ?? false;
                         return include;
                     })
                     .ToDictionary(kvp => kvp.Key, kvp => string.Join(",", kvp.Value));
             }
-
-            // Social Providers
-            result.AccountStores = this.providerConfigurations.Select(x => new AccountStoreViewModel()
-            {
-                Name = x.Key,
-                Href = x.Value.CallbackUri,
-                Provider = new AccountStoreProviderViewModel()
-                {
-                    ClientId = x.Value.ClientId,
-                    ProviderId = x.Key,
-                    Scope = x.Value.Scope
-                }
-            }).ToArray();
 
             return result;
         }

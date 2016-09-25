@@ -26,6 +26,8 @@ using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
+using Stormpath.SDK.Logging;
+using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -110,7 +112,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var viewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login);
+            var viewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login, _configuration.Providers);
             var loginViewModel = viewModelBuilder.Build();
 
             return JsonResponse.Ok(context, loginViewModel);
@@ -119,6 +121,11 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var model = await PostBodyParser.ToModel<LoginPostModel>(context, bodyContentType, _logger, cancellationToken);
+
+            if (model.ProviderData != null)
+            {
+                return await HandleSocialLogin(context, client, model, cancellationToken);
+            }
 
             bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
@@ -145,6 +152,95 @@ namespace Stormpath.Owin.Middleware.Route
             };
 
             return await JsonResponse.Ok(context, responseModel);
+        }
+
+        private async Task<bool> HandleSocialLogin(IOwinEnvironment context, IClient client, LoginPostModel model,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(model.ProviderData.ProviderId))
+            {
+                return await Error.Create(context, new BadRequest("No provider specified"), cancellationToken);
+            }
+
+            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
+
+            try
+            {
+                IProviderAccountRequest providerRequest;
+
+                switch (model.ProviderData.ProviderId)
+                {
+                    case "facebook":
+                    {
+                        providerRequest = client.Providers()
+                            .Facebook()
+                            .Account()
+                            .SetAccessToken(model.ProviderData.AccessToken)
+                            .Build();
+                        break;
+                    }
+                    case "google":
+                    {
+                        providerRequest = client.Providers()
+                            .Google()
+                            .Account()
+                            .SetCode(model.ProviderData.Code)
+                            .Build();
+                        break;
+                    }
+                    case "github":
+                    {
+                        providerRequest = client.Providers()
+                            .Github()
+                            .Account()
+                            .SetAccessToken(model.ProviderData.AccessToken)
+                            .Build();
+                        break;
+                    }
+                    case "linkedin":
+                    {
+                        providerRequest = client.Providers()
+                            .LinkedIn()
+                            .Account()
+                            .SetAccessToken(model.ProviderData.AccessToken)
+                            .Build();
+                        break;
+                    }
+                    default:
+                        providerRequest = null;
+                        break;
+                }
+
+                if (providerRequest == null)
+                {
+                    return await Error.Create(context,
+                        new BadRequest($"Unknown provider '{model.ProviderData.ProviderId}'"), cancellationToken);
+                }
+
+                var loginResult =
+                    await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+
+                await socialExecutor.HandleLoginResultAsync(
+                    context,
+                    application,
+                    loginResult,
+                    cancellationToken);
+
+                var sanitizer = new ResponseSanitizer<IAccount>();
+                var responseModel = new
+                {
+                    account = sanitizer.Sanitize(loginResult.Account)
+                };
+
+                return await JsonResponse.Ok(context, responseModel);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, source: nameof(HandleSocialLogin));
+                return await Error.Create(context, new BadRequest("An error occurred while processing the login"), cancellationToken);
+            }
         }
     }
 }
