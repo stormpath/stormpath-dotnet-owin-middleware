@@ -189,8 +189,24 @@ namespace Stormpath.Owin.Middleware.Route
                             .Build();
                         break;
                     }
-                    //case "github":
-                    //case "linkedin":
+                    case "github":
+                    {
+                        providerRequest = client.Providers()
+                            .Github()
+                            .Account()
+                            .SetAccessToken(model.ProviderData.AccessToken)
+                            .Build();
+                        break;
+                    }
+                    case "linkedin":
+                    {
+                        providerRequest = client.Providers()
+                            .LinkedIn()
+                            .Account()
+                            .SetAccessToken(model.ProviderData.AccessToken)
+                            .Build();
+                        break;
+                    }
                     default:
                         providerRequest = null;
                         break;
