@@ -18,6 +18,7 @@ using System;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
+using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
@@ -29,14 +30,15 @@ namespace Stormpath.Owin.Middleware
     {
         public static string AnyScheme = "*";
 
-        private readonly ApplicationConfiguration appConfiguration;
-        private readonly WebConfiguration webConfiguration;
-        private readonly ILogger logger;
+        private readonly IClient _client;
+        private readonly ApplicationConfiguration _appConfiguration;
+        private readonly WebConfiguration _webConfiguration;
+        private readonly ILogger _logger;
 
-        private readonly Action<WebCookieConfiguration> deleteCookie;
-        private readonly Action<int> setStatusCode;
-        private readonly Action<string, string> setHeader;
-        private readonly Action<string> redirect;
+        private readonly Action<WebCookieConfiguration> _deleteCookie;
+        private readonly Action<int> _setStatusCode;
+        private readonly Action<string, string> _setHeader;
+        private readonly Action<string> _redirect;
 
         /// <summary>
         /// Creates a new instance of the <see cref="RouteProtector"/> class.
@@ -49,6 +51,7 @@ namespace Stormpath.Owin.Middleware
         /// <param name="redirectAction">Delegate to set the response Location header.</param>
         /// <param name="logger">The <see cref="ILogger"/> to use.</param>
         public RouteProtector(
+            IClient client,
             ApplicationConfiguration appConfiguration,
             WebConfiguration webConfiguration,
             Action<WebCookieConfiguration> deleteCookieAction,
@@ -57,14 +60,14 @@ namespace Stormpath.Owin.Middleware
             Action<string> redirectAction,
             ILogger logger)
         {
-            this.appConfiguration = appConfiguration;
-            this.webConfiguration = webConfiguration;
-            this.logger = logger;
+            _appConfiguration = appConfiguration;
+            _webConfiguration = webConfiguration;
+            _logger = logger;
 
-            deleteCookie = deleteCookieAction;
-            setStatusCode = setStatusCodeAction;
-            setHeader = setHeaderAction;
-            redirect = redirectAction;
+            _deleteCookie = deleteCookieAction;
+            _setStatusCode = setStatusCodeAction;
+            _setHeader = setHeaderAction;
+            _redirect = redirectAction;
         }
 
         /// <summary>
@@ -102,23 +105,23 @@ namespace Stormpath.Owin.Middleware
         /// <param name="requestPath">The OWIN request path of this request.</param>
         public void OnUnauthorized(string acceptHeader, string requestPath)
         {
-            deleteCookie(webConfiguration.AccessTokenCookie);
-            deleteCookie(webConfiguration.RefreshTokenCookie);
+            _deleteCookie(_webConfiguration.AccessTokenCookie);
+            _deleteCookie(_webConfiguration.RefreshTokenCookie);
 
-            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, webConfiguration.Produces, logger);
+            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, _webConfiguration.Produces, _logger);
 
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)
             {
-                var loginUri = $"{webConfiguration.Login.Uri}?next={Uri.EscapeUriString(requestPath)}";
+                var loginUri = $"{_webConfiguration.Login.Uri}?next={Uri.EscapeUriString(requestPath)}";
 
-                setStatusCode(302);
-                redirect(loginUri);
+                _setStatusCode(302);
+                _redirect(loginUri);
             }
             else
             {
-                setStatusCode(401);
-                setHeader("WWW-Authenticate", $"Bearer realm=\"{appConfiguration.Name}\"");
+                _setStatusCode(401);
+                _setHeader("WWW-Authenticate", $"Bearer realm=\"{_appConfiguration.Name}\"");
             }
         }
     }
