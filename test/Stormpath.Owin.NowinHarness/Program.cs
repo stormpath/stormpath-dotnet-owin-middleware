@@ -94,35 +94,76 @@ namespace Stormpath.Owin.NowinHarness
             // Add a sample middleware that responds to GET /
             app.Use(new Func<AppFunc, AppFunc>(next => (async env =>
             {
-                if (env["owin.RequestPath"] as string == "/")
+                if (env["owin.RequestPath"] as string != "/")
                 {
-                    using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
+                    await next.Invoke(env);
+                    return;
+                }
+                using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
+                {
+                    await writer.WriteAsync("<h1>Hello from OWIN!</h1>");
+
+                    if (!env.ContainsKey(OwinKeys.StormpathUser))
                     {
-                        await writer.WriteAsync("<h1>Hello from OWIN!</h1>");
+                        await writer.WriteAsync("<a href=\"/login\">Log in</a>");
+                    }
+                    else
+                    {
+                        var user = env[OwinKeys.StormpathUser] as IAccount;
 
-                        if (!env.ContainsKey(OwinKeys.StormpathUser))
-                        {
-                            await writer.WriteAsync("<a href=\"/login\">Log in</a>");
-                        }
-                        else
-                        {
-                            var user = env[OwinKeys.StormpathUser] as IAccount;
+                        await writer.WriteAsync($"<p>Logged in as {user?.FullName} ({user?.Email})</p>");
 
-                            await writer.WriteAsync($"<p>Logged in as {user?.FullName} ({user?.Email})</p>");
-
-                            await writer.WriteAsync(@"
+                        await writer.WriteAsync(@"
 <form action=""/logout"" method=""post"" id=""logout_form"">
   <a onclick=""document.getElementById('logout_form').submit();"" style=""cursor: pointer;"">
     Log Out
   </a>
 </form>");
-                        }
+                    }
 
+                    await writer.FlushAsync();
+                }
+            })));
+
+            // Add a "protected" route
+            app.Use(new Func<AppFunc, AppFunc>(next => (async env =>
+            {
+                if (env["owin.RequestPath"] as string != "/protected")
+                {
+                    await next.Invoke(env);
+                    return;
+                }
+
+                if (!env.ContainsKey(OwinKeys.StormpathUser))
+                {
+                    var deleteCookieAction =
+                        new Action<Configuration.Abstractions.Immutable.WebCookieConfiguration>(_ => { }); // TODO
+                    var setStatusCodeAction = new Action<int>(code => env["owin.ResponseStatusCode"] = code);
+                    var setHeaderAction = new Action<string, string>((name, value) =>
+                        (env["owin.ResponseHeaders"] as IDictionary<string, string[]>).SetString(name, value));
+                    var redirectAction = new Action<string>(location =>
+                    {
+                        setStatusCodeAction(302);
+                        setHeaderAction("Location", location);
+                    });
+                    var routeProtector = new RouteProtector(
+                        stormpath.GetClient(),
+                        stormpath.Configuration,
+                        deleteCookieAction,
+                        setStatusCodeAction,
+                        setHeaderAction,
+                        redirectAction,
+                        null);
+                    routeProtector.OnUnauthorized("text/html", "/protected");
+                }
+                else
+                {
+                    using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
+                    {
+                        await writer.WriteAsync("<p>Zomg secret!</p>");
                         await writer.FlushAsync();
                     }
                 }
-
-                await next.Invoke(env);
             })));
         }
     }
