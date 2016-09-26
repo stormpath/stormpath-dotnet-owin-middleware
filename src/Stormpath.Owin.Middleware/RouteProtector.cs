@@ -31,8 +31,7 @@ namespace Stormpath.Owin.Middleware
         public static string AnyScheme = "*";
 
         private readonly IClient _client;
-        private readonly ApplicationConfiguration _appConfiguration;
-        private readonly WebConfiguration _webConfiguration;
+        private readonly StormpathConfiguration _configuration;
         private readonly ILogger _logger;
 
         private readonly Action<WebCookieConfiguration> _deleteCookie;
@@ -43,8 +42,8 @@ namespace Stormpath.Owin.Middleware
         /// <summary>
         /// Creates a new instance of the <see cref="RouteProtector"/> class.
         /// </summary>
-        /// <param name="appConfiguration">The active Stormpath <see cref="ApplicationConfiguration">application configuration</see>.</param>
-        /// <param name="webConfiguration">The active Stormpath <see cref="WebConfiguration">web configuration</see>.</param>
+        /// <param name="client">The Stormpath <see cref="IClient">Client</see>.</param>
+        /// <param name="stormpathConfiguration">The active Stormpath <see cref="StormpathConfiguration">configuration</see>.</param>
         /// <param name="deleteCookieAction">Delegate to delete cookies in the response.</param>
         /// <param name="setStatusCodeAction">Delegate to set the response status code.</param>
         /// <param name="setHeaderAction">Delegate to set a header in the response.</param>
@@ -52,16 +51,17 @@ namespace Stormpath.Owin.Middleware
         /// <param name="logger">The <see cref="ILogger"/> to use.</param>
         public RouteProtector(
             IClient client,
-            ApplicationConfiguration appConfiguration,
-            WebConfiguration webConfiguration,
+            StormpathConfiguration stormpathConfiguration,
             Action<WebCookieConfiguration> deleteCookieAction,
             Action<int> setStatusCodeAction,
             Action<string, string> setHeaderAction,
             Action<string> redirectAction,
             ILogger logger)
         {
-            _appConfiguration = appConfiguration;
-            _webConfiguration = webConfiguration;
+            // TODO: remove after splitting out JWT stuff
+            _client = client;
+
+            _configuration = stormpathConfiguration;
             _logger = logger;
 
             _deleteCookie = deleteCookieAction;
@@ -105,15 +105,20 @@ namespace Stormpath.Owin.Middleware
         /// <param name="requestPath">The OWIN request path of this request.</param>
         public void OnUnauthorized(string acceptHeader, string requestPath)
         {
-            _deleteCookie(_webConfiguration.AccessTokenCookie);
-            _deleteCookie(_webConfiguration.RefreshTokenCookie);
+            _deleteCookie(_configuration.Web.AccessTokenCookie);
+            _deleteCookie(_configuration.Web.RefreshTokenCookie);
 
-            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, _webConfiguration.Produces, _logger);
+            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, _configuration.Web.Produces, _logger);
 
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)
             {
-                var loginUri = $"{_webConfiguration.Login.Uri}?next={Uri.EscapeUriString(requestPath)}";
+                var redirectTokenBuilder = new RedirectTokenBuilder(_client, _configuration.Client.ApiKey)
+                {
+                    Path = requestPath
+                };
+
+                var loginUri = $"{_configuration.Web.Login.Uri}?rt={redirectTokenBuilder.ToString()}";
 
                 _setStatusCode(302);
                 _redirect(loginUri);
@@ -121,7 +126,7 @@ namespace Stormpath.Owin.Middleware
             else
             {
                 _setStatusCode(401);
-                _setHeader("WWW-Authenticate", $"Bearer realm=\"{_appConfiguration.Name}\"");
+                _setHeader("WWW-Authenticate", $"Bearer realm=\"{_configuration.Application.Name}\"");
             }
         }
     }
