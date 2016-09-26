@@ -106,8 +106,16 @@ namespace Stormpath.Owin.Middleware.Route
                     errors: new[] { rex.Message });
             }
 
-            var nextUriFromQueryString = queryString.GetString("next");
-            return await executor.HandleRedirectAsync(context, nextUriFromQueryString);
+            var redirectToken = queryString.GetString("rt");
+            string nextUri = null;
+
+            var redirectTokenParser = new RedirectTokenParser(client, _configuration.Client.ApiKey, redirectToken, _logger);
+            if (redirectTokenParser.Valid)
+            {
+                nextUri = redirectTokenParser.Path;
+            }
+
+            return await executor.HandleRedirectAsync(context, nextUri);
         }
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
