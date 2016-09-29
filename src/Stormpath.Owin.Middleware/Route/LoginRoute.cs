@@ -106,7 +106,13 @@ namespace Stormpath.Owin.Middleware.Route
                     errors: new[] { rex.Message });
             }
 
-            var redirectToken = queryString.GetString("rt");
+            var redirectTokenFromQueryString = queryString.GetString("rt");
+            var redirectTokenFromForm = formData.GetString("rt");
+
+            var redirectToken = !string.IsNullOrEmpty(redirectTokenFromForm)
+                ? redirectTokenFromForm 
+                : redirectTokenFromQueryString;
+
             string nextUri = null;
 
             var redirectTokenParser = new RedirectTokenParser(client, _configuration.Client.ApiKey, redirectToken, _logger);

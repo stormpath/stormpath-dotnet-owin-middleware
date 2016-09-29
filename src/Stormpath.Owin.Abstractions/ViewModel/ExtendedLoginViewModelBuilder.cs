@@ -64,8 +64,9 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             result.VerifyEmailEnabled = _verifyEmailEnabled;
             result.VerifyEmailUri = _webConfiguration.VerifyEmail.Uri;
 
-            // Status parameter from queryString
+            // Parameters from querystring
             result.Status = _queryString.GetString("status");
+            result.RedirectToken = _queryString.GetString("rt");
 
             // Error messages to render
             foreach (var error in _errors)
@@ -82,11 +83,24 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                 result.FormData = _previousFormData
                     .Where(kvp =>
                     {
+                        if (kvp.Key.Equals("rt", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+
                         var definedField = _webConfiguration.Login.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
                         bool include = !definedField.Value?.Type.Equals("password", StringComparison.OrdinalIgnoreCase) ?? false;
                         return include;
                     })
                     .ToDictionary(kvp => kvp.Key, kvp => string.Join(",", kvp.Value));
+            }
+
+            // If redirect token has been previously submitted via form, use that
+            string redirectTokenFromForm;
+            if (result.FormData.TryGetValue("rt", out redirectTokenFromForm)
+                && !string.IsNullOrEmpty(redirectTokenFromForm))
+            {
+                result.RedirectToken = redirectTokenFromForm;
             }
 
             return result;

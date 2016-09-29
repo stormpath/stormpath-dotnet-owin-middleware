@@ -20,8 +20,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class ExtendedLoginViewModel : LoginViewModel
     {
-        public static readonly string[] AcceptableStatuses = new string[]
-        {
+        public static readonly string[] AcceptableStatuses = {
             "unverified",
             "verified",
             "created",
@@ -60,5 +59,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         public IList<string> Errors { get; set; } = new List<string>();
 
         public string OauthStateToken { get; set; }
+
+        public string RedirectToken { get; set; }
     }
 }

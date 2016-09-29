@@ -118,6 +118,8 @@
                         <form method="post" role="form" class="login-form form-horizontal">
                             @* <input name="_csrf" type="hidden"> *@
 
+                            <input name="rt" type="hidden" value="@Model.RedirectToken"/>
+
                             @foreach (var field in Model.Form.Fields)
                             {
                                 <div class="form-group @($"group-{field.Name}")">
