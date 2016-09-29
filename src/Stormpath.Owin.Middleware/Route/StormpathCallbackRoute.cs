@@ -121,10 +121,15 @@ namespace Stormpath.Owin.Middleware.Route
             var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
             await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
-            Uri nextUri;
-            Uri.TryCreate(state, UriKind.Relative, out nextUri);
+            string nextUri = null;
 
-            await executor.HandleRedirectAsync(context, nextUri?.OriginalString);
+            var redirectTokenParser = new RedirectTokenParser(client, _configuration.Client.ApiKey, state, _logger);
+            if (redirectTokenParser.Valid)
+            {
+                nextUri = redirectTokenParser.Path;
+            }
+
+            await executor.HandleRedirectAsync(context, nextUri);
 
             return true;
         }
