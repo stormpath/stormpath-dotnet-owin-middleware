@@ -22,7 +22,7 @@ using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class LogoutRoute : AbstractRoute
+    public sealed class LogoutRoute : AbstractRoute
     {
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {

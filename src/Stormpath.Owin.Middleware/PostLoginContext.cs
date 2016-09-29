@@ -3,7 +3,7 @@ using Stormpath.SDK.Account;
 
 namespace Stormpath.Owin.Middleware
 {
-    public class PostLoginContext : HandlerContext
+    public sealed class PostLoginContext : HandlerContext
     {
         public PostLoginContext(IOwinEnvironment environment, IAccount account)
             : base(environment)

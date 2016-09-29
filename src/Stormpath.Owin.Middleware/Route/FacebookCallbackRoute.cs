@@ -27,7 +27,7 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class FacebookCallbackRoute : AbstractRoute
+    public sealed class FacebookCallbackRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
             => configuration.Web.Social.ContainsKey("facebook")

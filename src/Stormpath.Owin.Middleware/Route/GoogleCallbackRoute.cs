@@ -27,7 +27,7 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class GoogleCallbackRoute : AbstractRoute
+    public sealed class GoogleCallbackRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
             => configuration.Web.Social.ContainsKey("google")

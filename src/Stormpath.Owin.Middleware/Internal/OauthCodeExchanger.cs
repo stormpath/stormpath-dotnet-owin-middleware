@@ -25,7 +25,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
-    public class OauthCodeExchanger
+    public sealed class OauthCodeExchanger
     {
         private readonly string _oauthUri;
         private readonly ILogger _logger;

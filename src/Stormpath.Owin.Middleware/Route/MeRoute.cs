@@ -30,7 +30,7 @@ using Stormpath.SDK.Resource;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class MeRoute : AbstractRoute
+    public sealed class MeRoute : AbstractRoute
     {
         protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {

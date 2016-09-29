@@ -24,7 +24,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
-    public class CompositeViewRenderer : IViewRenderer
+    public sealed class CompositeViewRenderer : IViewRenderer
     {
         private readonly IViewRenderer[] _renderers;
         private readonly IDictionary<IViewRenderer, string> _rendererNames;

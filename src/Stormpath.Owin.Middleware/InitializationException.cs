@@ -18,7 +18,7 @@ using System;
 
 namespace Stormpath.Owin
 {
-    public class InitializationException : Exception
+    public sealed class InitializationException : Exception
     {
         public InitializationException(string message)
             : base(message)

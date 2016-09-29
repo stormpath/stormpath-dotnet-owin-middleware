@@ -27,7 +27,7 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class LinkedInCallbackRoute : AbstractRoute
+    public sealed class LinkedInCallbackRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
             => configuration.Web.Social.ContainsKey("linkedin")

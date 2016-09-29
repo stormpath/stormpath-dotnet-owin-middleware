@@ -2,7 +2,7 @@
 
 namespace Stormpath.Owin.Middleware
 {
-    public class PreVerifyEmailContext : HandlerContext
+    public sealed class PreVerifyEmailContext : HandlerContext
     {
         public PreVerifyEmailContext(IOwinEnvironment environment)
             : base(environment)

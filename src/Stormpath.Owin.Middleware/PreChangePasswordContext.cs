@@ -3,7 +3,7 @@ using Stormpath.SDK.Account;
 
 namespace Stormpath.Owin.Middleware
 {
-    public class PreChangePasswordContext : HandlerContext
+    public sealed class PreChangePasswordContext : HandlerContext
     {
         public PreChangePasswordContext(IOwinEnvironment environment, IAccount account)
             : base(environment)

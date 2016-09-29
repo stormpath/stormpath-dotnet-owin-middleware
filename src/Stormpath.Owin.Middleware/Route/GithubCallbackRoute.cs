@@ -27,7 +27,7 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class GithubCallbackRoute : AbstractRoute
+    public sealed class GithubCallbackRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
             => configuration.Web.Social.ContainsKey("github")

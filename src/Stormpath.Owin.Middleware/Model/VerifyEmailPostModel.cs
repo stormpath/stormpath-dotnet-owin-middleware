@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Middleware.Model
 {
-    public class VerifyEmailPostModel
+    public sealed class VerifyEmailPostModel
     {
         public string Email { get; set; }
     }

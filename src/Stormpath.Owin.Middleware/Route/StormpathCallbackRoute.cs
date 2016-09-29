@@ -13,7 +13,7 @@ using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class StormpathCallbackRoute : AbstractRoute
+    public sealed class StormpathCallbackRoute : AbstractRoute
     {
         protected override async Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult,
             CancellationToken cancellationToken)

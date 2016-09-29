@@ -3,7 +3,7 @@ using Stormpath.SDK.Account;
 
 namespace Stormpath.Owin.Middleware
 {
-    public class PostVerifyEmailContext : HandlerContext
+    public sealed class PostVerifyEmailContext : HandlerContext
     {
         public PostVerifyEmailContext(IOwinEnvironment environment, IAccount account)
             : base(environment)
