@@ -29,6 +29,12 @@ namespace Stormpath.Owin.Middleware
             string token,
             ILogger logger)
         {
+            if (string.IsNullOrEmpty(token))
+            {
+                Valid = false;
+                return;
+            }
+
             try
             {
                 // TODO: replace with direct JWT library access

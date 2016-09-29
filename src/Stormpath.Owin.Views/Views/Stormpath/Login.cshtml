@@ -157,17 +157,13 @@
 
                                         FB.login(function (response) {
                                             if (response.status === 'connected') {
-                                                var queryStr = window.location.search.replace('?', '');
-                                                // TODO make dynamic
-                                                if (queryStr) {
-                                                    // Don't include any access_token parameters in
-                                                    // the query string as it will be added by us.
-                                                    queryStr = queryStr.replace(/(&?)access_token=([^&]*)/, '');
+                                                var queryString = 'access_token=' + response.authResponse.accessToken;
 
-                                                    window.location.replace('@facebookProvider.Href?' + queryStr + '&access_token=' + response.authResponse.accessToken);
-                                                } else {
-                                                    window.location.replace('@facebookProvider.Href?access_token=' + response.authResponse.accessToken);
+                                                if ("@Model.RedirectToken".length != 0) {
+                                                    queryString += "&rt=@Model.RedirectToken";
                                                 }
+
+                                                window.location.replace('@facebookProvider.Href?' + queryString);
                                             }
                                         }, { scope: facebookScope });
                                     }

@@ -64,7 +64,10 @@ namespace Stormpath.Owin.Middleware.Route
                     loginResult,
                     cancellationToken);
 
-                return await socialExecutor.HandleRedirectAsync(context, loginResult, cancellationToken);
+                // TODO deep link redirection
+                string redirectToken = null;
+
+                return await socialExecutor.HandleRedirectAsync(client, context, loginResult, redirectToken, cancellationToken);
             }
             catch (Exception)
             {

@@ -81,16 +81,27 @@ namespace Stormpath.Owin.Middleware
         }
 
         public async Task<bool> HandleRedirectAsync(
+            IClient client,
             IOwinEnvironment environment,
             ExternalLoginResult loginResult,
+            string state,
             CancellationToken cancellationToken)
         {
             var loginExecutor = new LoginExecutor(_client, _configuration, _handlers, _logger);
 
-            // TODO: deep link redirection support
-            var nextUri = loginResult.IsNewAccount
-                ? _configuration.Web.Register.NextUri
-                : _configuration.Web.Login.NextUri;
+            string nextUri;
+
+            var redirectTokenParser = new RedirectTokenParser(client, _configuration.Client.ApiKey, state, _logger);
+            if (redirectTokenParser.Valid)
+            {
+                nextUri = redirectTokenParser.Path;
+            }
+            else
+            {
+                nextUri = loginResult.IsNewAccount
+                    ? _configuration.Web.Register.NextUri
+                    : _configuration.Web.Login.NextUri;
+            }
 
             return await loginExecutor.HandleRedirectAsync(environment, nextUri);
         }
