@@ -78,6 +78,19 @@ namespace Stormpath.Owin.Middleware.Route
             var model = PostBodyParser.ToModel<LoginPostModel>(body, bodyContentType, _logger);
             var formData = FormContentParser.Parse(body, _logger);
 
+            var stateToken = formData.GetString(ExtendedLoginViewModel.DefaultStateTokenName);
+            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                return await RenderLoginViewAsync(
+                    client,
+                    context,
+                    cancellationToken,
+                    queryString,
+                    formData,
+                    errors: new[] { "An error occurred. Please try again." });
+            }
+
             bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
             {
@@ -110,20 +123,7 @@ namespace Stormpath.Owin.Middleware.Route
                     errors: new[] { rex.Message });
             }
 
-            var redirectTokenFromQueryString = queryString.GetString("rt");
-            var redirectTokenFromForm = formData.GetString("rt");
-
-            var redirectToken = !string.IsNullOrEmpty(redirectTokenFromForm)
-                ? redirectTokenFromForm 
-                : redirectTokenFromQueryString;
-
-            string nextUri = null;
-
-            var redirectTokenParser = new StateTokenParser(client, _configuration.Client.ApiKey, redirectToken, _logger);
-            if (redirectTokenParser.Valid)
-            {
-                nextUri = redirectTokenParser.Path;
-            }
+            var nextUri = parsedStateToken.Path; // Might be null
 
             return await executor.HandleRedirectAsync(context, nextUri);
         }
