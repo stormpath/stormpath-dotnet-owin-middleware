@@ -59,14 +59,6 @@ namespace Stormpath.Owin.Middleware.Route
                 _logger);
             var loginViewModel = viewModelBuilder.Build();
 
-            // TODO restore or remove
-            //Cookies.AddTempCookieToResponse(
-            //    context,
-            //    Csrf.OauthStateTokenCookieName,
-            //    loginViewModel.OauthStateToken,
-            //    TimeSpan.FromMinutes(5),
-            //    _logger);
-
             await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
             return true;
         }
