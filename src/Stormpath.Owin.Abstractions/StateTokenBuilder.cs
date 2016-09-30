@@ -3,9 +3,9 @@ using System.Text;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.SDK.Client;
 
-namespace Stormpath.Owin.Middleware
+namespace Stormpath.Owin.Abstractions
 {
-    public sealed class RedirectTokenBuilder
+    public sealed class StateTokenBuilder
     {
         public const string PathClaimName = "path";
         public const string StateClaimName = "state";
@@ -15,17 +15,17 @@ namespace Stormpath.Owin.Middleware
 
         private readonly ClientApiKeyConfiguration _apiKeyConfiguration;
 
-        public RedirectTokenBuilder(IClient client, ClientApiKeyConfiguration apiKeyConfiguration)
+        public StateTokenBuilder(IClient client, ClientApiKeyConfiguration apiKeyConfiguration)
         {
             _client = client;
             _apiKeyConfiguration = apiKeyConfiguration;
         }
 
-        public string Path { get; set; } = "/";
+        public string Path { get; set; }
 
-        public string State { get; set; } = string.Empty;
+        public string State { get; set; } = Guid.NewGuid().ToString();
 
-        public TimeSpan ExpiresIn { get; set; } = TimeSpan.FromMinutes(10);
+        public TimeSpan ExpiresIn { get; set; } = TimeSpan.FromMinutes(30);
 
         public override string ToString()
         {

@@ -123,7 +123,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             string nextUri = null;
 
-            var redirectTokenParser = new RedirectTokenParser(client, _configuration.Client.ApiKey, state, _logger);
+            var redirectTokenParser = new StateTokenParser(client, _configuration.Client.ApiKey, state, _logger);
             if (redirectTokenParser.Valid)
             {
                 nextUri = redirectTokenParser.Path;

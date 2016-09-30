@@ -116,9 +116,7 @@
                             </div>
                         }
                         <form method="post" role="form" class="login-form form-horizontal">
-                            @* <input name="_csrf" type="hidden"> *@
-
-                            <input name="rt" type="hidden" value="@Model.RedirectToken"/>
+                            <input name="@ExtendedLoginViewModel.DefaultStateTokenName" type="hidden" value="@Model.StateToken"/>
 
                             @foreach (var field in Model.Form.Fields)
                             {
@@ -159,8 +157,8 @@
                                             if (response.status === 'connected') {
                                                 var queryString = 'access_token=' + response.authResponse.accessToken;
 
-                                                if ("@Model.RedirectToken".length != 0) {
-                                                    queryString += "&rt=@Model.RedirectToken";
+                                                if ("@Model.StateToken".length != 0) {
+                                                    queryString += "&@ExtendedLoginViewModel.DefaultStateTokenName=" + "@Model.StateToken";
                                                 }
 
                                                 window.location.replace('@facebookProvider.Href?' + queryString);
@@ -213,13 +211,13 @@
                                         var clientId = '@githubProvider.Provider.ClientId';
                                         var gitHubScope = '@githubProvider.Provider.Scope';
                                         var redirectUri = '@githubProvider.Href';
-                                        var oauthStateToken = '@Model.OauthStateToken';
+                                        var stateToken = '@Model.StateToken';
 
                                         var url = 'https://github.com/login/oauth/authorize' +
                                             '?client_id=' + encodeURIComponent(clientId) +
                                             '&scope=' + encodeURIComponent(gitHubScope) +
                                             '&redirect_uri=' + encodeURIComponent(redirectUri) +
-                                            '&state=' + encodeURIComponent(oauthStateToken);
+                                            '&state=' + encodeURIComponent(stateToken);
 
                                         window.location = url;
                                     }
@@ -259,7 +257,7 @@
                                     }
 
                                     function linkedinLogin() {
-                                        var oauthStateToken = '@Model.OauthStateToken';
+                                        var stateToken = '@Model.StateToken';
                                         var authorizationUrl = 'https://www.linkedin.com/uas/oauth2/authorization';
 
                                         var clientId = '@linkedInProvider.Provider.ClientId';
@@ -271,7 +269,7 @@
                                             client_id: clientId,
                                             scope: linkedinScope,
                                             redirect_uri: redirectUri,
-                                            state: oauthStateToken
+                                            state: stateToken
                                         });
                                     }
                                 </script>

@@ -37,10 +37,11 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            return await RenderLoginViewAsync(context, cancellationToken, queryString, null);
+            return await RenderLoginViewAsync(client, context, cancellationToken, queryString, null);
         }
 
         private async Task<bool> RenderLoginViewAsync(
+            IClient client,
             IOwinEnvironment context,
             CancellationToken cancellationToken,
             IDictionary<string, string[]> queryString,
@@ -48,8 +49,8 @@ namespace Stormpath.Owin.Middleware.Route
             string[] errors = null)
         {
             var viewModelBuilder = new ExtendedLoginViewModelBuilder(
-                _configuration.Web,
-                _configuration.Providers,
+                client,
+                _configuration,
                 ChangePasswordRoute.ShouldBeEnabled(_configuration),
                 VerifyEmailRoute.ShouldBeEnabled(_configuration),
                 queryString,
@@ -57,12 +58,13 @@ namespace Stormpath.Owin.Middleware.Route
                 errors);
             var loginViewModel = viewModelBuilder.Build();
 
-            Cookies.AddTempCookieToResponse(
-                context,
-                Csrf.OauthStateTokenCookieName,
-                loginViewModel.OauthStateToken,
-                TimeSpan.FromMinutes(5),
-                _logger);
+            // TODO restore or remove
+            //Cookies.AddTempCookieToResponse(
+            //    context,
+            //    Csrf.OauthStateTokenCookieName,
+            //    loginViewModel.OauthStateToken,
+            //    TimeSpan.FromMinutes(5),
+            //    _logger);
 
             await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
             return true;
@@ -80,6 +82,7 @@ namespace Stormpath.Owin.Middleware.Route
             if (missingLoginOrPassword)
             {
                 return await RenderLoginViewAsync(
+                    client,
                     context,
                     cancellationToken,
                     queryString,
@@ -99,6 +102,7 @@ namespace Stormpath.Owin.Middleware.Route
             catch (ResourceException rex)
             {
                 return await RenderLoginViewAsync(
+                    client,
                     context,
                     cancellationToken,
                     queryString,
@@ -115,7 +119,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             string nextUri = null;
 
-            var redirectTokenParser = new RedirectTokenParser(client, _configuration.Client.ApiKey, redirectToken, _logger);
+            var redirectTokenParser = new StateTokenParser(client, _configuration.Client.ApiKey, redirectToken, _logger);
             if (redirectTokenParser.Valid)
             {
                 nextUri = redirectTokenParser.Path;

@@ -16,6 +16,8 @@
 
 using System;
 using Stormpath.Configuration.Abstractions.Immutable;
+using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Client;
@@ -28,7 +30,7 @@ namespace Stormpath.Owin.Middleware
     /// </summary>
     public sealed class RouteProtector
     {
-        public static string AnyScheme = "*";
+        public const string AnyScheme = "*";
 
         private readonly IClient _client;
         private readonly StormpathConfiguration _configuration;
@@ -113,12 +115,12 @@ namespace Stormpath.Owin.Middleware
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)
             {
-                var redirectTokenBuilder = new RedirectTokenBuilder(_client, _configuration.Client.ApiKey)
+                var redirectTokenBuilder = new StateTokenBuilder(_client, _configuration.Client.ApiKey)
                 {
                     Path = requestPath
                 };
 
-                var loginUri = $"{_configuration.Web.Login.Uri}?rt={redirectTokenBuilder.ToString()}";
+                var loginUri = $"{_configuration.Web.Login.Uri}?{ExtendedLoginViewModel.DefaultStateTokenName}={redirectTokenBuilder}";
 
                 _setStatusCode(302);
                 _redirect(loginUri);

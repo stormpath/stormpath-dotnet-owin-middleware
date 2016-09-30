@@ -20,13 +20,14 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions.Configuration;
+using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class ExtendedLoginViewModelBuilder
     {
-        private readonly WebConfiguration _webConfiguration;
-        private readonly IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> _providerConfigurations;
+        private readonly IClient _client;
+        private readonly IntegrationConfiguration _configuration;
         private readonly bool _forgotPasswordEnabled;
         private readonly bool _verifyEmailEnabled;
         private readonly IDictionary<string, string[]> _queryString;
@@ -34,16 +35,16 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         private readonly IEnumerable<string> _errors;
 
         public ExtendedLoginViewModelBuilder(
-            WebConfiguration webConfiguration,
-            IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> providerConfigurations,
+            IClient client, // TODO remove when refactoring JWT
+            IntegrationConfiguration configuration,
             bool forgotPasswordEnabled,
             bool verifyEmailEnabled,
             IDictionary<string, string[]> queryString,
             IDictionary<string, string[]> previousFormData,
             IEnumerable<string> errors)
         {
-            _webConfiguration = webConfiguration;
-            _providerConfigurations = providerConfigurations;
+            _client = client;
+            _configuration = configuration;
             _forgotPasswordEnabled = forgotPasswordEnabled;
             _verifyEmailEnabled = verifyEmailEnabled;
             _queryString = queryString ?? new Dictionary<string, string[]>();
@@ -53,20 +54,21 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 
         public ExtendedLoginViewModel Build()
         {
-            var baseViewModelBuilder = new LoginViewModelBuilder(_webConfiguration.Login, _providerConfigurations);
+            var baseViewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login, _configuration.Providers);
             var result = new ExtendedLoginViewModel(baseViewModelBuilder.Build());
 
             // Copy values from configuration
             result.ForgotPasswordEnabled = _forgotPasswordEnabled;
-            result.ForgotPasswordUri = _webConfiguration.ForgotPassword.Uri;
-            result.RegistrationEnabled = _webConfiguration.Register.Enabled;
-            result.RegisterUri = _webConfiguration.Register.Uri;
+            result.ForgotPasswordUri = _configuration.Web.ForgotPassword.Uri;
+            result.RegistrationEnabled = _configuration.Web.Register.Enabled;
+            result.RegisterUri = _configuration.Web.Register.Uri;
             result.VerifyEmailEnabled = _verifyEmailEnabled;
-            result.VerifyEmailUri = _webConfiguration.VerifyEmail.Uri;
+            result.VerifyEmailUri = _configuration.Web.VerifyEmail.Uri;
 
             // Parameters from querystring
             result.Status = _queryString.GetString("status");
-            result.RedirectToken = _queryString.GetString("rt");
+            result.StateToken = _queryString.GetString(ExtendedLoginViewModel.DefaultStateTokenName);
+            // A new state token will be generated if one is not found in the querystring or form, see below
 
             // Error messages to render
             foreach (var error in _errors)
@@ -74,21 +76,18 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                 result.Errors.Add(error);
             }
 
-            // Oauth state token (nonce)
-            result.OauthStateToken = Guid.NewGuid().ToString();
-
             // Previous form submission (if any)
             if (_previousFormData != null && _previousFormData.Any())
             {
                 result.FormData = _previousFormData
                     .Where(kvp =>
                     {
-                        if (kvp.Key.Equals("rt", StringComparison.OrdinalIgnoreCase))
+                        if (kvp.Key.Equals(ExtendedLoginViewModel.DefaultStateTokenName, StringComparison.OrdinalIgnoreCase))
                         {
                             return true;
                         }
 
-                        var definedField = _webConfiguration.Login.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
+                        var definedField = _configuration.Web.Login.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
                         bool include = !definedField.Value?.Type.Equals("password", StringComparison.OrdinalIgnoreCase) ?? false;
                         return include;
                     })
@@ -96,11 +95,17 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             }
 
             // If redirect token has been previously submitted via form, use that
-            string redirectTokenFromForm;
-            if (result.FormData.TryGetValue("rt", out redirectTokenFromForm)
-                && !string.IsNullOrEmpty(redirectTokenFromForm))
+            string stateTokenFromForm;
+            if (result.FormData.TryGetValue(ExtendedLoginViewModel.DefaultStateTokenName, out stateTokenFromForm)
+                && !string.IsNullOrEmpty(stateTokenFromForm))
             {
-                result.RedirectToken = redirectTokenFromForm;
+                result.StateToken = stateTokenFromForm;
+            }
+
+            // If a state token isn't in the querystring or form, create one
+            if (string.IsNullOrEmpty(result.StateToken))
+            {
+                result.StateToken = new StateTokenBuilder(_client, _configuration.Client.ApiKey).ToString();
             }
 
             return result;

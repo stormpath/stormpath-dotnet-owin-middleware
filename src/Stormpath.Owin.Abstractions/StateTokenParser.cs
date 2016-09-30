@@ -4,11 +4,11 @@ using Stormpath.SDK.Client;
 using Stormpath.SDK.Jwt;
 using Stormpath.SDK.Logging;
 
-namespace Stormpath.Owin.Middleware
+namespace Stormpath.Owin.Abstractions
 {
-    public sealed class RedirectTokenParser
+    public sealed class StateTokenParser
     {
-        public RedirectTokenParser(
+        public StateTokenParser(
             IClient client,
             ClientApiKeyConfiguration apiKeyConfiguration,
             string token,
@@ -42,21 +42,21 @@ namespace Stormpath.Owin.Middleware
                     .SetSigningKey(apiKeyConfiguration.Secret, Encoding.UTF8)
                     .Parse(token);
 
-                if (parsedJwt.Body.ContainsClaim(RedirectTokenBuilder.PathClaimName))
+                if (parsedJwt.Body.ContainsClaim(StateTokenBuilder.PathClaimName))
                 {
-                    Path = parsedJwt.Body.GetClaim(RedirectTokenBuilder.PathClaimName).ToString();
+                    Path = parsedJwt.Body.GetClaim(StateTokenBuilder.PathClaimName).ToString();
                 }
 
-                if (parsedJwt.Body.ContainsClaim(RedirectTokenBuilder.StateClaimName))
+                if (parsedJwt.Body.ContainsClaim(StateTokenBuilder.StateClaimName))
                 {
-                    State = parsedJwt.Body.GetClaim(RedirectTokenBuilder.StateClaimName).ToString();
+                    State = parsedJwt.Body.GetClaim(StateTokenBuilder.StateClaimName).ToString();
                 }
 
                 Valid = true;
             }
             catch (InvalidJwtException ije)
             {
-                logger.Warn($"Redirect token failed validation ({ije.Message}): {token}", source: nameof(RedirectTokenParser));
+                logger.Warn($"Redirect token failed validation ({ije.Message}): {token}", source: nameof(StateTokenParser));
                 Valid = false;
             }
         }
