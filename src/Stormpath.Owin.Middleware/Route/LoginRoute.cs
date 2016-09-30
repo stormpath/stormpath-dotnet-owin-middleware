@@ -55,7 +55,8 @@ namespace Stormpath.Owin.Middleware.Route
                 VerifyEmailRoute.ShouldBeEnabled(_configuration),
                 queryString,
                 previousFormData,
-                errors);
+                errors,
+                _logger);
             var loginViewModel = viewModelBuilder.Build();
 
             // TODO restore or remove

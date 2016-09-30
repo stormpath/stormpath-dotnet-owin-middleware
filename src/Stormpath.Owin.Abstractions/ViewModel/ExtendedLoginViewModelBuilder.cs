@@ -21,6 +21,8 @@ using System.Runtime.CompilerServices;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.SDK.Client;
+using Stormpath.SDK.IdSite;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
@@ -33,6 +35,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         private readonly IDictionary<string, string[]> _queryString;
         private readonly IDictionary<string, string[]> _previousFormData;
         private readonly IEnumerable<string> _errors;
+        private readonly ILogger _logger;
 
         public ExtendedLoginViewModelBuilder(
             IClient client, // TODO remove when refactoring JWT
@@ -41,7 +44,8 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             bool verifyEmailEnabled,
             IDictionary<string, string[]> queryString,
             IDictionary<string, string[]> previousFormData,
-            IEnumerable<string> errors)
+            IEnumerable<string> errors,
+            ILogger logger)
         {
             _client = client;
             _configuration = configuration;
@@ -50,6 +54,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             _queryString = queryString ?? new Dictionary<string, string[]>();
             _previousFormData = previousFormData ?? new Dictionary<string, string[]>();
             _errors = errors ?? Enumerable.Empty<string>();
+            _logger = logger;
         }
 
         public ExtendedLoginViewModel Build()
@@ -94,12 +99,22 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                     .ToDictionary(kvp => kvp.Key, kvp => string.Join(",", kvp.Value));
             }
 
-            // If redirect token has been previously submitted via form, use that
+            // If a state token has been previously submitted via form, use that
             string stateTokenFromForm;
             if (result.FormData.TryGetValue(ExtendedLoginViewModel.DefaultStateTokenName, out stateTokenFromForm)
                 && !string.IsNullOrEmpty(stateTokenFromForm))
             {
                 result.StateToken = stateTokenFromForm;
+            }
+
+            // If a state token exists (from the querystring or a previous submission), make sure it is valid
+            if (!string.IsNullOrEmpty(result.StateToken))
+            {
+                var parsedStateToken = new StateTokenParser(_client, _configuration.Client.ApiKey, result.StateToken, _logger);
+                if (!parsedStateToken.Valid)
+                {
+                    result.StateToken = null; // Will be regenerated below
+                }
             }
 
             // If a state token isn't in the querystring or form, create one
