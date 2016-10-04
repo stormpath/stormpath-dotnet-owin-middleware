@@ -17,42 +17,86 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stormpath.Configuration.Abstractions.Immutable;
+using Stormpath.Owin.Abstractions.Configuration;
+using Stormpath.SDK.Client;
+using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class ExtendedRegisterViewModelBuilder
     {
-        private readonly WebConfiguration webConfiguration;
-        private IDictionary<string, string[]> previousFormData;
+        private readonly IClient _client;
+        private readonly IntegrationConfiguration _configuration;
+        private readonly IDictionary<string, string[]> _queryString;
+        private readonly IDictionary<string, string[]> _previousFormData;
+        private readonly ILogger _logger;
 
         public ExtendedRegisterViewModelBuilder(
-            WebConfiguration webConfiguration,
-            IDictionary<string, string[]> previousFormData)
+            IClient client, // TODO remove when refactoring JWT
+            IntegrationConfiguration configuration,
+            IDictionary<string, string[]> queryString,
+            IDictionary<string, string[]> previousFormData,
+            ILogger logger)
         {
-            this.webConfiguration = webConfiguration;
-            this.previousFormData = previousFormData;
+            _client = client;
+            _configuration = configuration;
+            _queryString = queryString;
+            _previousFormData = previousFormData;
+            _logger = logger;
         }
 
         public ExtendedRegisterViewModel Build()
         {
-            var baseViewModelBuilder = new RegisterViewModelBuilder(this.webConfiguration.Register);
+            var baseViewModelBuilder = new RegisterViewModelBuilder(_configuration.Web.Register);
             var result = new ExtendedRegisterViewModel(baseViewModelBuilder.Build());
 
+            // Parameters from querystring
+            result.StateToken = _queryString.GetString(StringConstants.StateTokenName);
+            // A new state token will be generated if one is not found in the querystring or form, see below
+
             // Copy values from configuration
-            result.LoginUri = this.webConfiguration.Login.Uri;
+            result.LoginUri = _configuration.Web.Login.Uri;
 
             // Previous form submission (if any)
-            if (this.previousFormData != null)
+            if (_previousFormData != null)
             {
-                result.FormData = previousFormData
+                result.FormData = _previousFormData
                     .Where(kvp =>
                     {
-                        var definedField = this.webConfiguration.Register.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
+                        if (kvp.Key.Equals(StringConstants.StateTokenName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+
+                        var definedField = _configuration.Web.Register.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
                         bool include = !definedField.Value?.Type.Equals("password", StringComparison.OrdinalIgnoreCase) ?? false;
                         return include;
                     })
                     .ToDictionary(kvp => kvp.Key, kvp => string.Join(",", kvp.Value));
+            }
+
+            // If a state token has been previously submitted via form, use that
+            string stateTokenFromForm;
+            if (result.FormData.TryGetValue(StringConstants.StateTokenName, out stateTokenFromForm)
+                && !string.IsNullOrEmpty(stateTokenFromForm))
+            {
+                result.StateToken = stateTokenFromForm;
+            }
+
+            // If a state token exists (from the querystring or a previous submission), make sure it is valid
+            if (!string.IsNullOrEmpty(result.StateToken))
+            {
+                var parsedStateToken = new StateTokenParser(_client, _configuration.Client.ApiKey, result.StateToken, _logger);
+                if (!parsedStateToken.Valid)
+                {
+                    result.StateToken = null; // Will be regenerated below
+                }
+            }
+
+            // If a state token isn't in the querystring or form, create one
+            if (string.IsNullOrEmpty(result.StateToken))
+            {
+                result.StateToken = new StateTokenBuilder(_client, _configuration.Client.ApiKey).ToString();
             }
 
             return result;

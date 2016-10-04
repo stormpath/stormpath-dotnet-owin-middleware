@@ -117,7 +117,8 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            var viewModelBuilder = new ExtendedRegisterViewModelBuilder(_configuration.Web, null);
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            var viewModelBuilder = new ExtendedRegisterViewModelBuilder(client, _configuration, queryString, null, _logger);
             var registerViewModel = viewModelBuilder.Build();
 
             await RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
@@ -130,22 +131,36 @@ namespace Stormpath.Owin.Middleware.Route
             var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType, _logger);
             var formData = FormContentParser.Parse(body, _logger);
 
-            var allNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value))).Select(f => f.Key).ToList();
-
-            var providedCustomFields = new Dictionary<string, object>();
-            foreach (var item in formData.Where(f => !DefaultFields.Contains(f.Key)))
-            {
-                providedCustomFields.Add(item.Key, string.Join(",", item.Value));
-            }
-
             var htmlErrorHandler = new Func<string, CancellationToken, Task>((message, ct) =>
             {
-                var viewModelBuilder = new ExtendedRegisterViewModelBuilder(_configuration.Web, formData);
+                var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+                var viewModelBuilder = new ExtendedRegisterViewModelBuilder(client, _configuration, queryString, formData, _logger);
                 var registerViewModel = viewModelBuilder.Build();
                 registerViewModel.Errors.Add(message);
 
                 return RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
             });
+
+            var stateToken = formData.GetString(StringConstants.StateTokenName);
+            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
+                return true;
+            }
+
+            var allNonEmptyFieldNames = formData
+                .Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value)))
+                .Select(f => f.Key)
+                .Except(new []{ StringConstants.StateTokenName })
+                .ToList();
+
+            var providedCustomFields = new Dictionary<string, object>();
+            var nonCustomFields = DefaultFields.Concat(new[] {StringConstants.StateTokenName}).ToArray();
+            foreach (var item in formData.Where(f => !nonCustomFields.Contains(f.Key)))
+            {
+                providedCustomFields.Add(item.Key, string.Join(",", item.Value));
+            }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
