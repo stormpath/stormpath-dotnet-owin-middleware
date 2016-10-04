@@ -69,7 +69,7 @@
                             </form>
                         </div>
                     </div>
-                    <a href="@Model.LoginUri" class="to-login">Back to Log In</a>
+                    <a href="@(Model.LoginUri + "?"+ @StringConstants.StateTokenName + "=" + @Model.StateToken)" class="to-login">Back to Log In</a>
                 </div>
             </div>
         </div>

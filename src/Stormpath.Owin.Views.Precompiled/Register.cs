@@ -588,9 +588,9 @@ WriteAttributeValue("", 3049, Model.FormData.Get(field.Name) ?? string.Empty, 30
 #line hidden
 
             WriteLiteral("                                <button type=\"submit\" class=\"btn btn-register btn-sp-green\">Create Account</button>\r\n                            </form>\r\n                        </div>\r\n                    </div>\r\n                    <a");
-            BeginWriteAttribute("href", " href=\"", 3565, "\"", 3587, 1);
+            BeginWriteAttribute("href", " href=\"", 3565, "\"", 3654, 1);
 #line 70 "Register.cshtml"
-WriteAttributeValue("", 3572, Model.LoginUri, 3572, 15, false);
+WriteAttributeValue("", 3572, Model.LoginUri + "?"+ @StringConstants.StateTokenName + "=" + @Model.StateToken, 3572, 82, false);
 
 #line default
 #line hidden

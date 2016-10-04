@@ -77,7 +77,7 @@ namespace Stormpath.Owin.Middleware
             await _handlers.PostRegistrationHandler(postRegistrationContext, cancellationToken);
         }
 
-        public Task<bool> HandleRedirectAsync(IOwinEnvironment environment, IAccount createdAccount)
+        public Task<bool> HandleRedirectAsync(IOwinEnvironment environment, IAccount createdAccount, string stateToken)
         {
             string nextUri;
 
@@ -93,6 +93,21 @@ namespace Stormpath.Owin.Middleware
             else
             {
                 nextUri = _configuration.Web.Login.Uri;
+            }
+
+            // Preserve the state token so that the login page can redirect after login if necessary
+            if (!string.IsNullOrEmpty(stateToken))
+            {
+                if (nextUri.Contains("?"))
+                {
+                    nextUri += "&";
+                }
+                else
+                {
+                    nextUri += "?";
+                }
+
+                nextUri += $"{StringConstants.StateTokenName}={stateToken}";
             }
 
             return HttpResponse.Redirect(environment, nextUri);
