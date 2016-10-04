@@ -27,7 +27,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         public ExtendedRegisterViewModel(RegisterViewModel existing)
         {
             // Copy and extend
-            this.Form = existing.Form;
+            Form = existing.Form;
             this.AccountStores = existing.AccountStores;
         }
 
@@ -36,5 +36,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         public IDictionary<string, string> FormData { get; set; } = new Dictionary<string, string>();
 
         public IList<string> Errors { get; set; } = new List<string>();
+
+        public string StateToken { get; set; }
     }
 }

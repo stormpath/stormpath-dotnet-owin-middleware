@@ -37,7 +37,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            var viewModelBuilder = new ForgotPasswordViewModelBuilder(_configuration.Web, queryString);
+            var viewModelBuilder = new ExtendedForgotPasswordViewModelBuilder(client, _configuration, queryString);
             var forgotViewModel = viewModelBuilder.Build();
 
             await RenderViewAsync(context, _configuration.Web.ForgotPassword.View, forgotViewModel, cancellationToken);
@@ -50,7 +50,22 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var model = await PostBodyParser.ToModel<ForgotPasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
+                var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
+                var model = PostBodyParser.ToModel<ForgotPasswordPostModel>(body, bodyContentType, _logger);
+                var formData = FormContentParser.Parse(body, _logger);
+
+                var stateToken = formData.GetString(StringConstants.StateTokenName);
+                var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+                if (!parsedStateToken.Valid)
+                {
+                    var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+                    var viewModelBuilder = new ExtendedForgotPasswordViewModelBuilder(client, _configuration, queryString);
+                    var viewModel = viewModelBuilder.Build();
+                    viewModel.Errors.Add("An error occurred. Please try again.");
+
+                    await RenderViewAsync(context, _configuration.Web.ForgotPassword.View, viewModel, cancellationToken);
+                    return true;
+                }
 
                 await application.SendPasswordResetEmailAsync(model.Email, cancellationToken);
             }

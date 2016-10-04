@@ -20,7 +20,7 @@ using Stormpath.Owin.Abstractions
     ;
     using System.Threading.Tasks;
 
-    public class Verify : BaseView<Stormpath.Owin.Abstractions.ViewModel.VerifyEmailViewModel>
+    public class Verify : BaseView<Stormpath.Owin.Abstractions.ViewModel.ExtendedVerifyEmailViewModel>
     {
         #line hidden
         public Verify()
@@ -524,8 +524,24 @@ p {
 #line default
 #line hidden
 
-            WriteLiteral(@"                        <p>&nbsp;</p>
-                        <form method=""post"" role=""form"" class=""login-form form-horizontal"">
+            WriteLiteral("                        <p>&nbsp;</p>\r\n                        <form method=\"post\" role=\"form\" class=\"login-form form-horizontal\">\r\n                            <input");
+            BeginWriteAttribute("name", " name=\"", 3285, "\"", 3323, 1);
+#line 71 "Verify.cshtml"
+WriteAttributeValue("", 3292, StringConstants.StateTokenName, 3292, 31, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(" type=\"hidden\"");
+            BeginWriteAttribute("value", " value=\"", 3338, "\"", 3363, 1);
+#line 71 "Verify.cshtml"
+WriteAttributeValue("", 3346, Model.StateToken, 3346, 17, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(@"/>
+
                             <div class=""form-group group-email"">
                                 <label class=""col-sm-4"">Email</label>
                                 <div class=""col-sm-8"">
@@ -539,13 +555,13 @@ p {
                     </div>
                 </div>
 ");
-#line 84 "Verify.cshtml"
+#line 85 "Verify.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 84 "Verify.cshtml"
+#line 85 "Verify.cshtml"
                  if (Model.LoginEnabled)
                 {
 
@@ -553,15 +569,15 @@ p {
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 4059, "\"", 4081, 1);
-#line 86 "Verify.cshtml"
-WriteAttributeValue("", 4066, Model.LoginUri, 4066, 15, false);
+            BeginWriteAttribute("href", " href=\"", 4110, "\"", 4132, 1);
+#line 87 "Verify.cshtml"
+WriteAttributeValue("", 4117, Model.LoginUri, 4117, 15, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Back to Log In</a>\r\n");
-#line 87 "Verify.cshtml"
+#line 88 "Verify.cshtml"
                 }
 
 #line default

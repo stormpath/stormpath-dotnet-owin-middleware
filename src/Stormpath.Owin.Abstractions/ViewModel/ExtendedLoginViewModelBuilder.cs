@@ -72,7 +72,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 
             // Parameters from querystring
             result.Status = _queryString.GetString("status");
-            result.StateToken = _queryString.GetString(ExtendedLoginViewModel.DefaultStateTokenName);
+            result.StateToken = _queryString.GetString(StringConstants.StateTokenName);
             // A new state token will be generated if one is not found in the querystring or form, see below
 
             // Error messages to render
@@ -87,7 +87,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                 result.FormData = _previousFormData
                     .Where(kvp =>
                     {
-                        if (kvp.Key.Equals(ExtendedLoginViewModel.DefaultStateTokenName, StringComparison.OrdinalIgnoreCase))
+                        if (kvp.Key.Equals(StringConstants.StateTokenName, StringComparison.OrdinalIgnoreCase))
                         {
                             return true;
                         }
@@ -101,7 +101,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 
             // If a state token has been previously submitted via form, use that
             string stateTokenFromForm;
-            if (result.FormData.TryGetValue(ExtendedLoginViewModel.DefaultStateTokenName, out stateTokenFromForm)
+            if (result.FormData.TryGetValue(StringConstants.StateTokenName, out stateTokenFromForm)
                 && !string.IsNullOrEmpty(stateTokenFromForm))
             {
                 result.StateToken = stateTokenFromForm;

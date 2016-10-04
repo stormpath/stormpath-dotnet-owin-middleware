@@ -51,7 +51,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
 
-                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
+                var viewModelBuilder = new ExtendedChangePasswordViewModelBuilder(client, _configuration);
                 var changePasswordViewModel = viewModelBuilder.Build();
 
                 await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
@@ -67,11 +67,25 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
+            var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var model = PostBodyParser.ToModel<ChangePasswordPostModel>(body, bodyContentType, _logger);
+            var formData = FormContentParser.Parse(body, _logger);
+
+            var stateToken = formData.GetString(StringConstants.StateTokenName);
+            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                var viewModelBuilder = new ExtendedChangePasswordViewModelBuilder(client, _configuration);
+                var changePasswordViewModel = viewModelBuilder.Build();
+                changePasswordViewModel.Errors.Add("An error occurred. Please try again.");
+
+                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+                return true;
+            }
 
             if (!model.Password.Equals(model.ConfirmPassword, StringComparison.Ordinal))
             {
-                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
+                var viewModelBuilder = new ExtendedChangePasswordViewModelBuilder(client, _configuration);
                 var changePasswordViewModel = viewModelBuilder.Build();
                 changePasswordViewModel.Errors.Add("Passwords do not match.");
 
@@ -101,7 +115,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex)
             {
-                var viewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
+                var viewModelBuilder = new ExtendedChangePasswordViewModelBuilder(client, _configuration);
                 var changePasswordViewModel = viewModelBuilder.Build();
                 changePasswordViewModel.Errors.Add(rex.Message);
 

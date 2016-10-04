@@ -18,7 +18,7 @@ using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class VerifyEmailViewModelBuilder
+    public sealed class VerifyEmailViewModelBuilder
     {
         private readonly WebConfiguration webConfiguration;
 

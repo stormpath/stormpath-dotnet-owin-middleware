@@ -1,4 +1,4 @@
-﻿// <copyright file="ChangePasswordViewModelBuilder.cs" company="Stormpath, Inc.">
+﻿// <copyright file="ExtendedChangePasswordViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,28 +14,20 @@
 // limitations under the License.
 // </copyright>
 
-using Stormpath.Configuration.Abstractions.Immutable;
-
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public sealed class ChangePasswordViewModelBuilder
+    public sealed class ExtendedChangePasswordViewModel : ChangePasswordViewModel
     {
-        private readonly WebConfiguration webConfiguration;
-
-        public ChangePasswordViewModelBuilder(
-            WebConfiguration webConfiguration)
+        public ExtendedChangePasswordViewModel()
         {
-            this.webConfiguration = webConfiguration;
         }
 
-        public ChangePasswordViewModel Build()
+        public ExtendedChangePasswordViewModel(ChangePasswordViewModel existing)
         {
-            var result = new ChangePasswordViewModel();
-
-            // Copy values from configuration
-            result.ChangePasswordUri = webConfiguration.ChangePassword.Uri;
-
-            return result;
+            Errors = existing.Errors;
+            ChangePasswordUri = existing.ChangePasswordUri;
         }
+
+        public string StateToken { get; set; }
     }
 }

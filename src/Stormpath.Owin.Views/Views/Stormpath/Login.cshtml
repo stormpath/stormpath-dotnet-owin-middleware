@@ -116,7 +116,7 @@
                             </div>
                         }
                         <form method="post" role="form" class="login-form form-horizontal">
-                            <input name="@ExtendedLoginViewModel.DefaultStateTokenName" type="hidden" value="@Model.StateToken"/>
+                            <input name="@StringConstants.StateTokenName" type="hidden" value="@Model.StateToken"/>
 
                             @foreach (var field in Model.Form.Fields)
                             {
@@ -158,7 +158,7 @@
                                                 var queryString = 'access_token=' + response.authResponse.accessToken;
 
                                                 if ("@Model.StateToken".length != 0) {
-                                                    queryString += "&@ExtendedLoginViewModel.DefaultStateTokenName=" + "@Model.StateToken";
+                                                    queryString += "&@StringConstants.StateTokenName=" + "@Model.StateToken";
                                                 }
 
                                                 window.location.replace('@facebookProvider.Href?' + queryString);

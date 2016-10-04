@@ -48,6 +48,8 @@
                                 </div>
                             }
                             <form method="post" role="form" class="registration-form form-horizontal sp-form">
+                                <input name="@StringConstants.StateTokenName" type="hidden" value="@Model.StateToken"/>
+
                                 @foreach (var field in Model.Form.Fields)
                                 {
                                     <div form-group="true" class="form-group @($"group-{field.Name}")">

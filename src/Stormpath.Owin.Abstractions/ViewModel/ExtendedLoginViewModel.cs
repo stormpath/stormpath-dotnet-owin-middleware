@@ -20,8 +20,6 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class ExtendedLoginViewModel : LoginViewModel
     {
-        public const string DefaultStateTokenName = "st";
-
         public static readonly string[] AcceptableStatuses = {
             "unverified",
             "verified",

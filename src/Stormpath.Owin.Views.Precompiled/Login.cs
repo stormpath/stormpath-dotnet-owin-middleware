@@ -680,17 +680,17 @@ WriteAttributeValue("", 5677, Model.RegisterUri, 5677, 18, false);
 #line hidden
 
             WriteLiteral("                        <form method=\"post\" role=\"form\" class=\"login-form form-horizontal\">\r\n                            <input");
-            BeginWriteAttribute("name", " name=\"", 6540, "\"", 6592, 1);
+            BeginWriteAttribute("name", " name=\"", 6540, "\"", 6578, 1);
 #line 117 "Login.cshtml"
-WriteAttributeValue("", 6547, ExtendedLoginViewModel.DefaultStateTokenName, 6547, 45, false);
+WriteAttributeValue("", 6547, StringConstants.StateTokenName, 6547, 31, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" type=\"hidden\"");
-            BeginWriteAttribute("value", " value=\"", 6607, "\"", 6632, 1);
+            BeginWriteAttribute("value", " value=\"", 6593, "\"", 6618, 1);
 #line 117 "Login.cshtml"
-WriteAttributeValue("", 6615, Model.StateToken, 6615, 17, false);
+WriteAttributeValue("", 6601, Model.StateToken, 6601, 17, false);
 
 #line default
 #line hidden
@@ -710,18 +710,18 @@ WriteAttributeValue("", 6615, Model.StateToken, 6615, 17, false);
 #line hidden
 
             WriteLiteral("                                <div");
-            BeginWriteAttribute("class", " class=\"", 6777, "\"", 6820, 2);
-            WriteAttributeValue("", 6785, "form-group", 6785, 10, true);
+            BeginWriteAttribute("class", " class=\"", 6763, "\"", 6806, 2);
+            WriteAttributeValue("", 6771, "form-group", 6771, 10, true);
 #line 121 "Login.cshtml"
-WriteAttributeValue(" ", 6795, $"group-{field.Name}", 6796, 25, false);
+WriteAttributeValue(" ", 6781, $"group-{field.Name}", 6782, 25, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">\r\n                                    <label");
-            BeginWriteAttribute("class", " class=\"", 6866, "\"", 6922, 1);
+            BeginWriteAttribute("class", " class=\"", 6852, "\"", 6908, 1);
 #line 122 "Login.cshtml"
-WriteAttributeValue("", 6874, hasSocialProviders ? "col-sm-12" : "col-sm-4", 6874, 48, false);
+WriteAttributeValue("", 6860, hasSocialProviders ? "col-sm-12" : "col-sm-4", 6860, 48, false);
 
 #line default
 #line hidden
@@ -733,38 +733,38 @@ WriteAttributeValue("", 6874, hasSocialProviders ? "col-sm-12" : "col-sm-4", 687
 #line default
 #line hidden
             WriteLiteral("\r\n                                    </label>\r\n                                    <div");
-            BeginWriteAttribute("class", " class=\"", 7066, "\"", 7122, 1);
+            BeginWriteAttribute("class", " class=\"", 7052, "\"", 7108, 1);
 #line 125 "Login.cshtml"
-WriteAttributeValue("", 7074, hasSocialProviders ? "col-sm-12" : "col-sm-8", 7074, 48, false);
+WriteAttributeValue("", 7060, hasSocialProviders ? "col-sm-12" : "col-sm-8", 7060, 48, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">\r\n                                        <input");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 7271, "\"", 7303, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 7257, "\"", 7289, 1);
 #line 127 "Login.cshtml"
-WriteAttributeValue("", 7285, field.Placeholder, 7285, 18, false);
+WriteAttributeValue("", 7271, field.Placeholder, 7271, 18, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("name", "\r\n                                               name=\"", 7304, "\"", 7370, 1);
+            BeginWriteAttribute("name", "\r\n                                               name=\"", 7290, "\"", 7356, 1);
 #line 128 "Login.cshtml"
-WriteAttributeValue("", 7359, field.Name, 7359, 11, false);
+WriteAttributeValue("", 7345, field.Name, 7345, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("type", "\r\n                                               type=\"", 7371, "\"", 7437, 1);
+            BeginWriteAttribute("type", "\r\n                                               type=\"", 7357, "\"", 7423, 1);
 #line 129 "Login.cshtml"
-WriteAttributeValue("", 7426, field.Type, 7426, 11, false);
+WriteAttributeValue("", 7412, field.Type, 7412, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("value", "\r\n                                               value=\"", 7438, "\"", 7543, 1);
+            BeginWriteAttribute("value", "\r\n                                               value=\"", 7424, "\"", 7529, 1);
 #line 130 "Login.cshtml"
-WriteAttributeValue("", 7494, Model.FormData.Get(field.Name) ?? string.Empty, 7494, 49, false);
+WriteAttributeValue("", 7480, Model.FormData.Get(field.Name) ?? string.Empty, 7480, 49, false);
 
 #line default
 #line hidden
@@ -834,13 +834,13 @@ WriteAttributeValue("", 7494, Model.FormData.Get(field.Name) ?? string.Empty, 74
 #line hidden
             WriteLiteral("\".length != 0) {\r\n                                                    queryString += \"&");
 #line 159 "Login.cshtml"
-                                                                Write(ExtendedLoginViewModel.DefaultStateTokenName);
+                                                                Write(StringConstants.StateTokenName);
 
 #line default
 #line hidden
             WriteLiteral("=\" + \"");
 #line 159 "Login.cshtml"
-                                                                                                                   Write(Model.StateToken);
+                                                                                                     Write(Model.StateToken);
 
 #line default
 #line hidden
@@ -1101,9 +1101,9 @@ WriteAttributeValue("", 7494, Model.FormData.Get(field.Name) ?? string.Empty, 74
 #line hidden
 
             WriteLiteral("                    <a style=\"float:left\"");
-            BeginWriteAttribute("href", " href=\"", 16206, "\"", 16234, 1);
+            BeginWriteAttribute("href", " href=\"", 16178, "\"", 16206, 1);
 #line 280 "Login.cshtml"
-WriteAttributeValue("", 16213, Model.VerifyEmailUri, 16213, 21, false);
+WriteAttributeValue("", 16185, Model.VerifyEmailUri, 16185, 21, false);
 
 #line default
 #line hidden
@@ -1130,9 +1130,9 @@ WriteAttributeValue("", 16213, Model.VerifyEmailUri, 16213, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 16416, "\"", 16447, 1);
+            BeginWriteAttribute("href", " href=\"", 16388, "\"", 16419, 1);
 #line 285 "Login.cshtml"
-WriteAttributeValue("", 16423, Model.ForgotPasswordUri, 16423, 24, false);
+WriteAttributeValue("", 16395, Model.ForgotPasswordUri, 16395, 24, false);
 
 #line default
 #line hidden

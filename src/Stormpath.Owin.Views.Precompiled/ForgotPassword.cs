@@ -20,7 +20,7 @@ using Stormpath.Owin.Abstractions
     ;
     using System.Threading.Tasks;
 
-    public class ForgotPassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ForgotPasswordViewModel>
+    public class ForgotPassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ExtendedForgotPasswordViewModel>
     {
         #line hidden
         public ForgotPassword()
@@ -536,7 +536,24 @@ WriteAttributeValue("", 3096, Model.ForgotPasswordUri, 3096, 24, false);
 #line default
 #line hidden
             EndWriteAttribute();
-            WriteLiteral(@" class=""login-form form-horizontal"">
+            WriteLiteral(" class=\"login-form form-horizontal\">\r\n                            <input");
+            BeginWriteAttribute("name", " name=\"", 3193, "\"", 3231, 1);
+#line 69 "ForgotPassword.cshtml"
+WriteAttributeValue("", 3200, StringConstants.StateTokenName, 3200, 31, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(" type=\"hidden\"");
+            BeginWriteAttribute("value", " value=\"", 3246, "\"", 3271, 1);
+#line 69 "ForgotPassword.cshtml"
+WriteAttributeValue("", 3254, Model.StateToken, 3254, 17, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(@"/>
+
                             <div class=""form-group group-email"">
                                 <label class=""col-sm-4"">Email</label>
                                 <div class=""col-sm-8"">
@@ -550,13 +567,13 @@ WriteAttributeValue("", 3096, Model.ForgotPasswordUri, 3096, 24, false);
                     </div>
                 </div>
 ");
-#line 82 "ForgotPassword.cshtml"
+#line 83 "ForgotPassword.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 82 "ForgotPassword.cshtml"
+#line 83 "ForgotPassword.cshtml"
                  if (Model.LoginEnabled)
                 {
 
@@ -564,15 +581,15 @@ WriteAttributeValue("", 3096, Model.ForgotPasswordUri, 3096, 24, false);
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 3972, "\"", 3994, 1);
-#line 84 "ForgotPassword.cshtml"
-WriteAttributeValue("", 3979, Model.LoginUri, 3979, 15, false);
+            BeginWriteAttribute("href", " href=\"", 4023, "\"", 4045, 1);
+#line 85 "ForgotPassword.cshtml"
+WriteAttributeValue("", 4030, Model.LoginUri, 4030, 15, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Back to Log In</a>\r\n");
-#line 85 "ForgotPassword.cshtml"
+#line 86 "ForgotPassword.cshtml"
                 }
 
 #line default

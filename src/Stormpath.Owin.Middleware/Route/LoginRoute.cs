@@ -71,7 +71,7 @@ namespace Stormpath.Owin.Middleware.Route
             var model = PostBodyParser.ToModel<LoginPostModel>(body, bodyContentType, _logger);
             var formData = FormContentParser.Parse(body, _logger);
 
-            var stateToken = formData.GetString(ExtendedLoginViewModel.DefaultStateTokenName);
+            var stateToken = formData.GetString(StringConstants.StateTokenName);
             var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {

@@ -120,7 +120,7 @@ namespace Stormpath.Owin.Middleware
                     Path = requestPath
                 };
 
-                var loginUri = $"{_configuration.Web.Login.Uri}?{ExtendedLoginViewModel.DefaultStateTokenName}={redirectTokenBuilder}";
+                var loginUri = $"{_configuration.Web.Login.Uri}?{StringConstants.StateTokenName}={redirectTokenBuilder}";
 
                 _setStatusCode(302);
                 _redirect(loginUri);

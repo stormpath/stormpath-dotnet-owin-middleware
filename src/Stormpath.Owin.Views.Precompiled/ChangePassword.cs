@@ -20,7 +20,7 @@ using Stormpath.Owin.Abstractions
     ;
     using System.Threading.Tasks;
 
-    public class ChangePassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ChangePasswordViewModel>
+    public class ChangePassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ExtendedChangePasswordViewModel>
     {
         #line hidden
         public ChangePassword()
@@ -505,8 +505,24 @@ p {
 #line default
 #line hidden
 
-            WriteLiteral(@"
-                        <form method=""post"" role=""form"" class=""login-form form-horizontal"">
+            WriteLiteral("\r\n                        <form method=\"post\" role=\"form\" class=\"login-form form-horizontal\">\r\n                            <input");
+            BeginWriteAttribute("name", " name=\"", 2532, "\"", 2570, 1);
+#line 57 "ChangePassword.cshtml"
+WriteAttributeValue("", 2539, StringConstants.StateTokenName, 2539, 31, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(" type=\"hidden\"");
+            BeginWriteAttribute("value", " value=\"", 2585, "\"", 2610, 1);
+#line 57 "ChangePassword.cshtml"
+WriteAttributeValue("", 2593, Model.StateToken, 2593, 17, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(@"/>
+
                             <div class=""form-group group-password"">
                                 <label class=""col-sm-4"">Password</label>
                                 <div class=""col-sm-8"">
@@ -520,10 +536,10 @@ p {
                                 </div>
                             </div>
                             <div>
-                                <button type=""submit"" class=""");
-            WriteLiteral(@"login btn btn-login btn-sp-green"">Submit</button>
+                                <button type=""submit"" class=""login btn btn-login btn-sp-green"">Submit</button>
                             </div>
-                        </form>
+  ");
+            WriteLiteral(@"                      </form>
                     </div>
                 </div>
             </div>
