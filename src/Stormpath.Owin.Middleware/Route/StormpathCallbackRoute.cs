@@ -24,7 +24,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (string.IsNullOrEmpty(stormpathToken))
             {
-                throw new ArgumentNullException(nameof(stormpathToken), "Token was null.");
+                throw new ArgumentNullException(nameof(stormpathToken), "Token was null."); // TODO json response, for now
             }
 
             // TODO: Use StormpathAssertionAuthenticator at SDK level (when it's ready) to locally validate token
@@ -42,12 +42,26 @@ namespace Stormpath.Owin.Middleware.Route
                     throw new InvalidJwtException("The token is not of the correct type");
                 }
 
-                return await HandleCallbackAsync(context, client, application, parsedJwt, cancellationToken);
+                // Verify state token for authenticity
+                string stateToken = null;
+                if (parsedJwt.Body.ContainsClaim("state"))
+                {
+                    stateToken = parsedJwt.Body.GetClaim("state").ToString();
+                }
+
+                var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+                if (!parsedStateToken.Valid)
+                {
+                    _logger.Warn("State token was invalid", nameof(StormpathCallbackRoute));
+                    throw new InvalidOperationException("State token was invalid"); // TODO json response, for now
+                }
+
+                return await HandleCallbackAsync(context, client, application, parsedJwt, parsedStateToken.Path, cancellationToken);
             }
             catch (InvalidJwtException ije)
             {
                 _logger.Error(ije, message: "JWT failed validation", source: nameof(StormpathCallbackRoute));
-                throw; // json response
+                throw; // TODO json response
             }
         }
 
@@ -56,6 +70,7 @@ namespace Stormpath.Owin.Middleware.Route
             IClient client,
             IApplication application,
             IJwt jwt,
+            string nextPath,
             CancellationToken cancellationToken)
         {
             var isNewSubscriber = false;
@@ -82,7 +97,7 @@ namespace Stormpath.Owin.Middleware.Route
                     context,
                     client,
                     grantResult,
-                    jwt.Body.GetClaim("state")?.ToString(),
+                    nextPath,
                     cancellationToken);
             }
 
@@ -115,21 +130,13 @@ namespace Stormpath.Owin.Middleware.Route
             IOwinEnvironment context,
             IClient client,
             IOauthGrantAuthenticationResult grantResult,
-            string state,
+            string nextPath,
             CancellationToken cancellationToken)
         {
             var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
             await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
-            string nextUri = null;
-
-            var redirectTokenParser = new StateTokenParser(client, _configuration.Client.ApiKey, state, _logger);
-            if (redirectTokenParser.Valid)
-            {
-                nextUri = redirectTokenParser.Path;
-            }
-
-            await executor.HandleRedirectAsync(context, nextUri);
+            await executor.HandleRedirectAsync(context, nextPath);
 
             return true;
         }
