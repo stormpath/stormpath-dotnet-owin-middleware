@@ -65,7 +65,10 @@
                         @if (Model.Errors.Any())
                         {
                             <div class="alert alert-danger bad-login">
-                                <p>Please enter a valid email address.</p>
+                                @foreach (var error in Model.Errors)
+                                {
+                                    <p>@error</p>
+                                }
                             </div>
                         }
                         <p>&nbsp;</p>

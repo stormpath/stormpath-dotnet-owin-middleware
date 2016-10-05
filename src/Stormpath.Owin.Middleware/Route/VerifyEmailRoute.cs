@@ -92,7 +92,7 @@ namespace Stormpath.Owin.Middleware.Route
                 var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
                 await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
 
-                return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=verified");
+                return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}");
             }
             catch (ResourceException)
             {
@@ -129,7 +129,8 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(ct => HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=unverified"));
+            var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(
+                ct => HttpResponse.Redirect(context, $"{_configuration.Web.Login.Uri}?status=unverified"));
 
             return await ResendVerification(
                 model.Email,

@@ -517,25 +517,52 @@ p {
 #line default
 #line hidden
 
-            WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n                                <p>Please enter a valid email address.</p>\r\n                            </div>\r\n");
+            WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n");
+#line 66 "Verify.cshtml"
+                                
+
+#line default
+#line hidden
+
+#line 66 "Verify.cshtml"
+                                 foreach (var error in Model.Errors)
+                                {
+
+#line default
+#line hidden
+
+            WriteLiteral("                                    <p>");
 #line 68 "Verify.cshtml"
+                                  Write(error);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n");
+#line 69 "Verify.cshtml"
+                                }
+
+#line default
+#line hidden
+
+            WriteLiteral("                            </div>\r\n");
+#line 71 "Verify.cshtml"
                         }
 
 #line default
 #line hidden
 
             WriteLiteral("                        <p>&nbsp;</p>\r\n                        <form method=\"post\" role=\"form\" class=\"login-form form-horizontal\">\r\n                            <input");
-            BeginWriteAttribute("name", " name=\"", 3285, "\"", 3323, 1);
-#line 71 "Verify.cshtml"
-WriteAttributeValue("", 3292, StringConstants.StateTokenName, 3292, 31, false);
+            BeginWriteAttribute("name", " name=\"", 3400, "\"", 3438, 1);
+#line 74 "Verify.cshtml"
+WriteAttributeValue("", 3407, StringConstants.StateTokenName, 3407, 31, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" type=\"hidden\"");
-            BeginWriteAttribute("value", " value=\"", 3338, "\"", 3363, 1);
-#line 71 "Verify.cshtml"
-WriteAttributeValue("", 3346, Model.StateToken, 3346, 17, false);
+            BeginWriteAttribute("value", " value=\"", 3453, "\"", 3478, 1);
+#line 74 "Verify.cshtml"
+WriteAttributeValue("", 3461, Model.StateToken, 3461, 17, false);
 
 #line default
 #line hidden
@@ -555,13 +582,13 @@ WriteAttributeValue("", 3346, Model.StateToken, 3346, 17, false);
                     </div>
                 </div>
 ");
-#line 85 "Verify.cshtml"
+#line 88 "Verify.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 85 "Verify.cshtml"
+#line 88 "Verify.cshtml"
                  if (Model.LoginEnabled)
                 {
 
@@ -569,15 +596,15 @@ WriteAttributeValue("", 3346, Model.StateToken, 3346, 17, false);
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 4110, "\"", 4132, 1);
-#line 87 "Verify.cshtml"
-WriteAttributeValue("", 4117, Model.LoginUri, 4117, 15, false);
+            BeginWriteAttribute("href", " href=\"", 4225, "\"", 4247, 1);
+#line 90 "Verify.cshtml"
+WriteAttributeValue("", 4232, Model.LoginUri, 4232, 15, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Back to Log In</a>\r\n");
-#line 88 "Verify.cshtml"
+#line 91 "Verify.cshtml"
                 }
 
 #line default
