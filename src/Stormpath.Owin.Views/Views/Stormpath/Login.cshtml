@@ -125,7 +125,6 @@
                                         @field.Label
                                     </label>
                                     <div class="@(hasSocialProviders ? "col-sm-12" : "col-sm-8")">
-                                        @* switch to col-sm-12 if social providers are present *@
                                         <input placeholder="@field.Placeholder"
                                                name="@field.Name"
                                                type="@field.Type"
@@ -157,7 +156,7 @@
                                             if (response.status === 'connected') {
                                                 var queryString = 'access_token=' + response.authResponse.accessToken;
 
-                                                if ("@Model.StateToken".length != 0) {
+                                                if ("@Model.StateToken".length !== 0) {
                                                     queryString += "&@StringConstants.StateTokenName=" + "@Model.StateToken";
                                                 }
 
@@ -193,10 +192,12 @@
                                         var clientId = '@googleProvider.Provider.ClientId';
                                         var googleScope = '@googleProvider.Provider.Scope';
 
-                                        var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=' +
-                                            clientId +
-                                            '&scope=' + googleScope +
-                                            '&include_granted_scopes=true&redirect_uri=@googleProvider.Href';
+                                        var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code' +
+                                            '&client_id=' + encodeURIComponent(clientId) +
+                                            '&scope=' + encodeURIComponent(googleScope) +
+                                            '&state=' + encodeURIComponent('@Model.StateToken') +
+                                            '&include_granted_scopes=true' +
+                                            '&redirect_uri=' + encodeURIComponent('@googleProvider.Href');
 
                                         window.location = finalUrl;
                                     }

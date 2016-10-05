@@ -84,19 +84,12 @@ namespace Stormpath.Owin.Middleware
             IClient client,
             IOwinEnvironment environment,
             ExternalLoginResult loginResult,
-            string state,
+            string nextUri,
             CancellationToken cancellationToken)
         {
             var loginExecutor = new LoginExecutor(_client, _configuration, _handlers, _logger);
 
-            string nextUri;
-
-            var redirectTokenParser = new StateTokenParser(client, _configuration.Client.ApiKey, state, _logger);
-            if (redirectTokenParser.Valid)
-            {
-                nextUri = redirectTokenParser.Path;
-            }
-            else
+            if (string.IsNullOrEmpty(nextUri))
             {
                 nextUri = loginResult.IsNewAccount
                     ? _configuration.Web.Register.NextUri

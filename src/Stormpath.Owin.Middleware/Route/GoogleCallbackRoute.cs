@@ -44,6 +44,14 @@ namespace Stormpath.Owin.Middleware.Route
                 return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
             }
 
+            var stateToken = queryString.GetString("state");
+            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                _logger.Warn("State token was invalid", nameof(GoogleCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+            }
+
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
@@ -64,10 +72,7 @@ namespace Stormpath.Owin.Middleware.Route
                     loginResult,
                     cancellationToken);
 
-                // TODO deep link redirection
-                string redirectToken = null;
-
-                return await socialExecutor.HandleRedirectAsync(client, context, loginResult, redirectToken, cancellationToken);
+                return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
             }
             catch (Exception)
             {
