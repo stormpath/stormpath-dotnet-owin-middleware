@@ -26,46 +26,46 @@ using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Abstractions
 {
-    public class DefaultOwinResponse : IOwinResponse
+    public sealed class DefaultOwinResponse : IOwinResponse
     {
-        private readonly IDictionary<string, object> environment;
+        private readonly IDictionary<string, object> _environment;
 
         public DefaultOwinResponse(IDictionary<string, object> owinEnvironment)
         {
-            this.environment = owinEnvironment;
+            _environment = owinEnvironment;
         }
 
         public Stream Body
         {
-            get { return environment.Get<Stream>(OwinKeys.ResponseBody); }
-            set { environment.SetOrRemove(OwinKeys.ResponseBody, value); }
+            get { return _environment.Get<Stream>(OwinKeys.ResponseBody); }
+            set { _environment.SetOrRemove(OwinKeys.ResponseBody, value); }
         }
 
         public IDictionary<string, string[]> Headers
         {
-            get { return environment.Get<IDictionary<string, string[]>>(OwinKeys.ResponseHeaders); }
-            set { environment.SetOrRemove(OwinKeys.ResponseHeaders, value); }
+            get { return _environment.Get<IDictionary<string, string[]>>(OwinKeys.ResponseHeaders); }
+            set { _environment.SetOrRemove(OwinKeys.ResponseHeaders, value); }
         }
 
         public int StatusCode
         {
-            set { environment.SetOrRemove(OwinKeys.ResponseStatusCode, value); }
+            set { _environment.SetOrRemove(OwinKeys.ResponseStatusCode, value); }
         }
 
         public string ReasonPhrase
         {
-            set { environment.SetOrRemove(OwinKeys.ResponseReasonPhrase, value); }
+            set { _environment.SetOrRemove(OwinKeys.ResponseReasonPhrase, value); }
         }
 
         public Action<Action<object>, object> OnSendingHeaders
         {
-            get { return environment.Get<Action<Action<object>, object>>(OwinKeys.OnSendingHeaders); }
+            get { return _environment.Get<Action<Action<object>, object>>(OwinKeys.OnSendingHeaders); }
         }
 
         public object this[string key]
         {
-            get { return environment.Get(key); }
-            set { environment[key] = value; }
+            get { return _environment.Get(key); }
+            set { _environment[key] = value; }
         }
 
         public async Task WriteAsync(string text, Encoding encoding, CancellationToken cancellationToken = default(CancellationToken))

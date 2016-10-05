@@ -20,12 +20,12 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public sealed class VerifyEmailViewModelBuilder
     {
-        private readonly WebConfiguration webConfiguration;
+        private readonly WebConfiguration _webConfiguration;
 
         public VerifyEmailViewModelBuilder(
             WebConfiguration webConfiguration)
         {
-            this.webConfiguration = webConfiguration;
+            _webConfiguration = webConfiguration;
         }
 
         public VerifyEmailViewModel Build()
@@ -33,8 +33,8 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             var result = new VerifyEmailViewModel();
 
             // Copy values from configuration
-            result.LoginEnabled = this.webConfiguration.Login.Enabled;
-            result.LoginUri = this.webConfiguration.Login.Uri;
+            result.LoginEnabled = _webConfiguration.Login.Enabled;
+            result.LoginUri = _webConfiguration.Login.Uri;
 
             return result;
         }

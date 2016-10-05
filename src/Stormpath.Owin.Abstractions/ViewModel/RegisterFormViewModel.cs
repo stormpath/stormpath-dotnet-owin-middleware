@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class RegisterFormViewModel : RegisterViewModel
+    public sealed class RegisterFormViewModel : RegisterViewModel
     {
         public RegisterFormViewModel()
         {

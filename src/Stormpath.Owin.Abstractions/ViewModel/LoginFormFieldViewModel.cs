@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class LoginFormFieldViewModel
+    public sealed class LoginFormFieldViewModel
     {
         public IReadOnlyList<FormFieldViewModel> Fields { get; set; } = new FormFieldViewModel[] { };
     }

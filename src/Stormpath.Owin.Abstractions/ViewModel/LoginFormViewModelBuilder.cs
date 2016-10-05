@@ -17,16 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.SDK.Client;
-using Stormpath.SDK.IdSite;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class LoginFormViewModelBuilder
+    public sealed class LoginFormViewModelBuilder
     {
         private readonly IClient _client;
         private readonly IntegrationConfiguration _configuration;

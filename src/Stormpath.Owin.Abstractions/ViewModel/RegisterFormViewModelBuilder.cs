@@ -23,7 +23,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class RegisterFormViewModelBuilder
+    public sealed class RegisterFormViewModelBuilder
     {
         private readonly IClient _client;
         private readonly IntegrationConfiguration _configuration;

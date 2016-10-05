@@ -38,7 +38,7 @@
     <div class="container custom-container">
         <div class="va-wrapper">
             <div class="view login-view container">
-                @if (Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
+                @if (Stormpath.Owin.Abstractions.ViewModel.LoginFormViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
                     <div class="box row">
                         <div class="email-password-area col-xs-12 large col-sm-12">
                             <div class="header">

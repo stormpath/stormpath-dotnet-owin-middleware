@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class LoginSuccessfulViewModel
+    public sealed class LoginSuccessfulViewModel
     {
         public AccountViewModel Account { get; set; } 
     }

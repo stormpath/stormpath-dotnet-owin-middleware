@@ -18,7 +18,7 @@ using System.Collections.Generic;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class LoginFormViewModel : LoginViewModel
+    public sealed class LoginFormViewModel : LoginViewModel
     {
         public static readonly string[] AcceptableStatuses = {
             "unverified",

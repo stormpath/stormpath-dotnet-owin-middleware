@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class FormFieldViewModel
+    public sealed class FormFieldViewModel
     {
         public string Label { get; set; }
 

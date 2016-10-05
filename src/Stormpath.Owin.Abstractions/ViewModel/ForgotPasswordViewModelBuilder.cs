@@ -19,7 +19,7 @@ using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class ForgotPasswordViewModelBuilder
+    public sealed class ForgotPasswordViewModelBuilder
     {
         private readonly WebConfiguration _webConfiguration;
         private readonly IDictionary<string, string[]> _queryString;
