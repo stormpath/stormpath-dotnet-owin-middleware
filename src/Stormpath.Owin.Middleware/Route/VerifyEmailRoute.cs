@@ -39,7 +39,7 @@ namespace Stormpath.Owin.Middleware.Route
             string email,
             IClient client,
             IOwinEnvironment environment,
-            Func<ResourceException, CancellationToken, Task<bool>> errorHandler,
+            Func<string, CancellationToken, Task<bool>> errorHandler,
             Func<CancellationToken, Task<bool>> successHandler,
             CancellationToken cancellationToken)
         {
@@ -65,7 +65,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException rex) when (errorHandler != null)
             {
-                return await errorHandler(rex, cancellationToken);
+                return await errorHandler(rex.Message, cancellationToken);
             }
 
             return await successHandler(cancellationToken);
@@ -78,7 +78,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (string.IsNullOrEmpty(spToken))
             {
-                var viewModelBuilder = new VerifyEmailViewModelBuilder(_configuration.Web);
+                var viewModelBuilder = new ExtendedVerifyEmailViewModelBuilder(client, _configuration);
                 var verifyViewModel = viewModelBuilder.Build();
 
                 await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
@@ -96,7 +96,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException)
             {
-                var viewModelBuilder = new VerifyEmailViewModelBuilder(_configuration.Web);
+                var viewModelBuilder = new ExtendedVerifyEmailViewModelBuilder(client, _configuration);
                 var verifyViewModel = viewModelBuilder.Build();
                 verifyViewModel.InvalidSpToken = true;
 
@@ -107,19 +107,27 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
-
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
-            var htmlErrorHandler = new Func<ResourceException, CancellationToken, Task<bool>>(async (rex, ct) =>
+            var htmlErrorHandler = new Func<string, CancellationToken, Task<bool>>(async (error, ct) =>
             {
-                var viewModelBuilder = new VerifyEmailViewModelBuilder(_configuration.Web);
+                var viewModelBuilder = new ExtendedVerifyEmailViewModelBuilder(client, _configuration);
                 var verifyEmailViewModel = viewModelBuilder.Build();
-                verifyEmailViewModel.Errors.Add(rex.Message);
+                verifyEmailViewModel.Errors.Add(error);
 
                 await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyEmailViewModel, cancellationToken);
                 return true;
             });
+
+            var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var model = PostBodyParser.ToModel<VerifyEmailPostModel>(body, bodyContentType, _logger);
+
+            var formData = FormContentParser.Parse(body, _logger);
+            var stateToken = formData.GetString(StringConstants.StateTokenName);
+            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
+                return true;
+            }
 
             var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(ct => HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}?status=unverified"));
 
