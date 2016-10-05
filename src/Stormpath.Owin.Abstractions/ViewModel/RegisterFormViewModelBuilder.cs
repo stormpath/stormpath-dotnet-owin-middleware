@@ -23,7 +23,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class ExtendedRegisterViewModelBuilder
+    public class RegisterFormViewModelBuilder
     {
         private readonly IClient _client;
         private readonly IntegrationConfiguration _configuration;
@@ -31,7 +31,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         private readonly IDictionary<string, string[]> _previousFormData;
         private readonly ILogger _logger;
 
-        public ExtendedRegisterViewModelBuilder(
+        public RegisterFormViewModelBuilder(
             IClient client, // TODO remove when refactoring JWT
             IntegrationConfiguration configuration,
             IDictionary<string, string[]> queryString,
@@ -45,10 +45,10 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             _logger = logger;
         }
 
-        public ExtendedRegisterViewModel Build()
+        public RegisterFormViewModel Build()
         {
             var baseViewModelBuilder = new RegisterViewModelBuilder(_configuration.Web.Register);
-            var result = new ExtendedRegisterViewModel(baseViewModelBuilder.Build());
+            var result = new RegisterFormViewModel(baseViewModelBuilder.Build());
 
             // Parameters from querystring
             result.StateToken = _queryString.GetString(StringConstants.StateTokenName);

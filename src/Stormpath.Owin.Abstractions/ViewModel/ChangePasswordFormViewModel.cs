@@ -1,4 +1,4 @@
-﻿// <copyright file="RegisterViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="ChangePasswordFormViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,20 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class RegisterViewModel
+    public sealed class ChangePasswordFormViewModel : ChangePasswordViewModel
     {
-        public RegisterFormFieldViewModel Form { get; set; } = new RegisterFormFieldViewModel();
+        public ChangePasswordFormViewModel()
+        {
+        }
 
-        public List<AccountStoreViewModel> AccountStores { get; set; } = new List<AccountStoreViewModel>();
+        public ChangePasswordFormViewModel(ChangePasswordViewModel existing)
+        {
+            Errors = existing.Errors;
+            ChangePasswordUri = existing.ChangePasswordUri;
+        }
+
+        public string StateToken { get; set; }
     }
 }

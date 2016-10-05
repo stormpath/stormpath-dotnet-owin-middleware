@@ -4,13 +4,13 @@ using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public sealed class ExtendedForgotPasswordViewModelBuilder
+    public sealed class ForgotPasswordFormViewModelBuilder
     {
         private readonly IClient _client;
         private readonly IntegrationConfiguration _configuration;
         private readonly IDictionary<string, string[]> _queryString;
 
-        public ExtendedForgotPasswordViewModelBuilder(
+        public ForgotPasswordFormViewModelBuilder(
             IClient client, // TODO remove when refactoring JWT
             IntegrationConfiguration configuration,
             IDictionary<string, string[]> queryString)
@@ -20,10 +20,10 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             _queryString = queryString;
         }
 
-        public ExtendedForgotPasswordViewModel Build()
+        public ForgotPasswordFormViewModel Build()
         {
             var baseViewModelBuilder = new ForgotPasswordViewModelBuilder(_configuration.Web, _queryString);
-            var result = new ExtendedForgotPasswordViewModel(baseViewModelBuilder.Build());
+            var result = new ForgotPasswordFormViewModel(baseViewModelBuilder.Build());
 
             // Add a state (CSRF) token
             result.StateToken = new StateTokenBuilder(_client, _configuration.Client.ApiKey).ToString();

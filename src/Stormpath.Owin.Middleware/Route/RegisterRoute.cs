@@ -118,7 +118,7 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            var viewModelBuilder = new ExtendedRegisterViewModelBuilder(client, _configuration, queryString, null, _logger);
+            var viewModelBuilder = new RegisterFormViewModelBuilder(client, _configuration, queryString, null, _logger);
             var registerViewModel = viewModelBuilder.Build();
 
             await RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
@@ -134,7 +134,7 @@ namespace Stormpath.Owin.Middleware.Route
             var htmlErrorHandler = new Func<string, CancellationToken, Task>((message, ct) =>
             {
                 var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-                var viewModelBuilder = new ExtendedRegisterViewModelBuilder(client, _configuration, queryString, formData, _logger);
+                var viewModelBuilder = new RegisterFormViewModelBuilder(client, _configuration, queryString, formData, _logger);
                 var registerViewModel = viewModelBuilder.Build();
                 registerViewModel.Errors.Add(message);
 

@@ -26,7 +26,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class ExtendedLoginViewModelBuilder
+    public class LoginFormViewModelBuilder
     {
         private readonly IClient _client;
         private readonly IntegrationConfiguration _configuration;
@@ -37,7 +37,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         private readonly IEnumerable<string> _errors;
         private readonly ILogger _logger;
 
-        public ExtendedLoginViewModelBuilder(
+        public LoginFormViewModelBuilder(
             IClient client, // TODO remove when refactoring JWT
             IntegrationConfiguration configuration,
             bool forgotPasswordEnabled,
@@ -57,10 +57,10 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             _logger = logger;
         }
 
-        public ExtendedLoginViewModel Build()
+        public LoginFormViewModel Build()
         {
             var baseViewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login, _configuration.Providers);
-            var result = new ExtendedLoginViewModel(baseViewModelBuilder.Build());
+            var result = new LoginFormViewModel(baseViewModelBuilder.Build());
 
             // Copy values from configuration
             result.ForgotPasswordEnabled = _forgotPasswordEnabled;

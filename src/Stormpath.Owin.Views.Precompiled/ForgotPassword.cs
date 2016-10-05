@@ -20,7 +20,7 @@ using Stormpath.Owin.Abstractions
     ;
     using System.Threading.Tasks;
 
-    public class ForgotPassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ExtendedForgotPasswordViewModel>
+    public class ForgotPassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ForgotPasswordFormViewModel>
     {
         #line hidden
         public ForgotPassword()

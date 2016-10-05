@@ -26,7 +26,7 @@ using Stormpath.Owin.Abstractions.ViewModel
     ;
     using System.Threading.Tasks;
 
-    public class Login : BaseView<ExtendedLoginViewModel>
+    public class Login : BaseView<LoginFormViewModel>
     {
         #line hidden
         public Login()

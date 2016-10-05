@@ -48,7 +48,7 @@ namespace Stormpath.Owin.Middleware.Route
             IDictionary<string, string[]> previousFormData,
             string[] errors = null)
         {
-            var viewModelBuilder = new ExtendedLoginViewModelBuilder(
+            var viewModelBuilder = new LoginFormViewModelBuilder(
                 client,
                 _configuration,
                 ChangePasswordRoute.ShouldBeEnabled(_configuration),

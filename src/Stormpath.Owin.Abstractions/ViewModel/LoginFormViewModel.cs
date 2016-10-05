@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginFormViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LoginViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,8 +18,46 @@ using System.Collections.Generic;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class LoginFormViewModel
+    public class LoginFormViewModel : LoginViewModel
     {
-        public IReadOnlyList<FormFieldViewModel> Fields { get; set; } = new FormFieldViewModel[] { };
+        public static readonly string[] AcceptableStatuses = {
+            "unverified",
+            "verified",
+            "created",
+            "forgot",
+            "reset",
+            "social_failed"
+        };
+
+        public LoginFormViewModel()
+        {
+        }
+
+        public LoginFormViewModel(LoginViewModel existing)
+        {
+            // Copy and extend
+            this.Form = existing.Form;
+            this.AccountStores = existing.AccountStores;
+        }
+
+        public string Status { get; set; }
+
+        public bool RegistrationEnabled { get; set; }
+
+        public string RegisterUri { get; set; }
+
+        public bool VerifyEmailEnabled { get; set; }
+
+        public string VerifyEmailUri { get; set; }
+
+        public bool ForgotPasswordEnabled { get; set; }
+
+        public string ForgotPasswordUri { get; set; }
+
+        public IDictionary<string, string> FormData { get; set; } = new Dictionary<string, string>();
+
+        public IList<string> Errors { get; set; } = new List<string>();
+
+        public string StateToken { get; set; }
     }
 }

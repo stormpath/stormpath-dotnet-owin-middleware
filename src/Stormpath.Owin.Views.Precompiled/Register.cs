@@ -20,7 +20,7 @@ using Stormpath.Owin.Abstractions
     ;
     using System.Threading.Tasks;
 
-    public class Register : BaseView<Stormpath.Owin.Abstractions.ViewModel.ExtendedRegisterViewModel>
+    public class Register : BaseView<Stormpath.Owin.Abstractions.ViewModel.RegisterFormViewModel>
     {
         #line hidden
         public Register()

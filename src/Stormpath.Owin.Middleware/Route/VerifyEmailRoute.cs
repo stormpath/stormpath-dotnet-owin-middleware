@@ -78,7 +78,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (string.IsNullOrEmpty(spToken))
             {
-                var viewModelBuilder = new ExtendedVerifyEmailViewModelBuilder(client, _configuration);
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
                 var verifyViewModel = viewModelBuilder.Build();
 
                 await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
@@ -96,7 +96,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (ResourceException)
             {
-                var viewModelBuilder = new ExtendedVerifyEmailViewModelBuilder(client, _configuration);
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
                 var verifyViewModel = viewModelBuilder.Build();
                 verifyViewModel.InvalidSpToken = true;
 
@@ -109,7 +109,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var htmlErrorHandler = new Func<string, CancellationToken, Task<bool>>(async (error, ct) =>
             {
-                var viewModelBuilder = new ExtendedVerifyEmailViewModelBuilder(client, _configuration);
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
                 var verifyEmailViewModel = viewModelBuilder.Build();
                 verifyEmailViewModel.Errors.Add(error);
 

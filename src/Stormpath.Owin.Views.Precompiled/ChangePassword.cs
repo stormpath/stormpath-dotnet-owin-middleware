@@ -20,7 +20,7 @@ using Stormpath.Owin.Abstractions
     ;
     using System.Threading.Tasks;
 
-    public class ChangePassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ExtendedChangePasswordViewModel>
+    public class ChangePassword : BaseView<Stormpath.Owin.Abstractions.ViewModel.ChangePasswordFormViewModel>
     {
         #line hidden
         public ChangePassword()

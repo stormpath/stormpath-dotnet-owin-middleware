@@ -37,7 +37,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            var viewModelBuilder = new ExtendedForgotPasswordViewModelBuilder(client, _configuration, queryString);
+            var viewModelBuilder = new ForgotPasswordFormViewModelBuilder(client, _configuration, queryString);
             var forgotViewModel = viewModelBuilder.Build();
 
             await RenderViewAsync(context, _configuration.Web.ForgotPassword.View, forgotViewModel, cancellationToken);
@@ -59,7 +59,7 @@ namespace Stormpath.Owin.Middleware.Route
                 if (!parsedStateToken.Valid)
                 {
                     var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-                    var viewModelBuilder = new ExtendedForgotPasswordViewModelBuilder(client, _configuration, queryString);
+                    var viewModelBuilder = new ForgotPasswordFormViewModelBuilder(client, _configuration, queryString);
                     var viewModel = viewModelBuilder.Build();
                     viewModel.Errors.Add("An error occurred. Please try again.");
 

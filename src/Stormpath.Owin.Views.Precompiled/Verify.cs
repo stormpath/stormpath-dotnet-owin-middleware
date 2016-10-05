@@ -20,7 +20,7 @@ using Stormpath.Owin.Abstractions
     ;
     using System.Threading.Tasks;
 
-    public class Verify : BaseView<Stormpath.Owin.Abstractions.ViewModel.ExtendedVerifyEmailViewModel>
+    public class Verify : BaseView<Stormpath.Owin.Abstractions.ViewModel.VerifyEmailFormViewModel>
     {
         #line hidden
         public Verify()

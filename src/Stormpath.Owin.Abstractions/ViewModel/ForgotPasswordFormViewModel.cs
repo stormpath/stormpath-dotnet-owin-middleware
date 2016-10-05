@@ -1,4 +1,4 @@
-﻿// <copyright file="ExtendedChangePasswordViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="ExtendedForgotPasswordViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,16 +16,19 @@
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public sealed class ExtendedChangePasswordViewModel : ChangePasswordViewModel
+    public sealed class ForgotPasswordFormViewModel : ForgotPasswordViewModel
     {
-        public ExtendedChangePasswordViewModel()
+        public ForgotPasswordFormViewModel()
         {
         }
 
-        public ExtendedChangePasswordViewModel(ChangePasswordViewModel existing)
+        public ForgotPasswordFormViewModel(ForgotPasswordViewModel existing)
         {
+            Status = existing.Status;
             Errors = existing.Errors;
-            ChangePasswordUri = existing.ChangePasswordUri;
+            ForgotPasswordUri = existing.ForgotPasswordUri;
+            LoginEnabled = existing.LoginEnabled;
+            LoginUri = existing.LoginUri;
         }
 
         public string StateToken { get; set; }

@@ -1,12 +1,12 @@
 ﻿namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public sealed class ExtendedVerifyEmailViewModel : VerifyEmailViewModel
+    public sealed class VerifyEmailFormViewModel : VerifyEmailViewModel
     {
-        public ExtendedVerifyEmailViewModel()
+        public VerifyEmailFormViewModel()
         {
         }
 
-        public ExtendedVerifyEmailViewModel(VerifyEmailViewModel existing)
+        public VerifyEmailFormViewModel(VerifyEmailViewModel existing)
         {
             InvalidSpToken = existing.InvalidSpToken;
             Errors = existing.Errors;

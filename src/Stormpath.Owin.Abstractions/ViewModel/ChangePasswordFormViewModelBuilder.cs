@@ -3,12 +3,12 @@ using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public sealed class ExtendedChangePasswordViewModelBuilder
+    public sealed class ChangePasswordFormViewModelBuilder
     {
         private readonly IClient _client;
         private readonly IntegrationConfiguration _configuration;
 
-        public ExtendedChangePasswordViewModelBuilder(
+        public ChangePasswordFormViewModelBuilder(
             IClient client, // TODO remove when refactoring JWT
             IntegrationConfiguration configuration)
         {
@@ -16,10 +16,10 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             _configuration = configuration;
         }
 
-        public ExtendedChangePasswordViewModel Build()
+        public ChangePasswordFormViewModel Build()
         {
             var baseViewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
-            var result = new ExtendedChangePasswordViewModel(baseViewModelBuilder.Build());
+            var result = new ChangePasswordFormViewModel(baseViewModelBuilder.Build());
 
             // Add a state (CSRF) token
             result.StateToken = new StateTokenBuilder(_client, _configuration.Client.ApiKey).ToString();
