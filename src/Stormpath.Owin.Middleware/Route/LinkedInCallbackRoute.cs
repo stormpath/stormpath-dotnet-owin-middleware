@@ -59,7 +59,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
 
-            var accessToken = await ExchangeCodeAsync(context, code, cancellationToken);
+            var accessToken = await ExchangeCodeAsync(code, cancellationToken);
 
             if (string.IsNullOrEmpty(accessToken))
             {
@@ -96,28 +96,20 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        private async Task<string> ExchangeCodeAsync(IOwinEnvironment context, string code, CancellationToken cancellationToken)
+        private async Task<string> ExchangeCodeAsync(
+            string code,
+            CancellationToken cancellationToken)
         {
             var providerData = _configuration.Providers
                 .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
                 .Value;
-
-            if (!Csrf.ConsumeOauthStateToken(context, _logger))
-            {
-                _logger.Info("A user attempted to log in via LinkedIn OAuth with an invalid state token.", nameof(ExchangeCodeAsync));
-                return null;
-            }
-
-            var cookieParser = CookieParser.FromRequest(context, _logger);
-            var oauthStateToken = cookieParser?.Get(Csrf.OauthStateTokenCookieName);
 
             var oauthCodeExchanger = new OauthCodeExchanger("https://www.linkedin.com/uas/oauth2/accessToken", _logger);
             var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
                 code, 
                 providerData.CallbackUri, 
                 providerData.ClientId, 
-                providerData.ClientSecret, 
-                oauthStateToken,
+                providerData.ClientSecret,
                 cancellationToken);
             return accessToken;
         }

@@ -41,7 +41,6 @@ namespace Stormpath.Owin.Middleware.Internal
             string callbackUri,
             string clientId,
             string clientSecret,
-            string stateToken,
             CancellationToken cancellationToken)
         {
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, _oauthUri)
@@ -53,7 +52,6 @@ namespace Stormpath.Owin.Middleware.Internal
                     ["redirect_uri"] = callbackUri,
                     ["client_id"] = clientId,
                     ["client_secret"] = clientSecret,
-                    ["state"] = stateToken
                 }),
                 Headers =
                 {

@@ -52,7 +52,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
 
-            var accessToken = await ExchangeCodeAsync(context, code, cancellationToken);
+            var accessToken = await ExchangeCodeAsync(code, cancellationToken);
 
             if (string.IsNullOrEmpty(accessToken))
             {
@@ -89,18 +89,18 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        private async Task<string> ExchangeCodeAsync(IOwinEnvironment context, string code, CancellationToken cancellationToken)
+        private async Task<string> ExchangeCodeAsync(string code, CancellationToken cancellationToken)
         {
             var providerData = _configuration.Providers
                 .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
                 .Value;
 
-            var cookieParser = CookieParser.FromRequest(context, _logger);
-            var oauthStateToken = cookieParser?.Get(Csrf.OauthStateTokenCookieName);
-
             var oauthCodeExchanger = new OauthCodeExchanger("https://github.com/login/oauth/access_token", _logger);
             var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
-                code, providerData.CallbackUri, providerData.ClientId, providerData.ClientSecret, oauthStateToken,
+                code, 
+                providerData.CallbackUri,
+                providerData.ClientId, 
+                providerData.ClientSecret,
                 cancellationToken);
             return accessToken;
         }
