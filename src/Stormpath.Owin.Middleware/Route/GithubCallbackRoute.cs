@@ -36,20 +36,20 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            var code = queryString.GetString("code");
-
-            if (string.IsNullOrEmpty(code))
-            {
-                _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
-            }
 
             var stateToken = queryString.GetString("state");
             var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
                 _logger.Warn("State token was invalid", nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
+            }
+
+            var code = queryString.GetString("code");
+            if (string.IsNullOrEmpty(code))
+            {
+                _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
 
             var accessToken = await ExchangeCodeAsync(context, code, cancellationToken);
@@ -57,7 +57,7 @@ namespace Stormpath.Owin.Middleware.Route
             if (string.IsNullOrEmpty(accessToken))
             {
                 _logger.Warn("Exchanged access token was null", source: nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
@@ -82,9 +82,10 @@ namespace Stormpath.Owin.Middleware.Route
 
                 return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+                _logger.Warn($"Got '{ex.Message}' during social login request", source: nameof(GithubCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
         }
 

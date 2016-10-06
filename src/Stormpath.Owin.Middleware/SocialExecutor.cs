@@ -32,8 +32,17 @@ namespace Stormpath.Owin.Middleware
             _logger = logger;
         }
 
-        public static string GetErrorUri(WebLoginRouteConfiguration loginRouteConfiguration)
-            => $"{loginRouteConfiguration.Uri}?status=social_failed";
+        public static string CreateErrorUri(WebLoginRouteConfiguration loginRouteConfiguration, string stateToken)
+        {
+            var uri = $"{loginRouteConfiguration.Uri}?status=social_failed";
+
+            if (!string.IsNullOrEmpty(stateToken))
+            {
+                uri += $"&{StringConstants.StateTokenName}={stateToken}";
+            }
+
+            return uri;
+        }
 
         public async Task<ExternalLoginResult> LoginWithProviderRequestAsync(
             IOwinEnvironment environment,

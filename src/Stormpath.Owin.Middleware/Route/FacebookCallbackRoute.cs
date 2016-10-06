@@ -37,20 +37,20 @@ namespace Stormpath.Owin.Middleware.Route
             CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            var accessToken = queryString.GetString("access_token");
-
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                _logger.Warn("Social access_token was empty", nameof(FacebookCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
-            }
 
             var stateToken = queryString.GetString(StringConstants.StateTokenName);
             var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
                 _logger.Warn("State token was invalid", nameof(FacebookCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
+            }
+
+            var accessToken = queryString.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                _logger.Warn("Social access_token was empty", nameof(FacebookCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
@@ -75,9 +75,10 @@ namespace Stormpath.Owin.Middleware.Route
 
                 return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+                _logger.Warn($"Got '{ex.Message}' during social login request", source: nameof(FacebookCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
         }
     }
