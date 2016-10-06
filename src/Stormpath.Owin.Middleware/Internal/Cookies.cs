@@ -55,15 +55,6 @@ namespace Stormpath.Owin.Middleware.Internal
             SetTokenCookie(context, cookieConfiguration, string.Empty, Epoch, IsSecureRequest(context), logger);
         }
 
-        public static void DeleteCookie(IOwinEnvironment context, string name, ILogger logger)
-        {
-            logger.Trace($"Deleting cookie '{name}' on response");
-
-            var finalCookieValue = string.Join("; ", string.Empty, "max-age=0", "path=/", "HttpOnly");
-
-            SetCookie(context, name, finalCookieValue, logger);
-        }
-
         private static bool IsSecureRequest(IOwinEnvironment context)
             => context.Request.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase);
 
@@ -75,8 +66,6 @@ namespace Stormpath.Owin.Middleware.Internal
             bool isSecureRequest,
             ILogger logger)
         {
-            value = Uri.EscapeDataString(value);
-
             var domain = !string.IsNullOrEmpty(cookieConfig.Domain)
                 ? $"domain={cookieConfig.Domain}"
                 : null;
@@ -100,22 +89,28 @@ namespace Stormpath.Owin.Middleware.Internal
                 ? "Secure"
                 : null;
 
-            var valueTokens = 
-                new[] { value, domain, path, expires, httpOnly, secure }
+            var attributeTokens = 
+                new[] { domain, path, expires, httpOnly, secure }
                 .Where(t => !string.IsNullOrEmpty(t));
 
-            var finalCookieValue = string.Join("; ", valueTokens);
+            var attributes = string.Join("; ", attributeTokens);
 
-            SetCookie(context, cookieConfig.Name, finalCookieValue, logger);
+            SetCookie(context, cookieConfig.Name, value, attributes, logger);
         }
 
         private static void SetCookie(
             IOwinEnvironment context,
             string name,
             string value,
+            string attributes,
             ILogger logger)
         {
-            var cookieFormat = $"{Uri.EscapeDataString(name)}={value}";
+            var cookieFormat = $"{Uri.EscapeDataString(name)}={Uri.EscapeDataString(value)}";
+
+            if (!string.IsNullOrEmpty(attributes))
+            {
+                cookieFormat += $"; {attributes}";
+            }
 
             logger.Trace($"Adding cookie to response: '{cookieFormat}'", nameof(SetCookie));
 
