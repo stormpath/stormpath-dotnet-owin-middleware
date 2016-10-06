@@ -52,6 +52,7 @@ namespace Stormpath.Owin.Middleware.Route
                 var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
                 if (!parsedStateToken.Valid)
                 {
+                    // Note: IsNullOrEmpty is considered invalid automatically
                     _logger.Warn("State token was invalid", nameof(StormpathCallbackRoute));
                     throw new InvalidOperationException("State token was invalid"); // TODO json response, for now
                 }
@@ -109,7 +110,7 @@ namespace Stormpath.Owin.Middleware.Route
                     context,
                     client,
                     grantResult,
-                    jwt.Body.GetClaim("state")?.ToString(),
+                    nextPath,
                     cancellationToken);
             }
 
