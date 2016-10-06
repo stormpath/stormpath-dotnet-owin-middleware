@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class AccountStoreViewModel
+    public sealed class AccountStoreViewModel
     {
         public string Href { get; set; }
 

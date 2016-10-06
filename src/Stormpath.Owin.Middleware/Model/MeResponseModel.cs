@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace Stormpath.Owin.Middleware.Model
 {
-    public class MeResponseModel
+    public sealed class MeResponseModel
     {
         public string Href { get; set; }
 

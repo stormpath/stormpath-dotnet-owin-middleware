@@ -48,23 +48,6 @@ namespace Stormpath.Owin.Middleware.Internal
             }
         }
 
-        /// <summary>
-        /// Adds a temporary HTTP-only cookie to the response.
-        /// </summary>
-        /// <param name="context">The OWIN context.</param>
-        /// <param name="name">The cookie name.</param>
-        /// <param name="value">The cookie value.</param>
-        /// <param name="maxAge">The lifetime of the cookie.</param>
-        /// <param name="logger">The logger.</param>
-        public static void AddTempCookieToResponse(IOwinEnvironment context, string name, string value, TimeSpan maxAge, ILogger logger)
-        {
-            value = Uri.EscapeDataString(value);
-
-            var finalCookieValue = string.Join("; ", value, $"max-age={maxAge.TotalSeconds}", "path=/", "HttpOnly");
-
-            SetCookie(context, name, finalCookieValue, logger);
-        }
-
         public static void DeleteTokenCookie(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration, ILogger logger)
         {
             logger.Trace($"Deleting cookie '{cookieConfiguration.Name}' on response");

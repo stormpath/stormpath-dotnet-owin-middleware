@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Middleware.Model
 {
-    public class ChangePasswordPostModel
+    public sealed class ChangePasswordPostModel
     {
         public string SpToken { get; set; }
 

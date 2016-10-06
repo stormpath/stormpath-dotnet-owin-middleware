@@ -23,7 +23,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
-    public class CookieParser
+    public sealed class CookieParser
     {
         private readonly ILogger logger;
         private readonly IDictionary<string, string> cookies;

@@ -1,4 +1,4 @@
-﻿// <copyright file="ExtendedRegisterViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="LoginFormViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,23 +18,8 @@ using System.Collections.Generic;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class ExtendedRegisterViewModel : RegisterViewModel
+    public sealed class LoginFormFieldViewModel
     {
-        public ExtendedRegisterViewModel()
-        {
-        }
-
-        public ExtendedRegisterViewModel(RegisterViewModel existing)
-        {
-            // Copy and extend
-            this.Form = existing.Form;
-            this.AccountStores = existing.AccountStores;
-        }
-
-        public string LoginUri { get; set; }
-
-        public IDictionary<string, string> FormData { get; set; } = new Dictionary<string, string>();
-
-        public IList<string> Errors { get; set; } = new List<string>();
+        public IReadOnlyList<FormFieldViewModel> Fields { get; set; } = new FormFieldViewModel[] { };
     }
 }

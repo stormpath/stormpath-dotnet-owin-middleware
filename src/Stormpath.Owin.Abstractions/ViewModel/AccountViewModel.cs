@@ -18,7 +18,7 @@ using System;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class AccountViewModel
+    public sealed class AccountViewModel
     {
         public string Href { get; set; }
 

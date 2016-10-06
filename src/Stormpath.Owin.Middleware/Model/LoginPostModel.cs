@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Middleware.Model
 {
-    public class LoginPostModel
+    public sealed class LoginPostModel
     {
         public string Login { get; set; }
 

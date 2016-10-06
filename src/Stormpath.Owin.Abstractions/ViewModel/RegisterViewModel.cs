@@ -20,7 +20,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public class RegisterViewModel
     {
-        public RegisterFormViewModel Form { get; set; } = new RegisterFormViewModel();
+        public RegisterFormFieldViewModel Form { get; set; } = new RegisterFormFieldViewModel();
 
         public List<AccountStoreViewModel> AccountStores { get; set; } = new List<AccountStoreViewModel>();
     }

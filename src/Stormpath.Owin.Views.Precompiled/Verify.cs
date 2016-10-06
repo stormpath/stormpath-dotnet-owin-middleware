@@ -20,7 +20,7 @@ using Stormpath.Owin.Abstractions
     ;
     using System.Threading.Tasks;
 
-    public class Verify : BaseView<Stormpath.Owin.Abstractions.ViewModel.VerifyEmailViewModel>
+    public class Verify : BaseView<Stormpath.Owin.Abstractions.ViewModel.VerifyEmailFormViewModel>
     {
         #line hidden
         public Verify()
@@ -517,15 +517,58 @@ p {
 #line default
 #line hidden
 
-            WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n                                <p>Please enter a valid email address.</p>\r\n                            </div>\r\n");
+            WriteLiteral("                            <div class=\"alert alert-danger bad-login\">\r\n");
+#line 66 "Verify.cshtml"
+                                
+
+#line default
+#line hidden
+
+#line 66 "Verify.cshtml"
+                                 foreach (var error in Model.Errors)
+                                {
+
+#line default
+#line hidden
+
+            WriteLiteral("                                    <p>");
 #line 68 "Verify.cshtml"
+                                  Write(error);
+
+#line default
+#line hidden
+            WriteLiteral("</p>\r\n");
+#line 69 "Verify.cshtml"
+                                }
+
+#line default
+#line hidden
+
+            WriteLiteral("                            </div>\r\n");
+#line 71 "Verify.cshtml"
                         }
 
 #line default
 #line hidden
 
-            WriteLiteral(@"                        <p>&nbsp;</p>
-                        <form method=""post"" role=""form"" class=""login-form form-horizontal"">
+            WriteLiteral("                        <p>&nbsp;</p>\r\n                        <form method=\"post\" role=\"form\" class=\"login-form form-horizontal\">\r\n                            <input");
+            BeginWriteAttribute("name", " name=\"", 3400, "\"", 3438, 1);
+#line 74 "Verify.cshtml"
+WriteAttributeValue("", 3407, StringConstants.StateTokenName, 3407, 31, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(" type=\"hidden\"");
+            BeginWriteAttribute("value", " value=\"", 3453, "\"", 3478, 1);
+#line 74 "Verify.cshtml"
+WriteAttributeValue("", 3461, Model.StateToken, 3461, 17, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(@"/>
+
                             <div class=""form-group group-email"">
                                 <label class=""col-sm-4"">Email</label>
                                 <div class=""col-sm-8"">
@@ -539,13 +582,13 @@ p {
                     </div>
                 </div>
 ");
-#line 84 "Verify.cshtml"
+#line 88 "Verify.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 84 "Verify.cshtml"
+#line 88 "Verify.cshtml"
                  if (Model.LoginEnabled)
                 {
 
@@ -553,15 +596,15 @@ p {
 #line hidden
 
             WriteLiteral("                    <a");
-            BeginWriteAttribute("href", " href=\"", 4059, "\"", 4081, 1);
-#line 86 "Verify.cshtml"
-WriteAttributeValue("", 4066, Model.LoginUri, 4066, 15, false);
+            BeginWriteAttribute("href", " href=\"", 4225, "\"", 4247, 1);
+#line 90 "Verify.cshtml"
+WriteAttributeValue("", 4232, Model.LoginUri, 4232, 15, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Back to Log In</a>\r\n");
-#line 87 "Verify.cshtml"
+#line 91 "Verify.cshtml"
                 }
 
 #line default

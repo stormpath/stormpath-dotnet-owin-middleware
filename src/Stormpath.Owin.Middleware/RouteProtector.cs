@@ -16,8 +16,11 @@
 
 using System;
 using Stormpath.Configuration.Abstractions.Immutable;
+using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
+using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
@@ -27,44 +30,46 @@ namespace Stormpath.Owin.Middleware
     /// </summary>
     public sealed class RouteProtector
     {
-        public static string AnyScheme = "*";
+        public const string AnyScheme = "*";
 
-        private readonly ApplicationConfiguration appConfiguration;
-        private readonly WebConfiguration webConfiguration;
-        private readonly ILogger logger;
+        private readonly IClient _client;
+        private readonly StormpathConfiguration _configuration;
+        private readonly ILogger _logger;
 
-        private readonly Action<WebCookieConfiguration> deleteCookie;
-        private readonly Action<int> setStatusCode;
-        private readonly Action<string, string> setHeader;
-        private readonly Action<string> redirect;
+        private readonly Action<WebCookieConfiguration> _deleteCookie;
+        private readonly Action<int> _setStatusCode;
+        private readonly Action<string, string> _setHeader;
+        private readonly Action<string> _redirect;
 
         /// <summary>
         /// Creates a new instance of the <see cref="RouteProtector"/> class.
         /// </summary>
-        /// <param name="appConfiguration">The active Stormpath <see cref="ApplicationConfiguration">application configuration</see>.</param>
-        /// <param name="webConfiguration">The active Stormpath <see cref="WebConfiguration">web configuration</see>.</param>
+        /// <param name="client">The Stormpath <see cref="IClient">Client</see>.</param>
+        /// <param name="stormpathConfiguration">The active Stormpath <see cref="StormpathConfiguration">configuration</see>.</param>
         /// <param name="deleteCookieAction">Delegate to delete cookies in the response.</param>
         /// <param name="setStatusCodeAction">Delegate to set the response status code.</param>
         /// <param name="setHeaderAction">Delegate to set a header in the response.</param>
         /// <param name="redirectAction">Delegate to set the response Location header.</param>
         /// <param name="logger">The <see cref="ILogger"/> to use.</param>
         public RouteProtector(
-            ApplicationConfiguration appConfiguration,
-            WebConfiguration webConfiguration,
+            IClient client,
+            StormpathConfiguration stormpathConfiguration,
             Action<WebCookieConfiguration> deleteCookieAction,
             Action<int> setStatusCodeAction,
             Action<string, string> setHeaderAction,
             Action<string> redirectAction,
             ILogger logger)
         {
-            this.appConfiguration = appConfiguration;
-            this.webConfiguration = webConfiguration;
-            this.logger = logger;
+            // TODO: remove after splitting out JWT stuff
+            _client = client;
 
-            deleteCookie = deleteCookieAction;
-            setStatusCode = setStatusCodeAction;
-            setHeader = setHeaderAction;
-            redirect = redirectAction;
+            _configuration = stormpathConfiguration;
+            _logger = logger;
+
+            _deleteCookie = deleteCookieAction;
+            _setStatusCode = setStatusCodeAction;
+            _setHeader = setHeaderAction;
+            _redirect = redirectAction;
         }
 
         /// <summary>
@@ -102,23 +107,28 @@ namespace Stormpath.Owin.Middleware
         /// <param name="requestPath">The OWIN request path of this request.</param>
         public void OnUnauthorized(string acceptHeader, string requestPath)
         {
-            deleteCookie(webConfiguration.AccessTokenCookie);
-            deleteCookie(webConfiguration.RefreshTokenCookie);
+            _deleteCookie(_configuration.Web.AccessTokenCookie);
+            _deleteCookie(_configuration.Web.RefreshTokenCookie);
 
-            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, webConfiguration.Produces, logger);
+            var contentNegotiationResult = ContentNegotiation.NegotiateAcceptHeader(acceptHeader, _configuration.Web.Produces, _logger);
 
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)
             {
-                var loginUri = $"{webConfiguration.Login.Uri}?next={Uri.EscapeUriString(requestPath)}";
+                var redirectTokenBuilder = new StateTokenBuilder(_client, _configuration.Client.ApiKey)
+                {
+                    Path = requestPath
+                };
 
-                setStatusCode(302);
-                redirect(loginUri);
+                var loginUri = $"{_configuration.Web.Login.Uri}?{StringConstants.StateTokenName}={redirectTokenBuilder}";
+
+                _setStatusCode(302);
+                _redirect(loginUri);
             }
             else
             {
-                setStatusCode(401);
-                setHeader("WWW-Authenticate", $"Bearer realm=\"{appConfiguration.Name}\"");
+                _setStatusCode(401);
+                _setHeader("WWW-Authenticate", $"Bearer realm=\"{_configuration.Application.Name}\"");
             }
         }
     }

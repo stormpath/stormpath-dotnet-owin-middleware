@@ -3,7 +3,7 @@ using Stormpath.SDK.AccountStore;
 
 namespace Stormpath.Owin.Middleware
 {
-    public class PreLoginContext : HandlerContext
+    public sealed class PreLoginContext : HandlerContext
     {
         public PreLoginContext(IOwinEnvironment environment)
             : base(environment)

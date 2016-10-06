@@ -32,8 +32,17 @@ namespace Stormpath.Owin.Middleware
             _logger = logger;
         }
 
-        public static string GetErrorUri(WebLoginRouteConfiguration loginRouteConfiguration)
-            => $"{loginRouteConfiguration.Uri}?status=social_failed";
+        public static string CreateErrorUri(WebLoginRouteConfiguration loginRouteConfiguration, string stateToken)
+        {
+            var uri = $"{loginRouteConfiguration.Uri}?status=social_failed";
+
+            if (!string.IsNullOrEmpty(stateToken))
+            {
+                uri += $"&{StringConstants.StateTokenName}={stateToken}";
+            }
+
+            return uri;
+        }
 
         public async Task<ExternalLoginResult> LoginWithProviderRequestAsync(
             IOwinEnvironment environment,
@@ -81,16 +90,20 @@ namespace Stormpath.Owin.Middleware
         }
 
         public async Task<bool> HandleRedirectAsync(
+            IClient client,
             IOwinEnvironment environment,
             ExternalLoginResult loginResult,
+            string nextUri,
             CancellationToken cancellationToken)
         {
             var loginExecutor = new LoginExecutor(_client, _configuration, _handlers, _logger);
 
-            // TODO: deep link redirection support
-            var nextUri = loginResult.IsNewAccount
-                ? _configuration.Web.Register.NextUri
-                : _configuration.Web.Login.NextUri;
+            if (string.IsNullOrEmpty(nextUri))
+            {
+                nextUri = loginResult.IsNewAccount
+                    ? _configuration.Web.Register.NextUri
+                    : _configuration.Web.Login.NextUri;
+            }
 
             return await loginExecutor.HandleRedirectAsync(environment, nextUri);
         }

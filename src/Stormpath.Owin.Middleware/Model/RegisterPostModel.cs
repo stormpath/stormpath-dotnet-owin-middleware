@@ -14,11 +14,9 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-
 namespace Stormpath.Owin.Middleware.Model
 {
-    public class RegisterPostModel
+    public sealed class RegisterPostModel
     {
         public string Email { get; set; }
 

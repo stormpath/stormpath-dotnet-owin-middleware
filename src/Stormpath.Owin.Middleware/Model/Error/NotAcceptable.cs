@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Middleware.Model.Error
 {
-    public class NotAcceptable : AbstractError
+    public sealed class NotAcceptable : AbstractError
     {
         public override int StatusCode => 406;
     }

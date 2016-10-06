@@ -19,17 +19,17 @@ using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class ForgotPasswordViewModelBuilder
+    public sealed class ForgotPasswordViewModelBuilder
     {
-        private readonly WebConfiguration webConfiguration;
-        private readonly IDictionary<string, string[]> queryString;
+        private readonly WebConfiguration _webConfiguration;
+        private readonly IDictionary<string, string[]> _queryString;
 
         public ForgotPasswordViewModelBuilder(
             WebConfiguration webConfiguration,
             IDictionary<string, string[]> queryString)
         {
-            this.webConfiguration = webConfiguration;
-            this.queryString = queryString;
+            _webConfiguration = webConfiguration;
+            _queryString = queryString;
         }
 
         public ForgotPasswordViewModel Build()
@@ -37,12 +37,12 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             var result = new ForgotPasswordViewModel();
 
             // status parameter from queryString
-            result.Status = this.queryString.GetString("status");
+            result.Status = _queryString.GetString("status");
 
             // Copy values from configuration
-            result.ForgotPasswordUri = this.webConfiguration.ForgotPassword.Uri;
-            result.LoginEnabled = this.webConfiguration.Login.Enabled;
-            result.LoginUri = this.webConfiguration.Login.Uri;
+            result.ForgotPasswordUri = _webConfiguration.ForgotPassword.Uri;
+            result.LoginEnabled = _webConfiguration.Login.Enabled;
+            result.LoginUri = _webConfiguration.Login.Uri;
 
             return result;
         }

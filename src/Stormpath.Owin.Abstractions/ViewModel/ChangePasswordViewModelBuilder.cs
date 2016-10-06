@@ -18,7 +18,7 @@ using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class ChangePasswordViewModelBuilder
+    public sealed class ChangePasswordViewModelBuilder
     {
         private readonly WebConfiguration webConfiguration;
 
@@ -33,7 +33,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             var result = new ChangePasswordViewModel();
 
             // Copy values from configuration
-            result.ChangePasswordUri = this.webConfiguration.ChangePassword.Uri;
+            result.ChangePasswordUri = webConfiguration.ChangePassword.Uri;
 
             return result;
         }

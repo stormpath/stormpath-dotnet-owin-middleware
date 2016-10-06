@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Middleware.Model.Error
 {
-    public class MethodNotAllowed : AbstractError
+    public sealed class MethodNotAllowed : AbstractError
     {
         public override int StatusCode => 405;
     }

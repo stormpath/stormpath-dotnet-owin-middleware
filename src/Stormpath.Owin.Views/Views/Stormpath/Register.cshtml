@@ -1,4 +1,4 @@
-﻿@model Stormpath.Owin.Abstractions.ViewModel.ExtendedRegisterViewModel
+﻿@model Stormpath.Owin.Abstractions.ViewModel.RegisterFormViewModel
 @using System
 @using System.Linq
 @using Stormpath.Owin.Abstractions
@@ -48,6 +48,8 @@
                                 </div>
                             }
                             <form method="post" role="form" class="registration-form form-horizontal sp-form">
+                                <input name="@StringConstants.StateTokenName" type="hidden" value="@Model.StateToken"/>
+
                                 @foreach (var field in Model.Form.Fields)
                                 {
                                     <div form-group="true" class="form-group @($"group-{field.Name}")">
@@ -67,7 +69,7 @@
                             </form>
                         </div>
                     </div>
-                    <a href="@Model.LoginUri" class="to-login">Back to Log In</a>
+                    <a href="@(Model.LoginUri + "?"+ @StringConstants.StateTokenName + "=" + @Model.StateToken)" class="to-login">Back to Log In</a>
                 </div>
             </div>
         </div>

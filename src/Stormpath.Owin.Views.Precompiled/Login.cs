@@ -26,7 +26,7 @@ using Stormpath.Owin.Abstractions.ViewModel
     ;
     using System.Threading.Tasks;
 
-    public class Login : BaseView<ExtendedLoginViewModel>
+    public class Login : BaseView<LoginFormViewModel>
     {
         #line hidden
         public Login()
@@ -464,7 +464,7 @@ p {
 #line hidden
 
 #line 39 "Login.cshtml"
-                 if (Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
+                 if (Stormpath.Owin.Abstractions.ViewModel.LoginFormViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
 
 #line default
 #line hidden
@@ -489,9 +489,9 @@ p {
                                         account by clicking the link we sent to your inbox.
                                     </p>
                                     <p>Didn't get the email? <a");
-            BeginWriteAttribute("href", " href=\"", 2946, "\"", 2974, 1);
+            BeginWriteAttribute("href", " href=\"", 2942, "\"", 2970, 1);
 #line 50 "Login.cshtml"
-WriteAttributeValue("", 2953, Model.VerifyEmailUri, 2953, 21, false);
+WriteAttributeValue("", 2949, Model.VerifyEmailUri, 2949, 21, false);
 
 #line default
 #line hidden
@@ -590,11 +590,11 @@ WriteAttributeValue("", 2953, Model.VerifyEmailUri, 2953, 21, false);
 #line hidden
 
             WriteLiteral("                <br>\r\n                <div class=\"box row\">\r\n                    <div");
-            BeginWriteAttribute("class", " class=\"", 5384, "\"", 5482, 3);
-            WriteAttributeValue("", 5392, "email-password-area", 5392, 19, true);
-            WriteAttributeValue(" ", 5411, "col-xs-12", 5412, 10, true);
+            BeginWriteAttribute("class", " class=\"", 5380, "\"", 5478, 3);
+            WriteAttributeValue("", 5388, "email-password-area", 5388, 19, true);
+            WriteAttributeValue(" ", 5407, "col-xs-12", 5408, 10, true);
 #line 94 "Login.cshtml"
-WriteAttributeValue(" ", 5421, hasSocialProviders ? "small col-sm-8" : "large col-sm-12", 5422, 61, false);
+WriteAttributeValue(" ", 5417, hasSocialProviders ? "small col-sm-8" : "large col-sm-12", 5418, 61, false);
 
 #line default
 #line hidden
@@ -614,9 +614,9 @@ WriteAttributeValue(" ", 5421, hasSocialProviders ? "small col-sm-8" : "large co
 #line hidden
 
             WriteLiteral("                            <div class=\"header\">\r\n                                <span>Log In or <a");
-            BeginWriteAttribute("href", " href=\"", 5670, "\"", 5695, 1);
+            BeginWriteAttribute("href", " href=\"", 5666, "\"", 5759, 1);
 #line 98 "Login.cshtml"
-WriteAttributeValue("", 5677, Model.RegisterUri, 5677, 18, false);
+WriteAttributeValue("", 5673, Model.RegisterUri + "?" + @StringConstants.StateTokenName + "=" + @Model.StateToken, 5673, 86, false);
 
 #line default
 #line hidden
@@ -679,7 +679,23 @@ WriteAttributeValue("", 5677, Model.RegisterUri, 5677, 18, false);
 #line default
 #line hidden
 
-            WriteLiteral("                        <form method=\"post\" role=\"form\" class=\"login-form form-horizontal\">\r\n\r\n");
+            WriteLiteral("                        <form method=\"post\" role=\"form\" class=\"login-form form-horizontal\">\r\n                            <input");
+            BeginWriteAttribute("name", " name=\"", 6604, "\"", 6642, 1);
+#line 117 "Login.cshtml"
+WriteAttributeValue("", 6611, StringConstants.StateTokenName, 6611, 31, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral(" type=\"hidden\"");
+            BeginWriteAttribute("value", " value=\"", 6657, "\"", 6682, 1);
+#line 117 "Login.cshtml"
+WriteAttributeValue("", 6665, Model.StateToken, 6665, 17, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            WriteLiteral("/>\r\n\r\n");
 #line 119 "Login.cshtml"
                             
 
@@ -694,18 +710,18 @@ WriteAttributeValue("", 5677, Model.RegisterUri, 5677, 18, false);
 #line hidden
 
             WriteLiteral("                                <div");
-            BeginWriteAttribute("class", " class=\"", 6716, "\"", 6759, 2);
-            WriteAttributeValue("", 6724, "form-group", 6724, 10, true);
+            BeginWriteAttribute("class", " class=\"", 6827, "\"", 6870, 2);
+            WriteAttributeValue("", 6835, "form-group", 6835, 10, true);
 #line 121 "Login.cshtml"
-WriteAttributeValue(" ", 6734, $"group-{field.Name}", 6735, 25, false);
+WriteAttributeValue(" ", 6845, $"group-{field.Name}", 6846, 25, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">\r\n                                    <label");
-            BeginWriteAttribute("class", " class=\"", 6805, "\"", 6861, 1);
+            BeginWriteAttribute("class", " class=\"", 6916, "\"", 6972, 1);
 #line 122 "Login.cshtml"
-WriteAttributeValue("", 6813, hasSocialProviders ? "col-sm-12" : "col-sm-4", 6813, 48, false);
+WriteAttributeValue("", 6924, hasSocialProviders ? "col-sm-12" : "col-sm-4", 6924, 48, false);
 
 #line default
 #line hidden
@@ -717,63 +733,63 @@ WriteAttributeValue("", 6813, hasSocialProviders ? "col-sm-12" : "col-sm-4", 681
 #line default
 #line hidden
             WriteLiteral("\r\n                                    </label>\r\n                                    <div");
-            BeginWriteAttribute("class", " class=\"", 7005, "\"", 7061, 1);
+            BeginWriteAttribute("class", " class=\"", 7116, "\"", 7172, 1);
 #line 125 "Login.cshtml"
-WriteAttributeValue("", 7013, hasSocialProviders ? "col-sm-12" : "col-sm-8", 7013, 48, false);
+WriteAttributeValue("", 7124, hasSocialProviders ? "col-sm-12" : "col-sm-8", 7124, 48, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(">\r\n                                        <input");
-            BeginWriteAttribute("placeholder", " placeholder=\"", 7210, "\"", 7242, 1);
+            BeginWriteAttribute("placeholder", " placeholder=\"", 7222, "\"", 7254, 1);
+#line 126 "Login.cshtml"
+WriteAttributeValue("", 7236, field.Placeholder, 7236, 18, false);
+
+#line default
+#line hidden
+            EndWriteAttribute();
+            BeginWriteAttribute("name", "\r\n                                               name=\"", 7255, "\"", 7321, 1);
 #line 127 "Login.cshtml"
-WriteAttributeValue("", 7224, field.Placeholder, 7224, 18, false);
+WriteAttributeValue("", 7310, field.Name, 7310, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("name", "\r\n                                               name=\"", 7243, "\"", 7309, 1);
+            BeginWriteAttribute("type", "\r\n                                               type=\"", 7322, "\"", 7388, 1);
 #line 128 "Login.cshtml"
-WriteAttributeValue("", 7298, field.Name, 7298, 11, false);
+WriteAttributeValue("", 7377, field.Type, 7377, 11, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("type", "\r\n                                               type=\"", 7310, "\"", 7376, 1);
+            BeginWriteAttribute("value", "\r\n                                               value=\"", 7389, "\"", 7494, 1);
 #line 129 "Login.cshtml"
-WriteAttributeValue("", 7365, field.Type, 7365, 11, false);
-
-#line default
-#line hidden
-            EndWriteAttribute();
-            BeginWriteAttribute("value", "\r\n                                               value=\"", 7377, "\"", 7482, 1);
-#line 130 "Login.cshtml"
-WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 7433, 49, false);
+WriteAttributeValue("", 7445, Model.FormData.Get(field.Name) ?? string.Empty, 7445, 49, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral("\r\n                                               class=\"form-control\"\r\n                                               ");
-#line 132 "Login.cshtml"
+#line 131 "Login.cshtml"
                                            Write(field.Required ? "required" : string.Empty);
 
 #line default
 #line hidden
             WriteLiteral(">\r\n                                    </div>\r\n                                </div>\r\n");
-#line 135 "Login.cshtml"
+#line 134 "Login.cshtml"
                             }
 
 #line default
 #line hidden
 
             WriteLiteral("                            <div>\r\n                                <button type=\"submit\" class=\"login btn btn-login btn-sp-green\">Log In</button>\r\n                            </div>\r\n                        </form>\r\n                    </div>\r\n");
-#line 141 "Login.cshtml"
+#line 140 "Login.cshtml"
                     
 
 #line default
 #line hidden
 
-#line 141 "Login.cshtml"
+#line 140 "Login.cshtml"
                      if (hasSocialProviders)
                     {
 
@@ -781,13 +797,13 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
 #line hidden
 
             WriteLiteral("                        <div class=\"social-area col-xs-12 col-sm-4\">\r\n                            <div class=\"header\">&nbsp;</div>\r\n                            <label>Easy 1-click login:</label>\r\n");
-#line 146 "Login.cshtml"
+#line 145 "Login.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 146 "Login.cshtml"
+#line 145 "Login.cshtml"
                              if (facebookProvider != null)
                             {
 
@@ -799,7 +815,7 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                     function facebookLogin() {
                                         var FB = window.FB;
                                         var facebookScope = '");
-#line 152 "Login.cshtml"
+#line 151 "Login.cshtml"
                                                         Write(facebookProvider.Provider.Scope);
 
 #line default
@@ -808,27 +824,33 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
 
                                         FB.login(function (response) {
                                             if (response.status === 'connected') {
-                                                var queryStr = window.location.search.replace('?', '');
-                                                // TODO make dynamic
-                                                if (queryStr) {
-                                                    // Don't include any access_token parameters in
-                                                    // the query string as it will be added by us.
-                                                    queryStr = queryStr.replace(/(&?)access_token=([^&]*)/, '');
+                                                var queryString = 'access_token=' + response.authResponse.accessToken;
 
-                                                    window.location.replace('");
-#line 163 "Login.cshtml"
-                                                                        Write(facebookProvider.Href);
+                                                if (""");
+#line 157 "Login.cshtml"
+                                                Write(Model.StateToken);
 
 #line default
 #line hidden
-            WriteLiteral("?\' + queryStr + \'&access_token=\' + response.authResponse.accessToken);\r\n                                                } else {\r\n                                                    window.location.replace(\'");
-#line 165 "Login.cshtml"
-                                                                        Write(facebookProvider.Href);
+            WriteLiteral("\".length !== 0) {\r\n                                                    queryString += \"&");
+#line 158 "Login.cshtml"
+                                                                Write(StringConstants.StateTokenName);
 
 #line default
 #line hidden
-            WriteLiteral(@"?access_token=' + response.authResponse.accessToken);
-                                                }
+            WriteLiteral("=\" + \"");
+#line 158 "Login.cshtml"
+                                                                                                     Write(Model.StateToken);
+
+#line default
+#line hidden
+            WriteLiteral("\";\r\n                                                }\r\n\r\n                                                window.location.replace(\'");
+#line 161 "Login.cshtml"
+                                                                    Write(facebookProvider.Href);
+
+#line default
+#line hidden
+            WriteLiteral(@"?' + queryString);
                                             }
                                         }, { scope: facebookScope });
                                     }
@@ -836,7 +858,7 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                     window.fbAsyncInit = function () {
                                         FB.init({
                                             appId: '");
-#line 173 "Login.cshtml"
+#line 168 "Login.cshtml"
                                                Write(facebookProvider.Provider.ClientId);
 
 #line default
@@ -857,20 +879,20 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                     }(document, 'script', 'facebook-jssdk'));
                                 </script>
 ");
-#line 188 "Login.cshtml"
+#line 183 "Login.cshtml"
                             }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 190 "Login.cshtml"
+#line 185 "Login.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 190 "Login.cshtml"
+#line 185 "Login.cshtml"
                              if (googleProvider != null)
                             {
 
@@ -881,43 +903,49 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                 <script type=""text/javascript"">
                                     function googleLogin() {
                                         var clientId = '");
-#line 195 "Login.cshtml"
+#line 190 "Login.cshtml"
                                                    Write(googleProvider.Provider.ClientId);
 
 #line default
 #line hidden
             WriteLiteral("\';\r\n                                        var googleScope = \'");
-#line 196 "Login.cshtml"
+#line 191 "Login.cshtml"
                                                       Write(googleProvider.Provider.Scope);
 
 #line default
 #line hidden
             WriteLiteral(@"';
 
-                                        var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=' +
-                                            clientId +
-                                            '&scope=' + googleScope +
-                                            '&include_granted_scopes=true&redirect_uri=");
-#line 201 "Login.cshtml"
-                                                                                  Write(googleProvider.Href);
+                                        var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code' +
+                                            '&client_id=' + encodeURIComponent(clientId) +
+                                            '&scope=' + encodeURIComponent(googleScope) +
+                                            '&state=' + encodeURIComponent('");
+#line 196 "Login.cshtml"
+                                                                       Write(Model.StateToken);
 
 #line default
 #line hidden
-            WriteLiteral("\';\r\n\r\n                                        window.location = finalUrl;\r\n                                    }\r\n                                </script>\r\n");
-#line 206 "Login.cshtml"
+            WriteLiteral("\') +\r\n                                            \'&include_granted_scopes=true\' +\r\n                                            \'&redirect_uri=\' + encodeURIComponent(\'");
+#line 198 "Login.cshtml"
+                                                                              Write(googleProvider.Href);
+
+#line default
+#line hidden
+            WriteLiteral("\');\r\n\r\n                                        window.location = finalUrl;\r\n                                    }\r\n                                </script>\r\n");
+#line 203 "Login.cshtml"
                             }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 208 "Login.cshtml"
+#line 205 "Login.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 208 "Login.cshtml"
+#line 205 "Login.cshtml"
                              if (githubProvider != null)
                             {
 
@@ -928,26 +956,26 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                 <script type=""text/javascript"">
                                     function githubLogin() {
                                         var clientId = '");
-#line 213 "Login.cshtml"
+#line 210 "Login.cshtml"
                                                    Write(githubProvider.Provider.ClientId);
 
 #line default
 #line hidden
             WriteLiteral("\';\r\n                                        var gitHubScope = \'");
-#line 214 "Login.cshtml"
+#line 211 "Login.cshtml"
                                                       Write(githubProvider.Provider.Scope);
 
 #line default
 #line hidden
             WriteLiteral("\';\r\n                                        var redirectUri = \'");
-#line 215 "Login.cshtml"
+#line 212 "Login.cshtml"
                                                       Write(githubProvider.Href);
 
 #line default
 #line hidden
-            WriteLiteral("\';\r\n                                        var oauthStateToken = \'");
-#line 216 "Login.cshtml"
-                                                          Write(Model.OauthStateToken);
+            WriteLiteral("\';\r\n                                        var stateToken = \'");
+#line 213 "Login.cshtml"
+                                                     Write(Model.StateToken);
 
 #line default
 #line hidden
@@ -957,26 +985,26 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                             '?client_id=' + encodeURIComponent(clientId) +
                                             '&scope=' + encodeURIComponent(gitHubScope) +
                                             '&redirect_uri=' + encodeURIComponent(redirectUri) +
-                                            '&state=' + encodeURIComponent(oauthStateToken);
+                                            '&state=' + encodeURIComponent(stateToken);
 
                                         window.location = url;
                                     }
                                 </script>
 ");
-#line 227 "Login.cshtml"
+#line 224 "Login.cshtml"
                             }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 229 "Login.cshtml"
+#line 226 "Login.cshtml"
                             
 
 #line default
 #line hidden
 
-#line 229 "Login.cshtml"
+#line 226 "Login.cshtml"
                              if (linkedInProvider != null)
                             {
 
@@ -1015,26 +1043,26 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                     }
 
                                     function linkedinLogin() {
-                                        var oauthStateToken = '");
-#line 262 "Login.cshtml"
-                                                          Write(Model.OauthStateToken);
+                                        var stateToken = '");
+#line 259 "Login.cshtml"
+                                                     Write(Model.StateToken);
 
 #line default
 #line hidden
             WriteLiteral("\';\r\n                                        var authorizationUrl = \'https://www.linkedin.com/uas/oauth2/authorization\';\r\n\r\n                                        var clientId = \'");
-#line 265 "Login.cshtml"
+#line 262 "Login.cshtml"
                                                    Write(linkedInProvider.Provider.ClientId);
 
 #line default
 #line hidden
             WriteLiteral("\';\r\n                                        var redirectUri = \'");
-#line 266 "Login.cshtml"
+#line 263 "Login.cshtml"
                                                       Write(linkedInProvider.Href);
 
 #line default
 #line hidden
             WriteLiteral("\';\r\n                                        var linkedinScope = \'");
-#line 267 "Login.cshtml"
+#line 264 "Login.cshtml"
                                                         Write(linkedInProvider.Provider.Scope);
 
 #line default
@@ -1046,32 +1074,32 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
                                             client_id: clientId,
                                             scope: linkedinScope,
                                             redirect_uri: redirectUri,
-                                            state: oauthStateToken
+                                            state: stateToken
                                         });
                                     }
                                 </script>
 ");
-#line 278 "Login.cshtml"
+#line 275 "Login.cshtml"
                             }
 
 #line default
 #line hidden
 
             WriteLiteral("                        </div>\r\n");
-#line 280 "Login.cshtml"
+#line 277 "Login.cshtml"
                     }
 
 #line default
 #line hidden
 
             WriteLiteral("                </div>\r\n");
-#line 282 "Login.cshtml"
+#line 279 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 282 "Login.cshtml"
+#line 279 "Login.cshtml"
                  if (Model.VerifyEmailEnabled)
                 {
 
@@ -1079,28 +1107,28 @@ WriteAttributeValue("", 7433, Model.FormData.Get(field.Name) ?? string.Empty, 74
 #line hidden
 
             WriteLiteral("                    <a style=\"float:left\"");
-            BeginWriteAttribute("href", " href=\"", 16647, "\"", 16675, 1);
-#line 284 "Login.cshtml"
-WriteAttributeValue("", 16654, Model.VerifyEmailUri, 16654, 21, false);
+            BeginWriteAttribute("href", " href=\"", 16363, "\"", 16391, 1);
+#line 281 "Login.cshtml"
+WriteAttributeValue("", 16370, Model.VerifyEmailUri, 16370, 21, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Resend Verification Email?</a>\r\n");
-#line 285 "Login.cshtml"
+#line 282 "Login.cshtml"
                 }
 
 #line default
 #line hidden
 
             WriteLiteral("\r\n");
-#line 287 "Login.cshtml"
+#line 284 "Login.cshtml"
                 
 
 #line default
 #line hidden
 
-#line 287 "Login.cshtml"
+#line 284 "Login.cshtml"
                  if (Model.ForgotPasswordEnabled)
                 {
 
@@ -1108,15 +1136,15 @@ WriteAttributeValue("", 16654, Model.VerifyEmailUri, 16654, 21, false);
 #line hidden
 
             WriteLiteral("                    <a style=\"float:right\"");
-            BeginWriteAttribute("href", " href=\"", 16857, "\"", 16888, 1);
-#line 289 "Login.cshtml"
-WriteAttributeValue("", 16864, Model.ForgotPasswordUri, 16864, 24, false);
+            BeginWriteAttribute("href", " href=\"", 16573, "\"", 16604, 1);
+#line 286 "Login.cshtml"
+WriteAttributeValue("", 16580, Model.ForgotPasswordUri, 16580, 24, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
             WriteLiteral(" class=\"forgot\">Forgot Password?</a>\r\n");
-#line 290 "Login.cshtml"
+#line 287 "Login.cshtml"
                 }
 
 #line default

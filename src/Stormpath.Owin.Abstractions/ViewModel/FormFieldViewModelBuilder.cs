@@ -21,7 +21,7 @@ using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
-    public class FormFieldViewModelBuilder
+    public sealed class FormFieldViewModelBuilder
     {
         private readonly IReadOnlyList<string> fieldOrder;
         private readonly IReadOnlyDictionary<string, WebFieldConfiguration> fields;

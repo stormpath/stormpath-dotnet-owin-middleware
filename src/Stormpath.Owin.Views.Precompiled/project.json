@@ -11,7 +11,7 @@
   "dependencies": {
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.5.0"
+      "version": "1.7.0-beta2"
     },
     "Stormpath.SDK.Abstractions": "0.94.1"
   },
@@ -43,5 +43,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Views.Precompiled"
   },
-  "version": "0.4.1"
+  "version": "0.4.2-beta1"
 }

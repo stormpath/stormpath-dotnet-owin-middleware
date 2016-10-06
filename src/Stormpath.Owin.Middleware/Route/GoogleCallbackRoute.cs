@@ -27,7 +27,7 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class GoogleCallbackRoute : AbstractRoute
+    public sealed class GoogleCallbackRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
             => configuration.Web.Social.ContainsKey("google")
@@ -36,12 +36,20 @@ namespace Stormpath.Owin.Middleware.Route
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            var code = queryString.GetString("code");
 
+            var stateToken = queryString.GetString("state");
+            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                _logger.Warn("State token was invalid", nameof(GoogleCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
+            }
+
+            var code = queryString.GetString("code");
             if (string.IsNullOrEmpty(code))
             {
                 _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
@@ -64,11 +72,12 @@ namespace Stormpath.Owin.Middleware.Route
                     loginResult,
                     cancellationToken);
 
-                return await socialExecutor.HandleRedirectAsync(context, loginResult, cancellationToken);
+                return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return await HttpResponse.Redirect(context, SocialExecutor.GetErrorUri(_configuration.Web.Login));
+                _logger.Warn($"Got '{ex.Message}' during social login request", source: nameof(GoogleCallbackRoute));
+                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
             }
         }
     }

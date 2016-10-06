@@ -31,38 +31,33 @@ using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
-    public class LoginRoute : AbstractRoute
+    public sealed class LoginRoute : AbstractRoute
     {
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            return await RenderLoginViewAsync(context, cancellationToken, queryString, null);
+            return await RenderLoginViewAsync(client, context, cancellationToken, queryString, null);
         }
 
         private async Task<bool> RenderLoginViewAsync(
+            IClient client,
             IOwinEnvironment context,
             CancellationToken cancellationToken,
             IDictionary<string, string[]> queryString,
             IDictionary<string, string[]> previousFormData,
             string[] errors = null)
         {
-            var viewModelBuilder = new ExtendedLoginViewModelBuilder(
-                _configuration.Web,
-                _configuration.Providers,
+            var viewModelBuilder = new LoginFormViewModelBuilder(
+                client,
+                _configuration,
                 ChangePasswordRoute.ShouldBeEnabled(_configuration),
                 VerifyEmailRoute.ShouldBeEnabled(_configuration),
                 queryString,
                 previousFormData,
-                errors);
-            var loginViewModel = viewModelBuilder.Build();
-
-            Cookies.AddTempCookieToResponse(
-                context,
-                Csrf.OauthStateTokenCookieName,
-                loginViewModel.OauthStateToken,
-                TimeSpan.FromMinutes(5),
+                errors,
                 _logger);
+            var loginViewModel = viewModelBuilder.Build();
 
             await RenderViewAsync(context, _configuration.Web.Login.View, loginViewModel, cancellationToken);
             return true;
@@ -76,10 +71,24 @@ namespace Stormpath.Owin.Middleware.Route
             var model = PostBodyParser.ToModel<LoginPostModel>(body, bodyContentType, _logger);
             var formData = FormContentParser.Parse(body, _logger);
 
+            var stateToken = formData.GetString(StringConstants.StateTokenName);
+            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                return await RenderLoginViewAsync(
+                    client,
+                    context,
+                    cancellationToken,
+                    queryString,
+                    formData,
+                    errors: new[] { "An error occurred. Please try again." });
+            }
+
             bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
             {
                 return await RenderLoginViewAsync(
+                    client,
                     context,
                     cancellationToken,
                     queryString,
@@ -99,6 +108,7 @@ namespace Stormpath.Owin.Middleware.Route
             catch (ResourceException rex)
             {
                 return await RenderLoginViewAsync(
+                    client,
                     context,
                     cancellationToken,
                     queryString,
@@ -106,8 +116,9 @@ namespace Stormpath.Owin.Middleware.Route
                     errors: new[] { rex.Message });
             }
 
-            var nextUriFromQueryString = queryString.GetString("next");
-            return await executor.HandleRedirectAsync(context, nextUriFromQueryString);
+            var nextUri = parsedStateToken.Path; // Might be null
+
+            return await executor.HandleRedirectAsync(context, nextUri);
         }
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)

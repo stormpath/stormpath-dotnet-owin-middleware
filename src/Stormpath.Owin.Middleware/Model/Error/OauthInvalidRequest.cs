@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Middleware.Model.Error
 {
-    public class OauthInvalidRequest : AbstractError
+    public sealed class OauthInvalidRequest : AbstractError
     {
         public override int StatusCode => 400;
 

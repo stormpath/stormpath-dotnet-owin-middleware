@@ -16,7 +16,7 @@
 
 namespace Stormpath.Owin.Middleware.Model.Error
 {
-    public class BadRequest : AbstractError
+    public sealed class BadRequest : AbstractError
     {
         public override int StatusCode => 400;
 

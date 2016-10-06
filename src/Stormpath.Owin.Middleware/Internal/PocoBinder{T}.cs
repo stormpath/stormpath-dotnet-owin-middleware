@@ -20,7 +20,7 @@ using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
-    public class PocoBinder<T>
+    public sealed class PocoBinder<T>
         where T : new()
     {
         private readonly Func<string, bool> hasValue;

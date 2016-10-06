@@ -21,13 +21,13 @@ namespace Stormpath.Owin.Abstractions
 {
     public sealed class DefaultOwinEnvironment : IOwinEnvironment
     {
-        private readonly IDictionary<string, object> environment;
+        private readonly IDictionary<string, object> _environment;
 
         public DefaultOwinEnvironment(IDictionary<string, object> owinEnvironment)
         {
-            this.environment = owinEnvironment;
-            this.Request = new DefaultOwinRequest(owinEnvironment);
-            this.Response = new DefaultOwinResponse(owinEnvironment);
+            _environment = owinEnvironment;
+            Request = new DefaultOwinRequest(owinEnvironment);
+            Response = new DefaultOwinResponse(owinEnvironment);
         }
 
         public IOwinRequest Request { get; private set; }
@@ -36,8 +36,8 @@ namespace Stormpath.Owin.Abstractions
 
         public CancellationToken CancellationToken
         {
-            get { return environment.Get<CancellationToken>(OwinKeys.CallCancelled); }
-            set { environment.SetOrRemove(OwinKeys.CallCancelled, value); }
+            get { return _environment.Get<CancellationToken>(OwinKeys.CallCancelled); }
+            set { _environment.SetOrRemove(OwinKeys.CallCancelled, value); }
         }
     }
 }

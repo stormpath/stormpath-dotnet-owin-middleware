@@ -1,4 +1,4 @@
-﻿@model ExtendedLoginViewModel
+﻿@model LoginFormViewModel
 @using System
 @using System.Linq
 @using Stormpath.Owin.Abstractions
@@ -38,7 +38,7 @@
     <div class="container custom-container">
         <div class="va-wrapper">
             <div class="view login-view container">
-                @if (Stormpath.Owin.Abstractions.ViewModel.ExtendedLoginViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
+                @if (Stormpath.Owin.Abstractions.ViewModel.LoginFormViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
                     <div class="box row">
                         <div class="email-password-area col-xs-12 large col-sm-12">
                             <div class="header">
@@ -97,7 +97,7 @@
                         @if (Model.RegistrationEnabled)
                         {
                             <div class="header">
-                                <span>Log In or <a href="@Model.RegisterUri">Create Account</a></span>
+                                <span>Log In or <a href="@(Model.RegisterUri + "?" + @StringConstants.StateTokenName + "=" + @Model.StateToken)">Create Account</a></span>
                             </div>
                         }
                         else
@@ -116,7 +116,7 @@
                             </div>
                         }
                         <form method="post" role="form" class="login-form form-horizontal">
-                            @* <input name="_csrf" type="hidden"> *@
+                            <input name="@StringConstants.StateTokenName" type="hidden" value="@Model.StateToken"/>
 
                             @foreach (var field in Model.Form.Fields)
                             {
@@ -125,7 +125,6 @@
                                         @field.Label
                                     </label>
                                     <div class="@(hasSocialProviders ? "col-sm-12" : "col-sm-8")">
-                                        @* switch to col-sm-12 if social providers are present *@
                                         <input placeholder="@field.Placeholder"
                                                name="@field.Name"
                                                type="@field.Type"
@@ -155,17 +154,13 @@
 
                                         FB.login(function (response) {
                                             if (response.status === 'connected') {
-                                                var queryStr = window.location.search.replace('?', '');
-                                                // TODO make dynamic
-                                                if (queryStr) {
-                                                    // Don't include any access_token parameters in
-                                                    // the query string as it will be added by us.
-                                                    queryStr = queryStr.replace(/(&?)access_token=([^&]*)/, '');
+                                                var queryString = 'access_token=' + response.authResponse.accessToken;
 
-                                                    window.location.replace('@facebookProvider.Href?' + queryStr + '&access_token=' + response.authResponse.accessToken);
-                                                } else {
-                                                    window.location.replace('@facebookProvider.Href?access_token=' + response.authResponse.accessToken);
+                                                if ("@Model.StateToken".length !== 0) {
+                                                    queryString += "&@StringConstants.StateTokenName=" + "@Model.StateToken";
                                                 }
+
+                                                window.location.replace('@facebookProvider.Href?' + queryString);
                                             }
                                         }, { scope: facebookScope });
                                     }
@@ -197,10 +192,12 @@
                                         var clientId = '@googleProvider.Provider.ClientId';
                                         var googleScope = '@googleProvider.Provider.Scope';
 
-                                        var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code&client_id=' +
-                                            clientId +
-                                            '&scope=' + googleScope +
-                                            '&include_granted_scopes=true&redirect_uri=@googleProvider.Href';
+                                        var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code' +
+                                            '&client_id=' + encodeURIComponent(clientId) +
+                                            '&scope=' + encodeURIComponent(googleScope) +
+                                            '&state=' + encodeURIComponent('@Model.StateToken') +
+                                            '&include_granted_scopes=true' +
+                                            '&redirect_uri=' + encodeURIComponent('@googleProvider.Href');
 
                                         window.location = finalUrl;
                                     }
@@ -215,13 +212,13 @@
                                         var clientId = '@githubProvider.Provider.ClientId';
                                         var gitHubScope = '@githubProvider.Provider.Scope';
                                         var redirectUri = '@githubProvider.Href';
-                                        var oauthStateToken = '@Model.OauthStateToken';
+                                        var stateToken = '@Model.StateToken';
 
                                         var url = 'https://github.com/login/oauth/authorize' +
                                             '?client_id=' + encodeURIComponent(clientId) +
                                             '&scope=' + encodeURIComponent(gitHubScope) +
                                             '&redirect_uri=' + encodeURIComponent(redirectUri) +
-                                            '&state=' + encodeURIComponent(oauthStateToken);
+                                            '&state=' + encodeURIComponent(stateToken);
 
                                         window.location = url;
                                     }
@@ -261,7 +258,7 @@
                                     }
 
                                     function linkedinLogin() {
-                                        var oauthStateToken = '@Model.OauthStateToken';
+                                        var stateToken = '@Model.StateToken';
                                         var authorizationUrl = 'https://www.linkedin.com/uas/oauth2/authorization';
 
                                         var clientId = '@linkedInProvider.Provider.ClientId';
@@ -273,7 +270,7 @@
                                             client_id: clientId,
                                             scope: linkedinScope,
                                             redirect_uri: redirectUri,
-                                            state: oauthStateToken
+                                            state: stateToken
                                         });
                                     }
                                 </script>

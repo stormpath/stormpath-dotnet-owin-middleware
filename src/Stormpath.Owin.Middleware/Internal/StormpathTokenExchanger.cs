@@ -28,7 +28,7 @@ using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
-    public class StormpathTokenExchanger
+    public sealed class StormpathTokenExchanger
     {
         private readonly IClient _client;
         private readonly IApplication _application;

@@ -21,6 +21,7 @@ using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.SDK.Account;
+using Stormpath.SDK.Client;
 using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
@@ -37,6 +38,7 @@ namespace Stormpath.Owin.Middleware
         public Task<bool> InvokeAsync(IDictionary<string, object> environment)
         {
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
+            var client = environment.Get<IClient>(OwinKeys.StormpathClient);
             var configuration = environment.Get<StormpathConfiguration>(OwinKeys.StormpathConfiguration);
             var authenticatedUser = environment.Get<IAccount>(OwinKeys.StormpathUser);
             var authenticationScheme = environment.Get<string>(OwinKeys.StormpathUserScheme);
@@ -47,8 +49,8 @@ namespace Stormpath.Owin.Middleware
             var redirectAction = new Action<string>(location => context.Response.Headers.SetString("Location", location));
 
             var handler = new RouteProtector(
-                configuration.Application,
-                configuration.Web,
+                client,
+                configuration,
                 deleteCookieAction,
                 setStatusCodeAction,
                 setHeaderAction,

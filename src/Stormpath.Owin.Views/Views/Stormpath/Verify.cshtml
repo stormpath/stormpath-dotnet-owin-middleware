@@ -1,4 +1,4 @@
-﻿@model Stormpath.Owin.Abstractions.ViewModel.VerifyEmailViewModel
+﻿@model Stormpath.Owin.Abstractions.ViewModel.VerifyEmailFormViewModel
 @using System
 @using System.Linq
 @using Stormpath.Owin.Abstractions
@@ -65,12 +65,16 @@
                         @if (Model.Errors.Any())
                         {
                             <div class="alert alert-danger bad-login">
-                                <p>Please enter a valid email address.</p>
+                                @foreach (var error in Model.Errors)
+                                {
+                                    <p>@error</p>
+                                }
                             </div>
                         }
                         <p>&nbsp;</p>
                         <form method="post" role="form" class="login-form form-horizontal">
-                            @*<input name="_csrf" type="hidden">*@
+                            <input name="@StringConstants.StateTokenName" type="hidden" value="@Model.StateToken"/>
+
                             <div class="form-group group-email">
                                 <label class="col-sm-4">Email</label>
                                 <div class="col-sm-8">
