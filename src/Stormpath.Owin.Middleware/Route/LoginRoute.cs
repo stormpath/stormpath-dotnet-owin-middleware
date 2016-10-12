@@ -247,6 +247,12 @@ namespace Stormpath.Owin.Middleware.Route
                 return await JsonResponse.Ok(context, responseModel);
 
             }
+            catch (ResourceException rex)
+            {
+                // TODO improve error logging (include request id, etc)
+                _logger.Error(rex.DeveloperMessage, source: nameof(HandleSocialLogin));
+                return await Error.Create(context, new BadRequest("An error occurred while processing the login"), cancellationToken);
+            }
             catch (Exception ex)
             {
                 _logger.Error(ex, source: nameof(HandleSocialLogin));
