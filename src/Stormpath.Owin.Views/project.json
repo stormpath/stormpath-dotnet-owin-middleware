@@ -7,7 +7,7 @@
     },
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.7.0-beta3"
+      "version": "1.7.0"
     }
   },
   "description": "Common views for the Stormpath OWIN middleware library.",

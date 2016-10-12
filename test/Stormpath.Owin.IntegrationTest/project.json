@@ -12,7 +12,7 @@
     "Newtonsoft.Json": "9.0.1",
     "Stormpath.Owin.Middleware": {
       "target": "project",
-      "version": "3.0.0-beta5"
+      "version": "3.0.0"
     },
     "xunit": "2.1.0"
   },
@@ -34,5 +34,5 @@
     }
   },
   "testRunner": "xunit",
-  "version": "3.0.0-beta5"
+  "version": "3.0.0"
 }

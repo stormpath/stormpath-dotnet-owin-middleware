@@ -12,11 +12,11 @@
     "Nowin": "0.22.2",
     "Stormpath.Owin.Middleware": {
       "target": "project",
-      "version": "3.0.0-beta5"
+      "version": "3.0.0"
     },
     "Stormpath.Owin.Views.Precompiled": {
       "target": "project",
-      "version": "0.4.2-beta2"
+      "version": "0.4.2"
     }
   },
   "description": "Nowin test harness for Stormpath.Owin.Middleware",
@@ -34,5 +34,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.NowinHarness"
   },
-  "version": "3.0.0-beta5"
+  "version": "3.0.0"
 }
