@@ -458,11 +458,10 @@ namespace Stormpath.Owin.Middleware
             IntegrationConfiguration configuration,
             ILogger logger)
         {
-            // TODO check for ID Site enabled state when ID Site is supported
-            //if (configuration.Web.IdSite.Enabled && string.IsNullOrEmpty(configuration.Web.ServerUri))
-            //{
-            //    throw new InitializationException("The stormpath.web.serverUri property must be set when using ID Site.");
-            //}
+            if (configuration.Web.IdSite.Enabled && string.IsNullOrEmpty(configuration.Web.ServerUri))
+            {
+                throw new InitializationException("The stormpath.web.serverUri property must be set when using ID Site.");
+            }
 
             if (configuration.Web.Callback.Enabled && string.IsNullOrEmpty(configuration.Web.Callback.Uri))
             {
