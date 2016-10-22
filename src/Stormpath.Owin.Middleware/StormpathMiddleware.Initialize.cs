@@ -490,7 +490,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.Oauth2.Uri,
-                    new RouteHandler(client => InitializeRoute<Oauth2Route>(client).InvokeAsync, false)
+                    new RouteHandler(client => InitializeRoute<Oauth2Route>(client).InvokeAsync)
                     );
             }
 
@@ -511,7 +511,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.Register.Uri,
-                    new RouteHandler(client => InitializeRoute<RegisterRoute>(client).InvokeAsync, false)
+                    new RouteHandler(client => InitializeRoute<RegisterRoute>(client).InvokeAsync)
                     );
             }
 
@@ -522,7 +522,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.Login.Uri,
-                    new RouteHandler(client => InitializeRoute<LoginRoute>(client).InvokeAsync, false)
+                    new RouteHandler(client => InitializeRoute<LoginRoute>(client).InvokeAsync)
                     );
             }
 
@@ -544,7 +544,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.Logout.Uri,
-                    new RouteHandler(client => InitializeRoute<LogoutRoute>(client).InvokeAsync, false)
+                    new RouteHandler(client => InitializeRoute<LogoutRoute>(client).InvokeAsync)
                     );
             }
 
@@ -555,7 +555,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.ForgotPassword.Uri,
-                    new RouteHandler(client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync, false)
+                    new RouteHandler(client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync)
                     );
             }
 
@@ -566,7 +566,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.ChangePassword.Uri,
-                    new RouteHandler(client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync, false)
+                    new RouteHandler(client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync)
                     );
             }
 
@@ -577,7 +577,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.VerifyEmail.Uri,
-                    new RouteHandler(client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync, false)
+                    new RouteHandler(client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync)
                     );
             }
 
@@ -592,7 +592,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     facebookProvider.CallbackPath,
-                    new RouteHandler(client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync, false));
+                    new RouteHandler(client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync));
             }
 
             // /callbacks/google
@@ -606,7 +606,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     googleProvider.CallbackPath,
-                    new RouteHandler(client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync, false));
+                    new RouteHandler(client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync));
             }
 
             // /callbacks/github
@@ -620,7 +620,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     githubProvider.CallbackPath,
-                    new RouteHandler(client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync, false));
+                    new RouteHandler(client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync));
             }
 
             // /callbacks/linkedin
@@ -634,7 +634,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     linkedInProvider.CallbackPath,
-                    new RouteHandler(client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync, false));
+                    new RouteHandler(client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync));
             }
 
             return routing;
