@@ -24,15 +24,27 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public class IdSiteRedirectRoute : AbstractRoute
     {
-        protected override async Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult,
+        protected override async Task<bool> GetAsync(
+            IOwinEnvironment context,
+            IClient client, 
+            ContentNegotiationResult contentNegotiationResult,
             CancellationToken cancellationToken)
         {
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var options = _options as IdSiteRedirectOptions ?? new IdSiteRedirectOptions();
 
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            var stateToken = queryString.GetString(StringConstants.StateTokenName);
+
+            if (string.IsNullOrEmpty(stateToken) || !new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger).Valid)
+            {
+                stateToken = new StateTokenBuilder(client, _configuration.Client.ApiKey).ToString();
+            }
+
             var idSiteUrlBuilder = application.NewIdSiteUrlBuilder()
                 .SetCallbackUri(options.CallbackUri)
-                .SetPath(options.Path);
+                .SetPath(options.Path)
+                .SetState(stateToken);
 
             if (options.Logout)
             {
