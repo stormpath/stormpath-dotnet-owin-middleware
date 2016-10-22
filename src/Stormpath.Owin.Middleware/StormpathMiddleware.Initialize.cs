@@ -470,11 +470,12 @@ namespace Stormpath.Owin.Middleware
         }
 
 
-        private AbstractRoute InitializeRoute<T>(IClient client)
+        private AbstractRoute InitializeRoute<T>(IClient client, RouteOptionsBase options = null)
             where T : AbstractRoute, new()
         {
             var route = new T();
-            route.Initialize(Configuration, Handlers, viewRenderer, logger, client);
+            options = options ?? new RouteOptionsBase();
+            route.Initialize(Configuration, Handlers, viewRenderer, logger, client, options);
 
             return route;
         }
@@ -482,6 +483,8 @@ namespace Stormpath.Owin.Middleware
         private IReadOnlyDictionary<string, RouteHandler> BuildRoutingTable()
         {
             var routing = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
+
+            var stormpathCallback = BuildSafeServerUrl(Configuration.Web, Configuration.Web.Callback.Uri);
 
             // /oauth/token
             if (Configuration.Web.Oauth2.Enabled)
@@ -520,10 +523,24 @@ namespace Stormpath.Owin.Middleware
             {
                 logger.Info($"Login route enabled on {Configuration.Web.Login.Uri}", nameof(BuildRoutingTable));
 
-                routing.Add(
-                    Configuration.Web.Login.Uri,
-                    new RouteHandler(client => InitializeRoute<LoginRoute>(client).InvokeAsync)
-                    );
+                if (Configuration.Web.IdSite.Enabled)
+                {
+                    var options = new IdSiteRedirectOptions
+                    {
+                        CallbackUri = stormpathCallback,
+                        Path = Configuration.Web.IdSite.LoginUri
+                    };
+
+                    routing.Add(
+                        Configuration.Web.Login.Uri,
+                        new RouteHandler(client => InitializeRoute<IdSiteRedirectRoute>(client, options).InvokeAsync));
+                }
+                else
+                {
+                    routing.Add(
+                        Configuration.Web.Login.Uri,
+                        new RouteHandler(client => InitializeRoute<LoginRoute>(client).InvokeAsync));
+                }
             }
 
             // /me
@@ -639,5 +656,8 @@ namespace Stormpath.Owin.Middleware
 
             return routing;
         }
+
+        private static string BuildSafeServerUrl(WebConfiguration webConfig, string route)
+            => $"{webConfig.ServerUri.TrimEnd('/')}/{route.TrimStart('/')}";
     }
 }
