@@ -116,6 +116,17 @@ namespace Stormpath.Owin.Middleware.Internal
 
             context.Response.OnSendingHeaders(_ =>
             {
+                string[] existingSetCookieHeaders;
+                context.Response.Headers.TryGetValue("Set-Cookie", out existingSetCookieHeaders);
+                var existingCookie = existingSetCookieHeaders?.SingleOrDefault(x => x.StartsWith($"{name}="));
+
+                if (existingCookie != null)
+                {
+                    // Cookie has already been set. OnSendingHeaders runs in LIFO order,
+                    // so this means a newer cookie has been set.
+                    return;
+                }
+
                 context.Response.Headers.AddString("Set-Cookie", cookieFormat);
             }, null);
         }
