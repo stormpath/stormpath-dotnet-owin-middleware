@@ -492,8 +492,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.Oauth2.Uri,
-                    new RouteHandler(client => InitializeRoute<Oauth2Route>(client).InvokeAsync)
-                    );
+                    new RouteHandler(client => InitializeRoute<Oauth2Route>(client).InvokeAsync));
             }
 
             // /stormpathCallback
@@ -565,8 +564,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.Me.Uri,
-                    new RouteHandler(client => InitializeRoute<MeRoute>(client).InvokeAsync, true)
-                    );
+                    new RouteHandler(client => InitializeRoute<MeRoute>(client).InvokeAsync, true));
             }
 
             // /logout
@@ -631,8 +629,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.ChangePassword.Uri,
-                    new RouteHandler(client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync)
-                    );
+                    new RouteHandler(client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync));
             }
 
             // /verify
@@ -642,14 +639,13 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.VerifyEmail.Uri,
-                    new RouteHandler(client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync)
-                    );
+                    new RouteHandler(client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync));
             }
 
             // /callbacks/facebook
             if (FacebookCallbackRoute.ShouldBeEnabled(Configuration))
             {
-                var facebookProvider =Configuration.Providers
+                var facebookProvider = Configuration.Providers
                     .First(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
