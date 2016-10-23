@@ -65,7 +65,11 @@ namespace Stormpath.Owin.NowinHarness
                 {
                     Web = new WebConfiguration()
                     {
-                        ServerUri = "http://localhost:8080"
+                        ServerUri = "http://localhost:8080",
+                        IdSite = new WebIdSiteConfiguration()
+                        {
+                            Enabled = true
+                        }
                     }
                 },
                 Logger = logger,

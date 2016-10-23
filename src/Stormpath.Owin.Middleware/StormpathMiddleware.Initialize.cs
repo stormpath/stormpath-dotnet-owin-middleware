@@ -469,7 +469,6 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
-
         private AbstractRoute InitializeRoute<T>(IClient client, RouteOptionsBase options = null)
             where T : AbstractRoute, new()
         {
@@ -512,10 +511,26 @@ namespace Stormpath.Owin.Middleware
             {
                 logger.Info($"Register route enabled on {Configuration.Web.Register.Uri}", nameof(BuildRoutingTable));
 
-                routing.Add(
-                    Configuration.Web.Register.Uri,
-                    new RouteHandler(client => InitializeRoute<RegisterRoute>(client).InvokeAsync)
-                    );
+                if (Configuration.Web.IdSite.Enabled)
+                {
+                    logger.Info($"Using ID Site for register route with path '{Configuration.Web.IdSite.RegisterUri}'", nameof(BuildRoutingTable));
+
+                    var options = new IdSiteRedirectOptions
+                    {
+                        CallbackUri = stormpathCallback,
+                        Path = Configuration.Web.IdSite.RegisterUri
+                    };
+
+                    routing.Add(
+                        Configuration.Web.Register.Uri,
+                        new RouteHandler(client => InitializeRoute<IdSiteRedirectRoute>(client, options).InvokeAsync));
+                }
+                else
+                {
+                    routing.Add(
+                        Configuration.Web.Register.Uri,
+                        new RouteHandler(client => InitializeRoute<RegisterRoute>(client).InvokeAsync));
+                }
             }
 
             // /login
@@ -559,10 +574,26 @@ namespace Stormpath.Owin.Middleware
             {
                 logger.Info($"Logout route enabled on {Configuration.Web.Logout.Uri}", nameof(BuildRoutingTable));
 
-                routing.Add(
-                    Configuration.Web.Logout.Uri,
-                    new RouteHandler(client => InitializeRoute<LogoutRoute>(client).InvokeAsync)
-                    );
+                if (Configuration.Web.IdSite.Enabled)
+                {
+                    logger.Info("Using ID Site for logout route", nameof(BuildRoutingTable));
+
+                    var options = new IdSiteRedirectOptions
+                    {
+                        CallbackUri = stormpathCallback,
+                        Logout = true
+                    };
+
+                    routing.Add(
+                        Configuration.Web.Logout.Uri,
+                        new RouteHandler(client => InitializeRoute<IdSiteRedirectRoute>(client, options).InvokeAsync));
+                }
+                else
+                {
+                    routing.Add(
+                        Configuration.Web.Logout.Uri,
+                        new RouteHandler(client => InitializeRoute<LogoutRoute>(client).InvokeAsync));
+                }
             }
 
             // /forgot   
@@ -570,10 +601,27 @@ namespace Stormpath.Owin.Middleware
             {
                 logger.Info($"ForgotPassword route enabled on {Configuration.Web.ForgotPassword.Uri}", nameof(BuildRoutingTable));
 
-                routing.Add(
-                    Configuration.Web.ForgotPassword.Uri,
-                    new RouteHandler(client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync)
-                    );
+                if (Configuration.Web.IdSite.Enabled)
+                {
+                    logger.Info($"Using ID Site for forgot route with path '{Configuration.Web.IdSite.ForgotUri}'",
+                        nameof(BuildRoutingTable));
+
+                    var options = new IdSiteRedirectOptions
+                    {
+                        CallbackUri = stormpathCallback,
+                        Path = Configuration.Web.IdSite.ForgotUri
+                    };
+
+                    routing.Add(
+                        Configuration.Web.ForgotPassword.Uri,
+                        new RouteHandler(client => InitializeRoute<IdSiteRedirectRoute>(client, options).InvokeAsync));
+                }
+                else
+                {
+                    routing.Add(
+                        Configuration.Web.ForgotPassword.Uri,
+                        new RouteHandler(client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync));
+                }
             }
 
             // /change
