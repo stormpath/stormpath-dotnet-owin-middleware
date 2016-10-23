@@ -63,13 +63,15 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                if (grantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase))
+                if (grantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase)
+                    && _configuration.Web.Oauth2.Client_Credentials.Enabled)
                 {
                     await ExecuteClientCredentialsFlow(context, client, cancellationToken);
                     return true;
                 }
 
-                if (grantType.Equals("password", StringComparison.OrdinalIgnoreCase))
+                if (grantType.Equals("password", StringComparison.OrdinalIgnoreCase)
+                    && _configuration.Web.Oauth2.Password.Enabled)
                 {
                     var username = WebUtility.UrlDecode(formData.GetString("username"));
                     var password = WebUtility.UrlDecode(formData.GetString("password"));
@@ -77,7 +79,8 @@ namespace Stormpath.Owin.Middleware.Route
                     return true;
                 }
 
-                if (grantType.Equals("refresh_token", StringComparison.OrdinalIgnoreCase))
+                if (grantType.Equals("refresh_token", StringComparison.OrdinalIgnoreCase)
+                    && _configuration.Web.Oauth2.Password.Enabled)
                 {
                     var refreshToken = WebUtility.UrlDecode(formData.GetString("refresh_token"));
                     await ExecuteRefreshFlow(context, client, refreshToken, cancellationToken);
