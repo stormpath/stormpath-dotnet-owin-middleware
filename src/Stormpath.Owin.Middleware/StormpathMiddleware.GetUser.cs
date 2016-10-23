@@ -68,32 +68,14 @@ namespace Stormpath.Owin.Middleware
         {
             try
             {
-                var basicHeader = context.Request.Headers.GetString("Authorization");
-                var isValid = !string.IsNullOrEmpty(basicHeader)
-                    && basicHeader.StartsWith("Basic ", StringComparison.Ordinal);
-                if (!isValid)
+                var basicHeaderParser = new BasicAuthenticationParser(context.Request.Headers.GetString("Authorization"), logger);
+                if (!basicHeaderParser.IsValid)
                 {
-                    logger.Trace("No Basic header found", nameof(TryBasicAuthenticationAsync));
-                    return Task.FromResult<IAccount>(null);
-                }
-
-                var basicPayload = basicHeader.Substring(6); // "Basic " + (payload)
-                if (string.IsNullOrEmpty(basicPayload))
-                {
-                    logger.Info("Found Basic header, but payload was empty", nameof(TryBasicAuthenticationAsync));
-                    return Task.FromResult<IAccount>(null);
-                }
-
-                var decodedPayload = Encoding.UTF8.GetString(Convert.FromBase64String(basicPayload));
-                var payloadChunks = decodedPayload.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
-                if (payloadChunks.Length != 2)
-                {
-                    logger.Info("Found Basic header, but it was malformed", nameof(TryBasicAuthenticationAsync));
                     return Task.FromResult<IAccount>(null);
                 }
 
                 logger.Info("Using Basic header to authenticate request", nameof(TryBasicAuthenticationAsync));
-                return ValidateApiCredentialsAsync(context, client, payloadChunks[0], payloadChunks[1], cancellationToken);
+                return ValidateApiCredentialsAsync(context, client, basicHeaderParser.Username, basicHeaderParser.Password, cancellationToken);
             }
             catch (Exception ex)
             {

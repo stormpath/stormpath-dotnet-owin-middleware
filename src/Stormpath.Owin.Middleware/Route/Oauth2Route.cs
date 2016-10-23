@@ -42,7 +42,7 @@ namespace Stormpath.Owin.Middleware.Route
             var rawBodyContentType = context.Request.Headers.GetString("Content-Type");
             var bodyContentTypeDetectionResult = ContentNegotiation.DetectBodyType(rawBodyContentType);
 
-            bool isValidContentType = bodyContentTypeDetectionResult.Success && bodyContentTypeDetectionResult.ContentType == ContentType.FormUrlEncoded;
+            var isValidContentType = bodyContentTypeDetectionResult.Success && bodyContentTypeDetectionResult.ContentType == ContentType.FormUrlEncoded;
 
             if (!isValidContentType)
             {
@@ -54,8 +54,6 @@ namespace Stormpath.Owin.Middleware.Route
             var formData = FormContentParser.Parse(requestBody, _logger);
 
             var grantType = formData.GetString("grant_type");
-            var username = WebUtility.UrlDecode(formData.GetString("username"));
-            var password = WebUtility.UrlDecode(formData.GetString("password"));
 
             if (string.IsNullOrEmpty(grantType))
             {
@@ -67,12 +65,14 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 if (grantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase))
                 {
-                    await ExecuteClientCredentialsFlow(context, username, password, cancellationToken);
+                    await ExecuteClientCredentialsFlow(context, client, cancellationToken);
                     return true;
                 }
 
                 if (grantType.Equals("password", StringComparison.OrdinalIgnoreCase))
                 {
+                    var username = WebUtility.UrlDecode(formData.GetString("username"));
+                    var password = WebUtility.UrlDecode(formData.GetString("password"));
                     await ExecutePasswordFlow(context, client, username, password, cancellationToken);
                     return true;
                 }
@@ -93,12 +93,50 @@ namespace Stormpath.Owin.Middleware.Route
             return await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);
         }
 
-        private static Task ExecuteClientCredentialsFlow(IOwinEnvironment context, string username, string password, CancellationToken cancellationToken)
+        private async Task<bool> ExecuteClientCredentialsFlow(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var basicHeaderParser = new BasicAuthenticationParser(context.Request.Headers.GetString("Authorization"), _logger);
+            if (!basicHeaderParser.IsValid)
+            {
+                await Error.Create<OauthInvalidRequest>(context, cancellationToken);
+                return true;
+            }
+
+            var preLoginContext = new PreLoginContext(context)
+            {
+                Login = basicHeaderParser.Username
+            };
+            await _handlers.PreLoginHandler(preLoginContext, cancellationToken).ConfigureAwait(false);
+
+            var request = new ClientCredentialsGrantRequest
+            {
+                Id = basicHeaderParser.Username,
+                Secret = basicHeaderParser.Password
+            };
+
+            if (preLoginContext.AccountStore != null)
+            {
+                request.AccountStoreHref = preLoginContext.AccountStore.Href;
+            }
+
+            var application = await client
+                .GetApplicationAsync(_configuration.Application.Href, cancellationToken)
+                .ConfigureAwait(false);
+
+            var tokenResult = await application
+                .ExecuteOauthRequestAsync(request, cancellationToken)
+                .ConfigureAwait(false);
+
+            var accessToken = await tokenResult.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
+            var account = await accessToken.GetAccountAsync(cancellationToken).ConfigureAwait(false);
+
+            var postLoginContext = new PostLoginContext(context, account);
+            await _handlers.PostLoginHandler(postLoginContext, cancellationToken).ConfigureAwait(false);
+
+            return await SanitizeResult(context, tokenResult).ConfigureAwait(false);
         }
 
-        private async Task ExecutePasswordFlow(IOwinEnvironment context, IClient client, string username, string password, CancellationToken cancellationToken)
+        private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, IClient client, string username, string password, CancellationToken cancellationToken)
         {
             var preLoginContext = new PreLoginContext(context)
             {
@@ -127,13 +165,10 @@ namespace Stormpath.Owin.Middleware.Route
             var postLoginContext = new PostLoginContext(context, account);
             await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
 
-            var sanitizer = new ResponseSanitizer<IOauthGrantAuthenticationResult>();
-            var responseModel = sanitizer.Sanitize(tokenResult);
-
-            await JsonResponse.Ok(context, responseModel);
+            return await SanitizeResult(context, tokenResult).ConfigureAwait(false);
         }
 
-        private async Task ExecuteRefreshFlow(IOwinEnvironment context, IClient client, string refreshToken, CancellationToken cancellationToken)
+        private async Task<bool> ExecuteRefreshFlow(IOwinEnvironment context, IClient client, string refreshToken, CancellationToken cancellationToken)
         {
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
@@ -144,10 +179,15 @@ namespace Stormpath.Owin.Middleware.Route
             var tokenResult = await application.NewRefreshGrantAuthenticator()
                 .AuthenticateAsync(refreshGrantRequest, cancellationToken);
 
-            var sanitizer = new ResponseSanitizer<IOauthGrantAuthenticationResult>();
-            var responseModel = sanitizer.Sanitize(tokenResult);
+            return await SanitizeResult(context, tokenResult).ConfigureAwait(false);
+        }
 
-            await JsonResponse.Ok(context, responseModel);
+        private static Task<bool> SanitizeResult(IOwinEnvironment context, IOauthGrantAuthenticationResult result)
+        {
+            var sanitizer = new ResponseSanitizer<IOauthGrantAuthenticationResult>();
+            var responseModel = sanitizer.Sanitize(result);
+
+            return JsonResponse.Ok(context, responseModel);
         }
     }
 }

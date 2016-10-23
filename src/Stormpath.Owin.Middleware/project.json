@@ -2,7 +2,8 @@
   "authors": [ "Nate Barbettini" ],
   "buildOptions": {
     "nowarn": [
-      "CS1591"
+      "CS1591",
+      "CS0618"
     ],
     "warningsAsErrors": true,
     "xmlDoc": true
@@ -13,7 +14,7 @@
       "target": "project",
       "version": "1.7.0"
     },
-    "Stormpath.SDK": "0.94.2"
+    "Stormpath.SDK": "0.95.0-beta1"
   },
   "description": "Stormpath OWIN middleware for .NET.",
   "frameworks": {
