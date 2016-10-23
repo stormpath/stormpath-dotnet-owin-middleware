@@ -17,12 +17,15 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.SDK;
 using Stormpath.SDK.Account;
+using Stormpath.SDK.Api;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Error;
 using Stormpath.SDK.Jwt;
@@ -34,7 +37,7 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
-        private async Task<IAccount> GetUserAsync(IOwinEnvironment context, IClient client)
+        private async Task<IAccount> GetUserAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
             var bearerAuthenticationResult = await TryBearerAuthenticationAsync(context, client);
             if (bearerAuthenticationResult != null)
@@ -50,7 +53,7 @@ namespace Stormpath.Owin.Middleware
                 return cookieAuthenticationResult;
             }
 
-            var apiAuthenticationResult = await TryBasicAuthenticationAsync(context, client);
+            var apiAuthenticationResult = await TryBasicAuthenticationAsync(context, client, cancellationToken);
             if (apiAuthenticationResult != null)
             {
                 context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.ApiCredentials;
@@ -61,12 +64,42 @@ namespace Stormpath.Owin.Middleware
             return null;
         }
 
-        private Task<IAccount> TryBasicAuthenticationAsync(IOwinEnvironment context, IClient client)
+        private Task<IAccount> TryBasicAuthenticationAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            this.logger.Trace("Basic Authentication is not yet supported", nameof(TryBasicAuthenticationAsync));
+            try
+            {
+                var basicHeader = context.Request.Headers.GetString("Authorization");
+                var isValid = !string.IsNullOrEmpty(basicHeader)
+                    && basicHeader.StartsWith("Basic ", StringComparison.Ordinal);
+                if (!isValid)
+                {
+                    logger.Trace("No Basic header found", nameof(TryBasicAuthenticationAsync));
+                    return Task.FromResult<IAccount>(null);
+                }
 
-            // TODO Basic auth
-            return Task.FromResult<IAccount>(null);
+                var basicPayload = basicHeader.Substring(6); // "Basic " + (payload)
+                if (string.IsNullOrEmpty(basicPayload))
+                {
+                    logger.Info("Found Basic header, but payload was empty", nameof(TryBasicAuthenticationAsync));
+                    return Task.FromResult<IAccount>(null);
+                }
+
+                var decodedPayload = Encoding.UTF8.GetString(Convert.FromBase64String(basicPayload));
+                var payloadChunks = decodedPayload.Split(new[] {':'}, StringSplitOptions.RemoveEmptyEntries);
+                if (payloadChunks.Length != 2)
+                {
+                    logger.Info("Found Basic header, but it was malformed", nameof(TryBasicAuthenticationAsync));
+                    return Task.FromResult<IAccount>(null);
+                }
+
+                logger.Info("Using Basic header to authenticate request", nameof(TryBasicAuthenticationAsync));
+                return ValidateApiCredentialsAsync(context, client, payloadChunks[0], payloadChunks[1], cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.Warn(ex, source: nameof(TryBasicAuthenticationAsync));
+                return Task.FromResult<IAccount>(null);
+            }
         }
 
         private Task<IAccount> TryBearerAuthenticationAsync(IOwinEnvironment context, IClient client)
@@ -79,7 +112,7 @@ namespace Stormpath.Owin.Middleware
                 return Task.FromResult<IAccount>(null);
             }
 
-            var bearerPayload = bearerHeader?.Substring(7); // "Bearer " + payload
+            var bearerPayload = bearerHeader.Substring(7); // "Bearer " + (payload)
             if (string.IsNullOrEmpty(bearerPayload))
             {
                 logger.Info("Found Bearer header, but payload was empty", nameof(TryBearerAuthenticationAsync));
@@ -255,6 +288,52 @@ namespace Stormpath.Owin.Middleware
 
             logger.Trace("Access token refreshed using Refresh token. Adding cookies to response", nameof(RefreshAccessTokenAsync));
             Cookies.AddTokenCookiesToResponse(context, client, grantResult, this.Configuration, logger);
+
+            return account;
+        }
+
+        private async Task<IAccount> ValidateApiCredentialsAsync(
+            IOwinEnvironment context,
+            IClient client,
+            string id,
+            string secret,
+            CancellationToken cancellationToken)
+        {
+            var application = await client
+                .GetApplicationAsync(Configuration.Application.Href, cancellationToken)
+                .ConfigureAwait(false);
+
+            var apiKey = await application
+                .GetApiKeys()
+                .Where(x => x.Id == id)
+                .SingleOrDefaultAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            if (apiKey == null)
+            {
+                logger.Info($"API key with ID {id} was not found", nameof(ValidateApiCredentialsAsync));
+                return null;
+            }
+
+            if (apiKey.Status != ApiKeyStatus.Enabled)
+            {
+                logger.Info($"API key with ID {id} was found, but was disabled", nameof(ValidateApiCredentialsAsync));
+                return null;
+            }
+
+            if (!apiKey.Secret.Equals(secret, StringComparison.Ordinal))
+            {
+                logger.Info($"API key with ID {id} was found, but secret did not match", nameof(ValidateApiCredentialsAsync));
+                return null;
+            }
+
+            var account = await apiKey.GetAccountAsync(cancellationToken).ConfigureAwait(false);
+
+            if (account.Status != AccountStatus.Enabled)
+            {
+                logger.Info($"API key with ID {id} was found, but the account is not enabled", nameof(ValidateApiCredentialsAsync));
+                return null;
+            }
 
             return account;
         }

@@ -77,9 +77,9 @@ namespace Stormpath.Owin.Middleware
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
             logger.Trace($"Incoming request {context.Request.Path}", "StormpathMiddleware.Invoke");
 
-            using (var scopedClient = this.CreateScopedClient(context))
+            using (var scopedClient = CreateScopedClient(context))
             {
-                var currentUser = await GetUserAsync(context, scopedClient);
+                var currentUser = await GetUserAsync(context, scopedClient, context.CancellationToken).ConfigureAwait(false);
 
                 if (currentUser == null)
                 {
@@ -87,7 +87,7 @@ namespace Stormpath.Owin.Middleware
                 }
                 else
                 {
-                    logger.Trace($"Request for Account '{currentUser.Href}'", "StormpathMiddleware.Invoke");
+                    logger.Trace($"Request for Account '{currentUser.Href}' via scheme {environment[OwinKeys.StormpathUserScheme]}", "StormpathMiddleware.Invoke");
                 }
 
                 AddStormpathVariablesToEnvironment(

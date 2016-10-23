@@ -21,6 +21,6 @@ namespace Stormpath.Owin.Abstractions
     {
         public static readonly string Bearer = "Bearer";
         public static readonly string Cookie = "Cookie";
-        public static readonly string ApiCredentials = "ApiCredentials";
+        public static readonly string ApiCredentials = "Basic";
     }
 }
