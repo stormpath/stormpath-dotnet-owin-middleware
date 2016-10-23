@@ -123,9 +123,18 @@ namespace Stormpath.Owin.Middleware.Route
                 .GetApplicationAsync(_configuration.Application.Href, cancellationToken)
                 .ConfigureAwait(false);
 
-            var tokenResult = await application
-                .ExecuteOauthRequestAsync(request, cancellationToken)
-                .ConfigureAwait(false);
+            IOauthGrantAuthenticationResult tokenResult;
+            try
+            {
+                tokenResult = await application
+                    .ExecuteOauthRequestAsync(request, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            // Catch error 10019 (API Authentication failed)
+            catch (ResourceException rex) when (rex.Code == 10019)
+            {
+                return await Error.Create<OauthInvalidClient>(context, cancellationToken).ConfigureAwait(false);
+            }
 
             var accessToken = await tokenResult.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
             var account = await accessToken.GetAccountAsync(cancellationToken).ConfigureAwait(false);
