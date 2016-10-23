@@ -248,7 +248,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
 
-            var sanitizer = new ResponseSanitizer<IAccount>();
+            var sanitizer = new AccountResponseSanitizer();
             var responseModel = new
             {
                 account = sanitizer.Sanitize(createdAccount)

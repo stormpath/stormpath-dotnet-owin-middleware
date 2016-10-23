@@ -142,7 +142,8 @@ namespace Stormpath.Owin.Middleware.Route
             var postLoginContext = new PostLoginContext(context, account);
             await _handlers.PostLoginHandler(postLoginContext, cancellationToken).ConfigureAwait(false);
 
-            return await SanitizeResult(context, tokenResult).ConfigureAwait(false);
+            var sanitizer = new GrantResultResponseSanitizer();
+            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithoutRefreshToken(tokenResult)).ConfigureAwait(false);
         }
 
         private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, IClient client, string username, string password, CancellationToken cancellationToken)
@@ -174,7 +175,8 @@ namespace Stormpath.Owin.Middleware.Route
             var postLoginContext = new PostLoginContext(context, account);
             await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
 
-            return await SanitizeResult(context, tokenResult).ConfigureAwait(false);
+            var sanitizer = new GrantResultResponseSanitizer();
+            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(tokenResult)).ConfigureAwait(false);
         }
 
         private async Task<bool> ExecuteRefreshFlow(IOwinEnvironment context, IClient client, string refreshToken, CancellationToken cancellationToken)
@@ -188,15 +190,8 @@ namespace Stormpath.Owin.Middleware.Route
             var tokenResult = await application.NewRefreshGrantAuthenticator()
                 .AuthenticateAsync(refreshGrantRequest, cancellationToken);
 
-            return await SanitizeResult(context, tokenResult).ConfigureAwait(false);
-        }
-
-        private static Task<bool> SanitizeResult(IOwinEnvironment context, IOauthGrantAuthenticationResult result)
-        {
-            var sanitizer = new ResponseSanitizer<IOauthGrantAuthenticationResult>();
-            var responseModel = sanitizer.Sanitize(result);
-
-            return JsonResponse.Ok(context, responseModel);
+            var sanitizer = new GrantResultResponseSanitizer();
+            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(tokenResult)).ConfigureAwait(false);
         }
     }
 }
