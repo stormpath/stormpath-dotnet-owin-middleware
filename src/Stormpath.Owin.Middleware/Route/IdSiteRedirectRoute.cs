@@ -24,10 +24,30 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public class IdSiteRedirectRoute : AbstractRoute
     {
-        protected override async Task<bool> GetAsync(
+        protected override Task<bool> GetAsync(
+                IOwinEnvironment context,
+                IClient client,
+                ContentNegotiationResult contentNegotiationResult,
+                CancellationToken cancellationToken)
+            => HandleIdSiteRedirectAsync(context, client, cancellationToken);
+
+        protected override Task<bool> PostAsync(
             IOwinEnvironment context,
-            IClient client, 
+            IClient client,
             ContentNegotiationResult contentNegotiationResult,
+            CancellationToken cancellationToken)
+        {
+            // The Stormpath middleware uses POSTs to /logout to avoid GETs mutating state,
+            // so we need to account for that here
+            var options = _options as IdSiteRedirectOptions ?? new IdSiteRedirectOptions();
+            return options.Logout 
+                ? HandleIdSiteRedirectAsync(context, client, cancellationToken) 
+                : Task.FromResult(false);
+        }
+
+        private async Task<bool> HandleIdSiteRedirectAsync(
+            IOwinEnvironment context,
+            IClient client,
             CancellationToken cancellationToken)
         {
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
