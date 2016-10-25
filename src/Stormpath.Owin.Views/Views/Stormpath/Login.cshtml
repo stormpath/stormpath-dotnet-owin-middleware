@@ -6,10 +6,11 @@
 
 @{
     bool hasSocialProviders = Model.AccountStores.Any();
-    AccountStoreViewModel facebookProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("facebook", StringComparison.OrdinalIgnoreCase));
-    AccountStoreViewModel googleProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("google", StringComparison.OrdinalIgnoreCase));
-    AccountStoreViewModel githubProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("github", StringComparison.OrdinalIgnoreCase));
-    AccountStoreViewModel linkedInProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("linkedin", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel facebookProvider = Model.AccountStores.FirstOrDefault(store => store.Provider.ProviderId.Equals("facebook", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel googleProvider = Model.AccountStores.FirstOrDefault(store => store.Provider.ProviderId.Equals("google", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel githubProvider = Model.AccountStores.FirstOrDefault(store => store.Provider.ProviderId.Equals("github", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel linkedInProvider = Model.AccountStores.FirstOrDefault(store => store.Provider.ProviderId.Equals("linkedin", StringComparison.OrdinalIgnoreCase));
+    AccountStoreViewModel[] samlProviders = Model.AccountStores.Where(store => store.Provider.ProviderId.Equals("saml", StringComparison.OrdinalIgnoreCase)).ToArray();
 }
 
 <!DOCTYPE html>
@@ -106,6 +107,7 @@
                                 <span>Log In</span>
                             </div>
                         }
+
                         @if (Model.Errors.Any())
                         {
                             <div class="alert alert-danger bad-login">
@@ -144,6 +146,24 @@
                         <div class="social-area col-xs-12 col-sm-4">
                             <div class="header">&nbsp;</div>
                             <label>Easy 1-click login:</label>
+                            
+                            @if (samlProviders.Any())
+                            {
+                                foreach (var samlProvider in samlProviders)
+                                {
+                                    <button class="btn btn-social btn-saml" onclick="samlLogin('@samlProvider.Href?st=@Model.StateToken')">
+                                        <span class="fa fa-lock"></span> @samlProvider.Name
+                                    </button>
+                                }
+
+                                <script type="text/javascript">
+                                    function samlLogin(provider) {
+                                        console.log(provider);
+                                    }
+                                </script>
+                            }
+
+
                             @if (facebookProvider != null)
                             {
                                 <button class="btn btn-social btn-facebook" onclick="facebookLogin()">Facebook</button>

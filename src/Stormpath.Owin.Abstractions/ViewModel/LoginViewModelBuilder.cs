@@ -45,11 +45,12 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             // Social Providers
             result.AccountStores = _providerConfigurations.Select(x => new AccountStoreViewModel
             {
-                Name = x.Key,
+                Name = x.Value.Name ?? x.Key, // TODO remove x.Key (breaking change)
+                Type = x.Key,
                 Href = x.Value.CallbackUri,
                 Provider = new AccountStoreProviderViewModel()
                 {
-                    Href = x.Key,
+                    Href = x.Value.Href ?? x.Key, // TODO breaking change, should not return x.Key (test against Angular?)
                     ClientId = x.Value.ClientId,
                     ProviderId = x.Key,
                     Scope = x.Value.Scope

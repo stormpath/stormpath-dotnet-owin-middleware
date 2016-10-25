@@ -23,13 +23,17 @@ namespace Stormpath.Owin.Abstractions.Configuration
             string clientSecret,
             string callbackPath,
             string callbackUri,
-            string scope)
+            string scope,
+            string href = null,
+            string name = null)
         {
             ClientId = clientId;
             ClientSecret = clientSecret;
             CallbackUri = callbackUri;
             CallbackPath = callbackPath;
             Scope = scope;
+            Href = href; // TODO make this mandatory (breaking change)
+            Name = name; // TODO make this mandatory (breaking change)
         }
 
         public string ClientId { get; }
@@ -41,5 +45,9 @@ namespace Stormpath.Owin.Abstractions.Configuration
         public string CallbackPath { get; }
 
         public string Scope { get; }
+
+        public string Href { get; }
+
+        public string Name { get; }
     }
 }

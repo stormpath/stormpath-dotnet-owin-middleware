@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public sealed class AccountStoreViewModel
@@ -21,6 +23,8 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         public string Href { get; set; }
 
         public string Name { get; set; }
+
+        public string Type { get; set; }
 
         public AccountStoreProviderViewModel Provider { get; set; }
     }

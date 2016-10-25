@@ -267,61 +267,63 @@ namespace Stormpath.Owin.Middleware
 
             logger.Trace("Getting social providers from tenant...", nameof(GetIntegrationConfiguration));
 
-            var socialProviders = GetSocialProviders(application, updatedConfiguration.Web, logger)
+            var externalLoginProviders = GetExternalLoginProviders(application, updatedConfiguration.Web, logger)
                 .ToList();
 
-            logger.Trace($"Found {socialProviders.Count} social providers", nameof(GetIntegrationConfiguration));
+            logger.Trace($"Found {externalLoginProviders.Count} social providers", nameof(GetIntegrationConfiguration));
 
             return new IntegrationConfiguration(
                 updatedConfiguration,
                 new TenantConfiguration(defaultAccountStoreHref, emailVerificationEnabled, passwordResetEnabled),
-                socialProviders);
+                externalLoginProviders);
         }
 
-        private static IEnumerable<KeyValuePair<string, ProviderConfiguration>> GetSocialProviders(IApplication application, WebConfiguration webConfig, ILogger logger)
+        private static IEnumerable<KeyValuePair<string, ProviderConfiguration>> GetExternalLoginProviders(IApplication application, WebConfiguration webConfig, ILogger logger)
         {
             var accountStores = application.GetAccountStoreMappings()
                 .Synchronously()
+                .Expand(m => m.GetAccountStore())
                 .ToList()
                 .Select(mapping => mapping.GetAccountStore())
                 .ToList();
 
-            logger.Trace($"Application has {accountStores.Count} Account Stores", nameof(GetSocialProviders));
+            logger.Trace($"Application has {accountStores.Count} Account Stores", nameof(GetExternalLoginProviders));
 
             foreach (var accountStore in accountStores)
             {
                 if (accountStore == null)
                 {
-                    logger.Trace("Skipping a null mapped Account Store", nameof(GetSocialProviders));
+                    logger.Trace("Skipping a null mapped Account Store", nameof(GetExternalLoginProviders));
                     continue;
                 }
 
                 var asDirectory = accountStore as IDirectory;
                 if (asDirectory == null)
                 {
-                    logger.Trace($"Account Store is not a directory: {accountStore.Href}", nameof(GetSocialProviders));
+                    logger.Trace($"Account Store is not a directory: {accountStore.Href}", nameof(GetExternalLoginProviders));
                     continue;
                 }
 
                 var provider = asDirectory.GetProvider();
                 if (NonSocialProviderIds.Any(x => provider.ProviderId.Contains(x)))
                 {
-                    logger.Trace($"Skipping Account Store {accountStore.Href} with provider ID '{provider.ProviderId}'", nameof(GetSocialProviders));
+                    logger.Trace($"Skipping Account Store {accountStore.Href} with provider ID '{provider.ProviderId}'", nameof(GetExternalLoginProviders));
                     continue;
                 }
 
-                logger.Trace($"Getting social provider configuration for Account Store {accountStore.Href}", nameof(GetSocialProviders));
-                var providerConfiguration = GetProviderConfiguration(provider, webConfig, logger);
+                logger.Trace($"Getting external login provider configuration for Account Store {accountStore.Href}", nameof(GetExternalLoginProviders));
+                var providerConfiguration = GetProviderConfiguration(provider, webConfig, asDirectory, logger);
 
                 if (providerConfiguration != null)
                 {
                     yield return new KeyValuePair<string, ProviderConfiguration>(
-                    provider.ProviderId, providerConfiguration);
+                        provider.ProviderId,
+                        providerConfiguration);
                 }
             }
         }
 
-        private static ProviderConfiguration GetProviderConfiguration(IProvider provider, WebConfiguration webConfig, ILogger logger)
+        private static ProviderConfiguration GetProviderConfiguration(IProvider provider, WebConfiguration webConfig, IDirectory directory, ILogger logger)
         {
             var asFacebookProvider = provider as IFacebookProvider;
             if (asFacebookProvider != null)
@@ -422,6 +424,27 @@ namespace Stormpath.Owin.Middleware
                     callbackPath: linkedinConfiguration.Uri,
                     callbackUri: callbackUri,
                     scope: linkedinConfiguration.Scope);
+            }
+
+            var asSamlProvider = provider as ISamlProvider;
+            if (asSamlProvider != null)
+            {
+                logger.Trace($"SAML directory at {asSamlProvider.Href}", nameof(GetProviderConfiguration));
+                
+                // TODO remove this, generate dynamically
+                if (string.IsNullOrEmpty(webConfig.ServerUri))
+                {
+                    throw new InitializationException("The stormpath.web.serverUri property must be set when using SAML login integration.");
+                }
+                var callbackUri = $"{webConfig.ServerUri.TrimEnd('/')}/{webConfig.Callback.Uri.TrimStart('/')}";
+
+                return new ProviderConfiguration(
+                    asSamlProvider.Href,
+                    null,
+                    webConfig.Callback.Uri,
+                    callbackUri,
+                    null,
+                    name: directory.Name);
             }
 
             logger.Trace($"Provider {provider.Href} has unknown provider ID {provider.ProviderId}. Skipping", nameof(GetProviderConfiguration));
