@@ -42,11 +42,14 @@ namespace Stormpath.Owin.Middleware.Internal
 
             if (bodyContentType == ContentType.FormUrlEncoded)
             {
-                var formDictionary = FormContentParser.Parse(body, logger);
+                // TODO this code is run twice -- should split this class in two
+                var sanitizedFormData = new FormContentSanitizer().Sanitize(
+                    FormContentParser.Parse(body, logger),
+                    verbatimFields: new[] { "password", StringConstants.StateTokenName });
 
                 return new PocoBinder<T>(
-                    key => formDictionary.ContainsKey(key),
-                    key => formDictionary.GetString(key),
+                    key => sanitizedFormData.ContainsKey(key),
+                    key => sanitizedFormData.GetString(key),
                     logger).Bind();
             }
 

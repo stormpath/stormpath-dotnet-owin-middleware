@@ -129,19 +129,22 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType, _logger);
-            var formData = FormContentParser.Parse(body, _logger);
+
+            var sanitizedFormData = new FormContentSanitizer().Sanitize(
+                FormContentParser.Parse(body, _logger), 
+                verbatimFields: new[] {"password", StringConstants.StateTokenName});
 
             var htmlErrorHandler = new Func<string, CancellationToken, Task>((message, ct) =>
             {
                 var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-                var viewModelBuilder = new RegisterFormViewModelBuilder(client, _configuration, queryString, formData, _logger);
+                var viewModelBuilder = new RegisterFormViewModelBuilder(client, _configuration, queryString, sanitizedFormData, _logger);
                 var registerViewModel = viewModelBuilder.Build();
                 registerViewModel.Errors.Add(message);
 
                 return RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
             });
 
-            var stateToken = formData.GetString(StringConstants.StateTokenName);
+            var stateToken = sanitizedFormData.GetString(StringConstants.StateTokenName);
             var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
@@ -149,7 +152,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var allNonEmptyFieldNames = formData
+            var allNonEmptyFieldNames = sanitizedFormData
                 .Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value)))
                 .Select(f => f.Key)
                 .Except(new []{ StringConstants.StateTokenName })
@@ -157,7 +160,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var providedCustomFields = new Dictionary<string, object>();
             var nonCustomFields = DefaultFields.Concat(new[] {StringConstants.StateTokenName}).ToArray();
-            foreach (var item in formData.Where(f => !nonCustomFields.Contains(f.Key)))
+            foreach (var item in sanitizedFormData.Where(f => !nonCustomFields.Contains(f.Key)))
             {
                 providedCustomFields.Add(item.Key, string.Join(",", item.Value));
             }
