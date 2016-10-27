@@ -74,16 +74,21 @@ namespace Stormpath.Owin.Middleware
             // Resolve application href, if necessary
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
             options.Logger.Trace("Resolving application...", nameof(StormpathMiddleware));
-            var updatedConfiguration = ResolveApplication(client, options.Logger);
+            var application = ResolveApplication(client, options.Logger);
+
+            var updatedConfiguration = new StormpathConfiguration(
+                client.Configuration.Client,
+                new ApplicationConfiguration(application.Name, application.Href),
+                client.Configuration.Web);
 
             // Pull some configuration from the tenant environment
             options.Logger.Trace("Examining tenant environment...", nameof(StormpathMiddleware));
-            var integrationConfiguration = GetIntegrationConfiguration(client, updatedConfiguration, options.Logger);
+            var integrationConfiguration = GetIntegrationConfiguration(client, updatedConfiguration, application, options.Logger);
 
             // Validate Account Store configuration
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
             options.Logger.Trace("Ensuring the Account Store configuration is valid...", nameof(StormpathMiddleware));
-            EnsureAccountStores(client, integrationConfiguration, options.Logger);
+            EnsureAccountStores(client, integrationConfiguration, application, options.Logger);
 
             // Validate any remaining configuration
             options.Logger.Trace("Ensuring the integration configuration is valid...", nameof(StormpathMiddleware));
@@ -154,7 +159,7 @@ namespace Stormpath.Owin.Middleware
             return new ScopedClientFactory(baseClient);
         }
 
-        private static StormpathConfiguration ResolveApplication(IClient client, ILogger logger)
+        private static IApplication ResolveApplication(IClient client, ILogger logger)
         {
             var originalConfiguration = client.Configuration;
             var configurationReady = false;
@@ -168,7 +173,7 @@ namespace Stormpath.Owin.Middleware
 
                 try
                 {
-                    foundApplication = client.GetApplication(originalConfiguration.Application.Href);
+                    foundApplication = client.GetResource<IApplication>(originalConfiguration.Application.Href, opt => opt.Expand(app => app.GetDefaultAccountStore()));
                     logger.Trace("Found Application by href", nameof(ResolveApplication));
                     configurationReady = true;
                 }
@@ -187,6 +192,7 @@ namespace Stormpath.Owin.Middleware
                 {
                     foundApplication = client.GetApplications()
                         .Where(app => app.Name == originalConfiguration.Application.Name)
+                        .Expand(app => app.GetDefaultAccountStore())
                         .Synchronously()
                         .Single();
 
@@ -208,6 +214,7 @@ namespace Stormpath.Owin.Middleware
                 try
                 {
                     foundApplication = client.GetApplications()
+                        .Expand(app => app.GetDefaultAccountStore())
                         .Synchronously()
                         .Take(3)
                         .ToArray()
@@ -229,21 +236,15 @@ namespace Stormpath.Owin.Middleware
 
             logger.Info($"Using Stormpath application '{foundApplication.Name}' ({foundApplication.Href})", nameof(ResolveApplication));
 
-            var newConfiguration = new StormpathConfiguration(
-                originalConfiguration.Client,
-                new ApplicationConfiguration(foundApplication.Name, foundApplication.Href),
-                originalConfiguration.Web);
-
-            return newConfiguration;
+            return foundApplication;
         }
 
         private static IntegrationConfiguration GetIntegrationConfiguration(
             IClient client,
             StormpathConfiguration updatedConfiguration,
+            IApplication application,
             ILogger logger)
         {
-            var application = client.GetApplication(updatedConfiguration.Application.Href);
-
             var defaultAccountStore = application.GetDefaultAccountStore();
             var defaultAccountStoreHref = defaultAccountStore?.Href;
 
@@ -281,6 +282,7 @@ namespace Stormpath.Owin.Middleware
         private static IEnumerable<KeyValuePair<string, ProviderConfiguration>> GetSocialProviders(IApplication application, WebConfiguration webConfig, ILogger logger)
         {
             var accountStores = application.GetAccountStoreMappings()
+                .Expand(asm => asm.GetAccountStore())
                 .Synchronously()
                 .ToList()
                 .Select(mapping => mapping.GetAccountStore())
@@ -431,10 +433,9 @@ namespace Stormpath.Owin.Middleware
         private static void EnsureAccountStores(
             IClient client,
             IntegrationConfiguration integrationConfiguration,
+            IApplication application,
             ILogger logger)
         {
-            var application = client.GetApplication(integrationConfiguration.Application.Href);
-
             // The application should have at least one mapped Account Store
             var accountStoreCount = application.GetAccountStoreMappings().Synchronously().Count();
             if (accountStoreCount < 1)
