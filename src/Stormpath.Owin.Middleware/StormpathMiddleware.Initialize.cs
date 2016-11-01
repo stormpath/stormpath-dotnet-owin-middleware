@@ -74,16 +74,21 @@ namespace Stormpath.Owin.Middleware
             // Resolve application href, if necessary
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
             options.Logger.Trace("Resolving application...", nameof(StormpathMiddleware));
-            var updatedConfiguration = ResolveApplication(client, options.Logger);
+            var application = ResolveApplication(client, options.Logger);
+
+            var updatedConfiguration = new StormpathConfiguration(
+                client.Configuration.Client,
+                new ApplicationConfiguration(application.Name, application.Href),
+                client.Configuration.Web);
 
             // Pull some configuration from the tenant environment
             options.Logger.Trace("Examining tenant environment...", nameof(StormpathMiddleware));
-            var integrationConfiguration = GetIntegrationConfiguration(client, updatedConfiguration, options.Logger);
+            var integrationConfiguration = GetIntegrationConfiguration(client, updatedConfiguration, application, options.Logger);
 
             // Validate Account Store configuration
             // (see https://github.com/stormpath/stormpath-framework-spec/blob/master/configuration.md#application-resolution)
             options.Logger.Trace("Ensuring the Account Store configuration is valid...", nameof(StormpathMiddleware));
-            EnsureAccountStores(client, integrationConfiguration, options.Logger);
+            EnsureAccountStores(client, integrationConfiguration, application, options.Logger);
 
             // Validate any remaining configuration
             options.Logger.Trace("Ensuring the integration configuration is valid...", nameof(StormpathMiddleware));
@@ -154,7 +159,7 @@ namespace Stormpath.Owin.Middleware
             return new ScopedClientFactory(baseClient);
         }
 
-        private static StormpathConfiguration ResolveApplication(IClient client, ILogger logger)
+        private static IApplication ResolveApplication(IClient client, ILogger logger)
         {
             var originalConfiguration = client.Configuration;
             var configurationReady = false;
@@ -168,7 +173,7 @@ namespace Stormpath.Owin.Middleware
 
                 try
                 {
-                    foundApplication = client.GetApplication(originalConfiguration.Application.Href);
+                    foundApplication = client.GetResource<IApplication>(originalConfiguration.Application.Href, opt => opt.Expand(app => app.GetDefaultAccountStore()));
                     logger.Trace("Found Application by href", nameof(ResolveApplication));
                     configurationReady = true;
                 }
@@ -187,6 +192,7 @@ namespace Stormpath.Owin.Middleware
                 {
                     foundApplication = client.GetApplications()
                         .Where(app => app.Name == originalConfiguration.Application.Name)
+                        .Expand(app => app.GetDefaultAccountStore())
                         .Synchronously()
                         .Single();
 
@@ -208,6 +214,7 @@ namespace Stormpath.Owin.Middleware
                 try
                 {
                     foundApplication = client.GetApplications()
+                        .Expand(app => app.GetDefaultAccountStore())
                         .Synchronously()
                         .Take(3)
                         .ToArray()
@@ -229,21 +236,15 @@ namespace Stormpath.Owin.Middleware
 
             logger.Info($"Using Stormpath application '{foundApplication.Name}' ({foundApplication.Href})", nameof(ResolveApplication));
 
-            var newConfiguration = new StormpathConfiguration(
-                originalConfiguration.Client,
-                new ApplicationConfiguration(foundApplication.Name, foundApplication.Href),
-                originalConfiguration.Web);
-
-            return newConfiguration;
+            return foundApplication;
         }
 
         private static IntegrationConfiguration GetIntegrationConfiguration(
             IClient client,
             StormpathConfiguration updatedConfiguration,
+            IApplication application,
             ILogger logger)
         {
-            var application = client.GetApplication(updatedConfiguration.Application.Href);
-
             var defaultAccountStore = application.GetDefaultAccountStore();
             var defaultAccountStoreHref = defaultAccountStore?.Href;
 
@@ -281,6 +282,7 @@ namespace Stormpath.Owin.Middleware
         private static IEnumerable<KeyValuePair<string, ProviderConfiguration>> GetSocialProviders(IApplication application, WebConfiguration webConfig, ILogger logger)
         {
             var accountStores = application.GetAccountStoreMappings()
+                .Expand(asm => asm.GetAccountStore())
                 .Synchronously()
                 .ToList()
                 .Select(mapping => mapping.GetAccountStore())
@@ -431,10 +433,9 @@ namespace Stormpath.Owin.Middleware
         private static void EnsureAccountStores(
             IClient client,
             IntegrationConfiguration integrationConfiguration,
+            IApplication application,
             ILogger logger)
         {
-            var application = client.GetApplication(integrationConfiguration.Application.Href);
-
             // The application should have at least one mapped Account Store
             var accountStoreCount = application.GetAccountStoreMappings().Synchronously().Count();
             if (accountStoreCount < 1)
@@ -458,11 +459,10 @@ namespace Stormpath.Owin.Middleware
             IntegrationConfiguration configuration,
             ILogger logger)
         {
-            // TODO check for ID Site enabled state when ID Site is supported
-            //if (configuration.Web.IdSite.Enabled && string.IsNullOrEmpty(configuration.Web.ServerUri))
-            //{
-            //    throw new InitializationException("The stormpath.web.serverUri property must be set when using ID Site.");
-            //}
+            if (configuration.Web.IdSite.Enabled && string.IsNullOrEmpty(configuration.Web.ServerUri))
+            {
+                throw new InitializationException("The stormpath.web.serverUri property must be set when using ID Site.");
+            }
 
             if (configuration.Web.Callback.Enabled && string.IsNullOrEmpty(configuration.Web.Callback.Uri))
             {
@@ -470,12 +470,12 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
-
-        private AbstractRoute InitializeRoute<T>(IClient client)
+        private AbstractRoute InitializeRoute<T>(IClient client, RouteOptionsBase options = null)
             where T : AbstractRoute, new()
         {
             var route = new T();
-            route.Initialize(Configuration, Handlers, viewRenderer, logger, client);
+            options = options ?? new RouteOptionsBase();
+            route.Initialize(Configuration, Handlers, viewRenderer, logger, client, options);
 
             return route;
         }
@@ -484,6 +484,8 @@ namespace Stormpath.Owin.Middleware
         {
             var routing = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
 
+            var stormpathCallback = BuildSafeServerUrl(Configuration.Web, Configuration.Web.Callback.Uri);
+
             // /oauth/token
             if (Configuration.Web.Oauth2.Enabled)
             {
@@ -491,8 +493,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.Oauth2.Uri,
-                    new RouteHandler(client => InitializeRoute<Oauth2Route>(client).InvokeAsync, false)
-                    );
+                    new RouteHandler(client => InitializeRoute<Oauth2Route>(client).InvokeAsync));
             }
 
             // /stormpathCallback
@@ -510,10 +511,26 @@ namespace Stormpath.Owin.Middleware
             {
                 logger.Info($"Register route enabled on {Configuration.Web.Register.Uri}", nameof(BuildRoutingTable));
 
-                routing.Add(
-                    Configuration.Web.Register.Uri,
-                    new RouteHandler(client => InitializeRoute<RegisterRoute>(client).InvokeAsync, false)
-                    );
+                if (Configuration.Web.IdSite.Enabled)
+                {
+                    logger.Info($"Using ID Site for register route with path '{Configuration.Web.IdSite.RegisterUri}'", nameof(BuildRoutingTable));
+
+                    var options = new IdSiteRedirectOptions
+                    {
+                        CallbackUri = stormpathCallback,
+                        Path = Configuration.Web.IdSite.RegisterUri
+                    };
+
+                    routing.Add(
+                        Configuration.Web.Register.Uri,
+                        new RouteHandler(client => InitializeRoute<IdSiteRedirectRoute>(client, options).InvokeAsync));
+                }
+                else
+                {
+                    routing.Add(
+                        Configuration.Web.Register.Uri,
+                        new RouteHandler(client => InitializeRoute<RegisterRoute>(client).InvokeAsync));
+                }
             }
 
             // /login
@@ -521,10 +538,24 @@ namespace Stormpath.Owin.Middleware
             {
                 logger.Info($"Login route enabled on {Configuration.Web.Login.Uri}", nameof(BuildRoutingTable));
 
-                routing.Add(
-                    Configuration.Web.Login.Uri,
-                    new RouteHandler(client => InitializeRoute<LoginRoute>(client).InvokeAsync, false)
-                    );
+                if (Configuration.Web.IdSite.Enabled)
+                {
+                    var options = new IdSiteRedirectOptions
+                    {
+                        CallbackUri = stormpathCallback,
+                        Path = Configuration.Web.IdSite.LoginUri
+                    };
+
+                    routing.Add(
+                        Configuration.Web.Login.Uri,
+                        new RouteHandler(client => InitializeRoute<IdSiteRedirectRoute>(client, options).InvokeAsync));
+                }
+                else
+                {
+                    routing.Add(
+                        Configuration.Web.Login.Uri,
+                        new RouteHandler(client => InitializeRoute<LoginRoute>(client).InvokeAsync));
+                }
             }
 
             // /me
@@ -534,8 +565,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.Me.Uri,
-                    new RouteHandler(client => InitializeRoute<MeRoute>(client).InvokeAsync, true)
-                    );
+                    new RouteHandler(client => InitializeRoute<MeRoute>(client).InvokeAsync, true));
             }
 
             // /logout
@@ -543,10 +573,26 @@ namespace Stormpath.Owin.Middleware
             {
                 logger.Info($"Logout route enabled on {Configuration.Web.Logout.Uri}", nameof(BuildRoutingTable));
 
-                routing.Add(
-                    Configuration.Web.Logout.Uri,
-                    new RouteHandler(client => InitializeRoute<LogoutRoute>(client).InvokeAsync, false)
-                    );
+                if (Configuration.Web.IdSite.Enabled)
+                {
+                    logger.Info("Using ID Site for logout route", nameof(BuildRoutingTable));
+
+                    var options = new IdSiteRedirectOptions
+                    {
+                        CallbackUri = stormpathCallback,
+                        Logout = true
+                    };
+
+                    routing.Add(
+                        Configuration.Web.Logout.Uri,
+                        new RouteHandler(client => InitializeRoute<IdSiteRedirectRoute>(client, options).InvokeAsync));
+                }
+                else
+                {
+                    routing.Add(
+                        Configuration.Web.Logout.Uri,
+                        new RouteHandler(client => InitializeRoute<LogoutRoute>(client).InvokeAsync));
+                }
             }
 
             // /forgot   
@@ -554,10 +600,27 @@ namespace Stormpath.Owin.Middleware
             {
                 logger.Info($"ForgotPassword route enabled on {Configuration.Web.ForgotPassword.Uri}", nameof(BuildRoutingTable));
 
-                routing.Add(
-                    Configuration.Web.ForgotPassword.Uri,
-                    new RouteHandler(client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync, false)
-                    );
+                if (Configuration.Web.IdSite.Enabled)
+                {
+                    logger.Info($"Using ID Site for forgot route with path '{Configuration.Web.IdSite.ForgotUri}'",
+                        nameof(BuildRoutingTable));
+
+                    var options = new IdSiteRedirectOptions
+                    {
+                        CallbackUri = stormpathCallback,
+                        Path = Configuration.Web.IdSite.ForgotUri
+                    };
+
+                    routing.Add(
+                        Configuration.Web.ForgotPassword.Uri,
+                        new RouteHandler(client => InitializeRoute<IdSiteRedirectRoute>(client, options).InvokeAsync));
+                }
+                else
+                {
+                    routing.Add(
+                        Configuration.Web.ForgotPassword.Uri,
+                        new RouteHandler(client => InitializeRoute<ForgotPasswordRoute>(client).InvokeAsync));
+                }
             }
 
             // /change
@@ -567,8 +630,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.ChangePassword.Uri,
-                    new RouteHandler(client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync, false)
-                    );
+                    new RouteHandler(client => InitializeRoute<ChangePasswordRoute>(client).InvokeAsync));
             }
 
             // /verify
@@ -578,14 +640,13 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     Configuration.Web.VerifyEmail.Uri,
-                    new RouteHandler(client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync, false)
-                    );
+                    new RouteHandler(client => InitializeRoute<VerifyEmailRoute>(client).InvokeAsync));
             }
 
             // /callbacks/facebook
             if (FacebookCallbackRoute.ShouldBeEnabled(Configuration))
             {
-                var facebookProvider =Configuration.Providers
+                var facebookProvider = Configuration.Providers
                     .First(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase))
                     .Value;
 
@@ -593,7 +654,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     facebookProvider.CallbackPath,
-                    new RouteHandler(client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync, false));
+                    new RouteHandler(client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync));
             }
 
             // /callbacks/google
@@ -607,7 +668,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     googleProvider.CallbackPath,
-                    new RouteHandler(client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync, false));
+                    new RouteHandler(client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync));
             }
 
             // /callbacks/github
@@ -621,7 +682,7 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     githubProvider.CallbackPath,
-                    new RouteHandler(client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync, false));
+                    new RouteHandler(client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync));
             }
 
             // /callbacks/linkedin
@@ -635,10 +696,13 @@ namespace Stormpath.Owin.Middleware
 
                 routing.Add(
                     linkedInProvider.CallbackPath,
-                    new RouteHandler(client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync, false));
+                    new RouteHandler(client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync));
             }
 
             return routing;
         }
+
+        private static string BuildSafeServerUrl(WebConfiguration webConfig, string route)
+            => $"{webConfig.ServerUri.TrimEnd('/')}/{route.TrimStart('/')}";
     }
 }

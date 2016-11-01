@@ -22,11 +22,8 @@ namespace Stormpath.Owin.Middleware.Internal
     {
         public static void AddDoNotCacheHeaders(IOwinEnvironment context)
         {
-            context.Response.OnSendingHeaders(state =>
-            {
-                context.Response.Headers.SetString("Cache-Control", "no-cache, no-store");
-                context.Response.Headers.SetString("Pragma", "no-cache");
-            }, null);
+            context.Response.Headers.SetString("Cache-Control", "no-cache, no-store");
+            context.Response.Headers.SetString("Pragma", "no-cache");
         }
     }
 }

@@ -127,14 +127,8 @@ namespace Stormpath.Owin.Middleware
 
         private void DeleteCookies(IOwinEnvironment context, CookieParser cookieParser)
         {
-            if (cookieParser.Contains(_configuration.Web.AccessTokenCookie.Name))
-            {
-                Cookies.DeleteTokenCookie(context, _configuration.Web.AccessTokenCookie, _logger);
-            }
-            if (cookieParser.Contains(_configuration.Web.RefreshTokenCookie.Name))
-            {
-                Cookies.DeleteTokenCookie(context, _configuration.Web.RefreshTokenCookie, _logger);
-            }
+            Cookies.DeleteTokenCookie(context, _configuration.Web.AccessTokenCookie, _logger);
+            Cookies.DeleteTokenCookie(context, _configuration.Web.RefreshTokenCookie, _logger);
         }
     }
 }

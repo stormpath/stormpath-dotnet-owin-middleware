@@ -1,6 +1,5 @@
-﻿// <copyright file="RequestAuthenticationScheme.cs" company="Stormpath, Inc.">
+﻿// <copyright file="IdSiteRedirectOptions.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
-// Portions copyright 2013 Microsoft Open Technologies, Inc. Licensed under Apache 2.0.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Abstractions
+namespace Stormpath.Owin.Middleware.Route
 {
-    public static class RequestAuthenticationScheme
+    public class IdSiteRedirectOptions : RouteOptionsBase
     {
-        public static readonly string Bearer = "Bearer";
-        public static readonly string Cookie = "Cookie";
-        public static readonly string ApiCredentials = "Basic";
+        public string CallbackUri { get; set; }
+
+        public string Path { get; set; }
+
+        public bool Logout { get; set; }
     }
 }

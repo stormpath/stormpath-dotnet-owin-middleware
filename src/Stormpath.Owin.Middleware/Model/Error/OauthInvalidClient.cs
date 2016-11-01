@@ -1,6 +1,5 @@
-﻿// <copyright file="RequestAuthenticationScheme.cs" company="Stormpath, Inc.">
+﻿// <copyright file="OauthInvalidRequest.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
-// Portions copyright 2013 Microsoft Open Technologies, Inc. Licensed under Apache 2.0.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 
-namespace Stormpath.Owin.Abstractions
+namespace Stormpath.Owin.Middleware.Model.Error
 {
-    public static class RequestAuthenticationScheme
+    public sealed class OauthInvalidClient : AbstractError
     {
-        public static readonly string Bearer = "Bearer";
-        public static readonly string Cookie = "Cookie";
-        public static readonly string ApiCredentials = "Basic";
+        public override int StatusCode => 401;
+
+        public OauthInvalidClient()
+        {
+            Body = new
+            {
+                error = "invalid_client"
+            };
+        }
     }
 }

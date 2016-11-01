@@ -105,7 +105,7 @@ namespace Stormpath.Owin.NowinHarness
 
                     if (!env.ContainsKey(OwinKeys.StormpathUser))
                     {
-                        await writer.WriteAsync("<a href=\"/login\">Log in</a>");
+                        await writer.WriteAsync("<a href=\"/login\">Log in</a> or <a href=\"/register\">Register</a>");
                     }
                     else
                     {

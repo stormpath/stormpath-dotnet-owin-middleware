@@ -46,7 +46,10 @@ namespace Stormpath.Owin.IntegrationTest
                 if (context.Request.Path == "/")
                 {
                     await context.Response.WriteAsync("Hello World!");
+                    return;
                 }
+
+                context.Response.StatusCode = 404;
             });
         }
     }

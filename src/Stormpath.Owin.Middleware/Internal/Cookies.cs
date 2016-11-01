@@ -114,10 +114,18 @@ namespace Stormpath.Owin.Middleware.Internal
 
             logger.Trace($"Adding cookie to response: '{cookieFormat}'", nameof(SetCookie));
 
-            context.Response.OnSendingHeaders(_ =>
+            // If the cookie has already been set, make sure it's replaced
+            string[] existingSetCookieHeaders;
+            context.Response.Headers.TryGetValue("Set-Cookie", out existingSetCookieHeaders);
+            if (existingSetCookieHeaders == null)
             {
-                context.Response.Headers.AddString("Set-Cookie", cookieFormat);
-            }, null);
+                existingSetCookieHeaders = new string[0];
+            }
+
+            var newSetCookieHeaders = existingSetCookieHeaders.Where(h => !h.StartsWith($"{name}=")).ToList();
+            newSetCookieHeaders.Add(cookieFormat);
+
+            context.Response.Headers["Set-Cookie"] = newSetCookieHeaders.ToArray();
         }
     }
 }

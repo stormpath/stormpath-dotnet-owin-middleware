@@ -156,7 +156,7 @@ namespace Stormpath.Owin.Middleware.Route
             var token = await grantResult.GetAccessTokenAsync(cancellationToken);
             var account = await token.GetAccountAsync(cancellationToken);
 
-            var sanitizer = new ResponseSanitizer<IAccount>();
+            var sanitizer = new AccountResponseSanitizer();
             var responseModel = new
             {
                 account = sanitizer.Sanitize(account)
@@ -238,7 +238,7 @@ namespace Stormpath.Owin.Middleware.Route
                     loginResult,
                     cancellationToken);
 
-                var sanitizer = new ResponseSanitizer<IAccount>();
+                var sanitizer = new AccountResponseSanitizer();
                 var responseModel = new
                 {
                     account = sanitizer.Sanitize(loginResult.Account)

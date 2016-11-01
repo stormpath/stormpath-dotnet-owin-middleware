@@ -34,13 +34,15 @@ namespace Stormpath.Owin.Middleware.Route
         private IViewRenderer _viewRenderer;
         protected ILogger _logger;
         private IClient _client;
+        protected RouteOptionsBase _options;
 
         public void Initialize(
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
             IViewRenderer viewRenderer,
             ILogger logger,
-            IClient client)
+            IClient client,
+            RouteOptionsBase options)
         {
             if (configuration == null)
             {
@@ -67,6 +69,7 @@ namespace Stormpath.Owin.Middleware.Route
             _logger = logger;
             _client = client;
             _handlers = handlers;
+            _options = options;
 
             _initialized = true;
         }

@@ -9,9 +9,9 @@
   },
   "dependencies": {
     "Stormpath.Configuration.Abstractions": "6.0.0",
-    "Stormpath.SDK.Abstractions": "0.94.2" 
+    "Stormpath.SDK.Abstractions": "0.95.0" 
   },
-  "description": "Common components for the Stormpath OWIN middleware library.",
+  "description": "Common components for the Stormpath.Owin library",
   "frameworks": {
     "net45": { },
     "netstandard1.1": {
@@ -23,7 +23,7 @@
     }
   },
   "packOptions": {
-    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
+    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-dotnet/develop/icon.png",
     "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
     "owners": [ "Stormpath, Inc." ],
     "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
@@ -34,5 +34,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Abstractions"
   },
-  "version": "1.7.0"
+  "version": "1.7.1"
 }
