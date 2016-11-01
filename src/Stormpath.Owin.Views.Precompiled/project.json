@@ -11,11 +11,11 @@
   "dependencies": {
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.7.0"
+      "version": "1.7.1"
     },
-    "Stormpath.SDK.Abstractions": "0.94.2"
+    "Stormpath.SDK.Abstractions": "0.95.0-beta4"
   },
-  "description": "Precompiled views for the Stormpath OWIN middleware library.",
+  "description": "Precompiled Razor views for the Stormpath.Owin library",
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
@@ -32,7 +32,7 @@
     }
   },
   "packOptions": {
-    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
+    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-dotnet/develop/icon.png",
     "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
     "owners": [ "Stormpath, Inc." ],
     "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
@@ -43,5 +43,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Views.Precompiled"
   },
-  "version": "0.4.2"
+  "version": "0.4.3"
 }

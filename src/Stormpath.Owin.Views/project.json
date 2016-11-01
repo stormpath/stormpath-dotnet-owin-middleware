@@ -7,15 +7,15 @@
     },
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.7.0"
+      "version": "1.7.1"
     }
   },
-  "description": "Common views for the Stormpath OWIN middleware library.",
+  "description": "Common views for the Stormpath OWIN middleware library",
   "frameworks": {
     "netcoreapp1.0": {}
   },
   "packOptions": {
-    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-csharp/master/icon.png",
+    "iconUrl": "https://raw.githubusercontent.com/stormpath/stormpath-sdk-dotnet/develop/icon.png",
     "licenseUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE",
     "owners": [ "Stormpath, Inc." ],
     "projectUrl": "https://github.com/stormpath/stormpath-dotnet-owin-middleware",
