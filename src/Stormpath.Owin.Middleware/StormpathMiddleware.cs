@@ -38,7 +38,7 @@ namespace Stormpath.Owin.Middleware
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
         private readonly IScopedClientFactory clientFactory;
         private readonly IReadOnlyDictionary<string, RouteHandler> routingTable;
-        private AppFunc next;
+        private AppFunc _next;
 
         private StormpathMiddleware(
             IViewRenderer viewRenderer,
@@ -64,14 +64,14 @@ namespace Stormpath.Owin.Middleware
 
         public void Initialize(AppFunc next)
         {
-            this.next = next;
+            _next = next;
         }
 
         public async Task Invoke(IDictionary<string, object> environment)
         {
-            if (this.next == null)
+            if (this._next == null)
             {
-                throw new ArgumentNullException(nameof(next));
+                throw new ArgumentNullException(nameof(_next));
             }
 
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
@@ -101,7 +101,7 @@ namespace Stormpath.Owin.Middleware
 
                 if (routeHandler == null)
                 {
-                    await this.next.Invoke(environment);
+                    await this._next.Invoke(environment);
                     return;
                 }
 
@@ -122,7 +122,7 @@ namespace Stormpath.Owin.Middleware
                 if (!handled)
                 {
                     logger.Trace("Handler skipped request.", "StormpathMiddleware.Invoke");
-                    await this.next.Invoke(environment);
+                    await this._next.Invoke(environment);
                 }
             }
         }
