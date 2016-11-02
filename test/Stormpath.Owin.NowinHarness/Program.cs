@@ -61,13 +61,6 @@ namespace Stormpath.Owin.NowinHarness
             {
                 LibraryUserAgent = "nowin/0.22.2",
                 ViewRenderer = new PrecompiledViewRenderer(logger),
-                Configuration = new StormpathConfiguration
-                {
-                    Web = new WebConfiguration()
-                    {
-                        ServerUri = "http://localhost:8080"
-                    }
-                },
                 Logger = logger,
                 PreRegistrationHandler = (ctx, ct) =>
                 {
