@@ -170,5 +170,18 @@ namespace Stormpath.Owin.UnitTest
 
             result.Success.Should().BeFalse();
         }
+
+        /// <summary>
+        /// Regression test for https://github.com/stormpath/stormpath-dotnet-owin-middleware/issues/57
+        /// </summary>
+        [Fact]
+        public void Complex_scenario_1_is_html()
+        {
+            var headerValue = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: null);
+
+            result.Success.Should().BeTrue();
+            result.ContentType.ToString().Should().Be(TextHtml);
+        }
     }
 }
