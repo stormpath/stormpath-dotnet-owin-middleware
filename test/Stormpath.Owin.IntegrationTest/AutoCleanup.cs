@@ -58,6 +58,8 @@ namespace Stormpath.Owin.IntegrationTest
                 throw new ObjectDisposedException(nameof(AutoCleanup), "The environment has already been cleaned up");
             }
 
+            var exceptions = new List<Exception>();
+
             foreach (var resource in (_cleanupList as IEnumerable<IDeletable>).Reverse())
             {
                 try
@@ -67,7 +69,18 @@ namespace Stormpath.Owin.IntegrationTest
                 catch (ResourceException rex)
                 {
                     _log($"Could not delete {(resource as IResource)?.Href} - '{rex.DeveloperMessage}'");
+                    exceptions.Add(rex);
                 }
+                catch (Exception ex)
+                {
+                    _log($"Could not delete {(resource as IResource)?.Href} - '{ex.Message}'");
+                    exceptions.Add(ex);
+                }
+            }
+
+            if (exceptions.Any())
+            {
+                throw new AggregateException("Could not clean up all resources", exceptions);
             }
 
             _disposed = true;
