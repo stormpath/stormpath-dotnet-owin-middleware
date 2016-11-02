@@ -484,7 +484,9 @@ namespace Stormpath.Owin.Middleware
         {
             var routing = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
 
-            var stormpathCallback = BuildSafeServerUrl(Configuration.Web, Configuration.Web.Callback.Uri);
+            // TODO Absolute URI is required for now, until it can be automatically generated
+            var stormpathCallbackAbsoluteUri = new Lazy<string>(() =>
+                BuildSafeServerUrl(Configuration.Web, Configuration.Web.Callback.Uri));
 
             // /oauth/token
             if (Configuration.Web.Oauth2.Enabled)
@@ -517,7 +519,7 @@ namespace Stormpath.Owin.Middleware
 
                     var options = new IdSiteRedirectOptions
                     {
-                        CallbackUri = stormpathCallback,
+                        CallbackUri = stormpathCallbackAbsoluteUri.Value,
                         Path = Configuration.Web.IdSite.RegisterUri
                     };
 
@@ -542,7 +544,7 @@ namespace Stormpath.Owin.Middleware
                 {
                     var options = new IdSiteRedirectOptions
                     {
-                        CallbackUri = stormpathCallback,
+                        CallbackUri = stormpathCallbackAbsoluteUri.Value,
                         Path = Configuration.Web.IdSite.LoginUri
                     };
 
@@ -579,7 +581,7 @@ namespace Stormpath.Owin.Middleware
 
                     var options = new IdSiteRedirectOptions
                     {
-                        CallbackUri = stormpathCallback,
+                        CallbackUri = stormpathCallbackAbsoluteUri.Value,
                         Logout = true
                     };
 
@@ -607,7 +609,7 @@ namespace Stormpath.Owin.Middleware
 
                     var options = new IdSiteRedirectOptions
                     {
-                        CallbackUri = stormpathCallback,
+                        CallbackUri = stormpathCallbackAbsoluteUri.Value,
                         Path = Configuration.Web.IdSite.ForgotUri
                     };
 
