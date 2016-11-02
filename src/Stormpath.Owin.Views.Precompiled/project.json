@@ -13,7 +13,7 @@
       "target": "project",
       "version": "1.7.1"
     },
-    "Stormpath.SDK.Abstractions": "0.95.0-beta4"
+    "Stormpath.SDK.Abstractions": "0.95.0"
   },
   "description": "Precompiled Razor views for the Stormpath.Owin library",
   "frameworks": {
