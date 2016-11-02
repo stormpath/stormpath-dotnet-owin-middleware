@@ -36,13 +36,13 @@ namespace Stormpath.Owin.IntegrationTest
                 var account = await application.CreateAccountAsync(
                     nameof(AccessAccount),
                     nameof(PreLogoutHandlerShould),
-                    $"its-{fixture.TestKey}@example.com",
+                    $"its-{fixture.TestKey}@testmail.stormpath.com",
                     "Changeme123!!");
                 cleanup.MarkForDeletion(account);
 
                 var payload = new
                 {
-                    login = $"its-{fixture.TestKey}@example.com",
+                    login = $"its-{fixture.TestKey}@testmail.stormpath.com",
                     password = "Changeme123!!"
                 };
 

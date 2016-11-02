@@ -25,7 +25,7 @@ namespace Stormpath.Owin.IntegrationTest
             => client.Instantiate<IAccount>()
                 .SetGivenName("Test")
                 .SetSurname("User")
-                .SetEmail($"{Guid.NewGuid()}@foo.bar")
+                .SetEmail($"{Guid.NewGuid()}@testmail.stormpath.com")
                 .SetPassword("Changeme123!!");
 
         [Fact]

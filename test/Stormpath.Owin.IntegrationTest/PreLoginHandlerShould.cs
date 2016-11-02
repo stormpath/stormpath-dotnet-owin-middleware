@@ -38,13 +38,13 @@ namespace Stormpath.Owin.IntegrationTest
                 var account = await application.CreateAccountAsync(
                     nameof(AlterLogin),
                     nameof(PreLoginHandlerShould),
-                    $"its-{fixture.TestKey}@example.com",
+                    $"its-{fixture.TestKey}@testmail.stormpath.com",
                     "Changeme123!!");
                 cleanup.MarkForDeletion(account);
 
                 var payload = new
                 {
-                    login = $"its-{fixture.TestKey}@example", // missing ".com"
+                    login = $"its-{fixture.TestKey}@testmail.stormpath", // missing ".com"
                     password = "Changeme123!!"
                 };
 

@@ -31,7 +31,7 @@ namespace Stormpath.Owin.IntegrationTest
             using (var cleanup = new AutoCleanup(fixture.Client))
             {
                 var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
-                var email = $"its-{fixture.TestKey}@example.com";
+                var email = $"its-{fixture.TestKey}@testmail.stormpath.com";
                 var account = await application.CreateAccountAsync(
                     nameof(AccessAccount), 
                     nameof(PreChangePasswordHandlerShould),

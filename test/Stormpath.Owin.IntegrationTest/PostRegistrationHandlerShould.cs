@@ -34,7 +34,7 @@ namespace Stormpath.Owin.IntegrationTest
                 var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
 
                 // Act
-                var email = $"its-{fixture.TestKey}@example.com";
+                var email = $"its-{fixture.TestKey}@testmail.stormpath.com";
                 var payload = new
                 {
                     email,
