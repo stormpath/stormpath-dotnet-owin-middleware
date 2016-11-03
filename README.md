@@ -1,4 +1,4 @@
-# Stormpath OWIN Middleware for .NET [![Build status](https://ci.appveyor.com/api/projects/status/o2sn5r4501ckgwb9/branch/master?svg=true)](https://ci.appveyor.com/project/nbarbettini/stormpath-dotnet-owin-middleware/branch/master) [![NuGet](https://img.shields.io/nuget/v/Stormpath.Owin.Middleware.svg)](https://www.nuget.org/packages/Stormpath.Owin.Middleware)
+# Stormpath OWIN Middleware for .NET [![Slack Status](https://talkstormpath.shipit.xyz/badge.svg)](https://talkstormpath.shipit.xyz) [![NuGet](https://img.shields.io/nuget/v/Stormpath.Owin.Middleware.svg)](https://www.nuget.org/packages/Stormpath.Owin.Middleware)
 
 This library provides middleware that plugs into any OWIN pipeline and makes it easy to add user authentication to your .NET application, with pre-built functionality for login, signup, authorization, and social login.
 
