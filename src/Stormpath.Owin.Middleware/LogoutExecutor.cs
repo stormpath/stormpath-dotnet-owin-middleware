@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Immutable;
@@ -47,6 +48,7 @@ namespace Stormpath.Owin.Middleware
 
                 // TODO delete tokens for other types of auth too
                 await RevokeCookieTokens(_client, cookieParser, cancellationToken);
+                await RevokeHeaderToken(context, _client, cancellationToken);
 
                 var postLogoutContext = new PostLogoutContext(context, account);
                 await _handlers.PostLogoutHandler(postLogoutContext, cancellationToken);
@@ -63,66 +65,38 @@ namespace Stormpath.Owin.Middleware
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
 
-            var deleteAccessTokenTask = Task.FromResult(false);
-            var deleteRefreshTokenTask = Task.FromResult(false);
-
-            string jti;
-            if (IsValidJwt(accessToken, client, out jti))
-            {
-                try
-                {
-                    var accessTokenResource = await client.GetAccessTokenAsync($"/accessTokens/{jti}", cancellationToken);
-                    deleteAccessTokenTask = accessTokenResource.DeleteAsync(cancellationToken);
-                }
-                catch (ResourceException rex)
-                {
-                    _logger.Info(rex.DeveloperMessage, source: nameof(RevokeCookieTokens));
-                }
-            }
-
-            if (IsValidJwt(refreshToken, client, out jti))
-            {
-                try
-                {
-                    var refreshTokenResource = await client.GetRefreshTokenAsync($"/refreshTokens/{jti}", cancellationToken);
-                    deleteRefreshTokenTask = refreshTokenResource.DeleteAsync(cancellationToken);
-                }
-                catch (ResourceException rex)
-                {
-                    _logger.Info(rex.DeveloperMessage, source: nameof(RevokeCookieTokens));
-                }
-            }
+            var revoker = new TokenRevoker(client, _logger)
+                .AddToken(accessToken)
+                .AddToken(refreshToken);
 
             try
             {
-                await Task.WhenAll(deleteAccessTokenTask, deleteRefreshTokenTask);
+                await revoker.Revoke(cancellationToken);
             }
-            catch (ResourceException rex)
+            catch (Exception ex)
             {
-                _logger.Info(rex.DeveloperMessage, source: nameof(RevokeCookieTokens));
+                _logger.Info(ex.Message, source: nameof(RevokeCookieTokens));
             }
         }
 
-        private static bool IsValidJwt(string jwt, IClient client, out string jti)
+        private async Task RevokeHeaderToken(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
-            jti = null;
-
-            if (string.IsNullOrEmpty(jwt))
+            var bearerHeaderParser = new BearerAuthenticationParser(context.Request.Headers.GetString("Authorization"), _logger);
+            if (!bearerHeaderParser.IsValid)
             {
-                return false;
+                return;
             }
+
+            var revoker = new TokenRevoker(client, _logger)
+                .AddToken(bearerHeaderParser.Token);
 
             try
             {
-                var parsed = client.NewJwtParser()
-                    .SetSigningKey(client.Configuration.Client.ApiKey.Secret, Encoding.UTF8)
-                    .Parse(jwt);
-                jti = parsed.Body.Id;
-                return true;
+                await revoker.Revoke(cancellationToken);
             }
-            catch (InvalidJwtException)
+            catch (Exception ex)
             {
-                return false;
+                _logger.Info(ex.Message, source: nameof(RevokeCookieTokens));
             }
         }
 

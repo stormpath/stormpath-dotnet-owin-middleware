@@ -86,23 +86,15 @@ namespace Stormpath.Owin.Middleware
 
         private Task<IAccount> TryBearerAuthenticationAsync(IOwinEnvironment context, IClient client)
         {
-            var bearerHeader = context.Request.Headers.GetString("Authorization");
-            bool isValid = !string.IsNullOrEmpty(bearerHeader) && bearerHeader.StartsWith("Bearer ", StringComparison.Ordinal);
-            if (!isValid)
+            var bearerHeaderParser = new BearerAuthenticationParser(context.Request.Headers.GetString("Authorization"),
+                logger);
+            if (!bearerHeaderParser.IsValid)
             {
-                logger.Trace("No Bearer header found", nameof(TryBearerAuthenticationAsync));
-                return Task.FromResult<IAccount>(null);
-            }
-
-            var bearerPayload = bearerHeader.Substring(7); // "Bearer " + (payload)
-            if (string.IsNullOrEmpty(bearerPayload))
-            {
-                logger.Info("Found Bearer header, but payload was empty", nameof(TryBearerAuthenticationAsync));
                 return Task.FromResult<IAccount>(null);
             }
 
             logger.Info("Using Bearer header to authenticate request", nameof(TryBearerAuthenticationAsync));
-            return ValidateAccessTokenAsync(context, client, bearerPayload);
+            return ValidateAccessTokenAsync(context, client, bearerHeaderParser.Token);
         }
 
         private async Task<IAccount> TryCookieAuthenticationAsync(IOwinEnvironment context, IClient client)
