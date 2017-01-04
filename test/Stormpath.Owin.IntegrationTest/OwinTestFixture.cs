@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
+using Stormpath.Owin.Views.Precompiled;
 using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.IntegrationTest
@@ -26,7 +26,7 @@ namespace Stormpath.Owin.IntegrationTest
         {
             var options = Options ?? new StormpathOwinOptions();
             options.LibraryUserAgent = "Stormpath.Owin.IntegrationTest";
-            options.ViewRenderer = new NullViewRenderer();
+            options.ViewRenderer = new PrecompiledViewRenderer(null);
 
             var stormpathMiddleware = StormpathMiddleware.Create(options);
             Client = stormpathMiddleware.GetClient();
