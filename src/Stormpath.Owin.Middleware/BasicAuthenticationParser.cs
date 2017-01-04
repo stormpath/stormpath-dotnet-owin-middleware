@@ -10,8 +10,8 @@ namespace Stormpath.Owin.Middleware
 
         public BasicAuthenticationParser(string authorizationHeader, ILogger logger)
         {
-            Parse(authorizationHeader);
             _logger = logger;
+            Parse(authorizationHeader);
         }
 
         public string Username { get; private set; }
@@ -39,7 +39,18 @@ namespace Stormpath.Owin.Middleware
                 return;
             }
 
-            var decodedPayload = Encoding.UTF8.GetString(Convert.FromBase64String(basicPayload));
+            var decodedPayload = string.Empty;
+
+            try
+            {
+                decodedPayload = Encoding.UTF8.GetString(Convert.FromBase64String(basicPayload));
+            }
+            catch (FormatException fex)
+            {
+                _logger.Info($"Found Basic header, but payload was not valid: {fex.Message}");
+                decodedPayload = string.Empty;
+            }
+
             var payloadChunks = decodedPayload.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
             if (payloadChunks.Length != 2)
             {
