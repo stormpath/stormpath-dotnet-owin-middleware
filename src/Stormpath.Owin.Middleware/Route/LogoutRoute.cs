@@ -24,18 +24,19 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class LogoutRoute : AbstractRoute
     {
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostAsync(
+            IOwinEnvironment context,
+            IClient client,
+            ContentNegotiationResult acceptContentNegotiationResult,
+            CancellationToken cancellationToken)
         {
             var executor = new LogoutExecutor(client, _configuration, _handlers, _logger);
             await executor.HandleLogoutAsync(context, cancellationToken);
 
-            return await executor.HandleRedirectAsync(context);
-        }
-
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
-        {
-            var executor = new LogoutExecutor(client, _configuration, _handlers, _logger);
-            await executor.HandleLogoutAsync(context, cancellationToken);
+            if (acceptContentNegotiationResult.ContentType == ContentType.Html)
+            {
+                return await executor.HandleRedirectAsync(context);
+            }
 
             await JsonResponse.Ok(context);
             return true;

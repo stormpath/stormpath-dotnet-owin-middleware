@@ -34,30 +34,31 @@ namespace Stormpath.Owin.Middleware
         public async Task HandleLogoutAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var account = context.Request[OwinKeys.StormpathUser] as IAccount;
-
-            var preLogoutContext = new PreLogoutContext(context, account);
-            await _handlers.PreLogoutHandler(preLogoutContext, cancellationToken);
-
-            // Remove user from request
             context.Request[OwinKeys.StormpathUser] = null;
 
             string[] rawCookies;
             context.Request.Headers.TryGetValue("Cookie", out rawCookies);
             var cookieParser = new CookieParser(rawCookies, _logger);
 
-            await RevokeTokens(_client, cookieParser, cancellationToken);
+            if (account != null)
+            {
+                var preLogoutContext = new PreLogoutContext(context, account);
+                await _handlers.PreLogoutHandler(preLogoutContext, cancellationToken);
 
-            // TODO delete tokens for other types of auth too
+                // TODO delete tokens for other types of auth too
+                await RevokeCookieTokens(_client, cookieParser, cancellationToken);
+
+                var postLogoutContext = new PostLogoutContext(context, account);
+                await _handlers.PostLogoutHandler(postLogoutContext, cancellationToken);
+            }
+
             DeleteCookies(context, cookieParser);
-
-            var postLogoutContext = new PostLogoutContext(context, account);
-            await _handlers.PostLogoutHandler(postLogoutContext, cancellationToken);
         }
 
         public Task<bool> HandleRedirectAsync(IOwinEnvironment context)
             => HttpResponse.Redirect(context, _configuration.Web.Logout.NextUri);
 
-        private async Task RevokeTokens(IClient client, CookieParser cookieParser, CancellationToken cancellationToken)
+        private async Task RevokeCookieTokens(IClient client, CookieParser cookieParser, CancellationToken cancellationToken)
         {
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
@@ -75,7 +76,7 @@ namespace Stormpath.Owin.Middleware
                 }
                 catch (ResourceException rex)
                 {
-                    _logger.Info(rex.DeveloperMessage, source: nameof(RevokeTokens));
+                    _logger.Info(rex.DeveloperMessage, source: nameof(RevokeCookieTokens));
                 }
             }
 
@@ -88,7 +89,7 @@ namespace Stormpath.Owin.Middleware
                 }
                 catch (ResourceException rex)
                 {
-                    _logger.Info(rex.DeveloperMessage, source: nameof(RevokeTokens));
+                    _logger.Info(rex.DeveloperMessage, source: nameof(RevokeCookieTokens));
                 }
             }
 
@@ -98,7 +99,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (ResourceException rex)
             {
-                _logger.Info(rex.DeveloperMessage, source: nameof(RevokeTokens));
+                _logger.Info(rex.DeveloperMessage, source: nameof(RevokeCookieTokens));
             }
         }
 
