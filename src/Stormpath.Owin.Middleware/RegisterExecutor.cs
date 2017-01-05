@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model;
 using Stormpath.SDK.Account;
 using Stormpath.SDK.Application;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Directory;
 using Stormpath.SDK.Logging;
+using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -77,13 +79,23 @@ namespace Stormpath.Owin.Middleware
             await _handlers.PostRegistrationHandler(postRegistrationContext, cancellationToken);
         }
 
-        public Task<bool> HandleRedirectAsync(IOwinEnvironment environment, IAccount createdAccount, string stateToken)
+        public Task<bool> HandleRedirectAsync(
+            IOwinEnvironment environment,
+            IApplication application,
+            IAccount createdAccount,
+            RegisterPostModel postModel,
+            string stateToken,
+            CancellationToken cancellationToken)
         {
-            string nextUri;
+            if (_configuration.Web.Register.AutoLogin
+                && createdAccount.Status != AccountStatus.Unverified)
+            {
+                return HandleAutologinAsync(environment, application, createdAccount, postModel, stateToken, cancellationToken);
+            }
 
+            string nextUri;
             if (createdAccount.Status == AccountStatus.Enabled)
             {
-                // TODO: Autologin
                 nextUri = $"{_configuration.Web.Login.Uri}?status=created";
             }
             else if (createdAccount.Status == AccountStatus.Unverified)
@@ -111,6 +123,31 @@ namespace Stormpath.Owin.Middleware
             }
 
             return HttpResponse.Redirect(environment, nextUri);
+        }
+
+        private async Task<bool> HandleAutologinAsync(
+            IOwinEnvironment environment,
+            IApplication application,
+            IAccount createdAccount,
+            RegisterPostModel postModel,
+            string stateToken,
+            CancellationToken cancellationToken)
+        {
+            var loginExecutor = new LoginExecutor(_client, _configuration, _handlers, _logger);
+            var loginResult = await loginExecutor.PasswordGrantAsync(
+                environment, 
+                application, 
+                postModel.Email,
+                postModel.Password, 
+                cancellationToken);
+
+            await loginExecutor.HandlePostLoginAsync(environment, loginResult, cancellationToken);
+
+            var parsedStateToken = new StateTokenParser(_client, _configuration.Client.ApiKey, stateToken, _logger);
+            return await loginExecutor.HandleRedirectAsync(
+                environment,
+                parsedStateToken.Path,
+                _configuration.Web.Register.NextUri);
         }
     }
 }

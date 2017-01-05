@@ -98,14 +98,11 @@ namespace Stormpath.Owin.Middleware
         {
             var loginExecutor = new LoginExecutor(_client, _configuration, _handlers, _logger);
 
-            if (string.IsNullOrEmpty(nextUri))
-            {
-                nextUri = loginResult.IsNewAccount
-                    ? _configuration.Web.Register.NextUri
-                    : _configuration.Web.Login.NextUri;
-            }
+            var defaultNextPath = loginResult.IsNewAccount
+                ? _configuration.Web.Register.NextUri
+                : _configuration.Web.Login.NextUri;
 
-            return await loginExecutor.HandleRedirectAsync(environment, nextUri);
+            return await loginExecutor.HandleRedirectAsync(environment, nextUri, defaultNextPath);
         }
     }
 }

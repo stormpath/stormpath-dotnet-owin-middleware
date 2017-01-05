@@ -102,11 +102,16 @@ namespace Stormpath.Owin.Middleware
             Cookies.AddTokenCookiesToResponse(context, _client, grantResult, _configuration, _logger);
         }
 
-        public Task<bool> HandleRedirectAsync(IOwinEnvironment context, string nextUri = null)
+        public Task<bool> HandleRedirectAsync(IOwinEnvironment context, string nextUri = null, string defaultNextUri = null)
         {
-            // Use the provided next URI, or default to stormpath.web.login.nextUri
+            if (string.IsNullOrEmpty(defaultNextUri))
+            {
+                defaultNextUri = _configuration.Web.Login.NextUri;
+            }
+
+            // Use the provided next URI, or fall back to default
             var parsedNextUri = string.IsNullOrEmpty(nextUri)
-                ? new Uri(_configuration.Web.Login.NextUri, UriKind.Relative)
+                ? new Uri(defaultNextUri, UriKind.RelativeOrAbsolute)
                 : new Uri(nextUri, UriKind.RelativeOrAbsolute);
 
             // Ensure this is a relative URI

@@ -98,6 +98,7 @@ namespace Stormpath.Owin.Middleware.Route
                     context,
                     client,
                     grantResult,
+                    true,
                     nextPath,
                     cancellationToken);
             }
@@ -110,6 +111,7 @@ namespace Stormpath.Owin.Middleware.Route
                     context,
                     client,
                     grantResult,
+                    false,
                     nextPath,
                     cancellationToken);
             }
@@ -131,15 +133,18 @@ namespace Stormpath.Owin.Middleware.Route
             IOwinEnvironment context,
             IClient client,
             IOauthGrantAuthenticationResult grantResult,
+            bool isNewAccount,
             string nextPath,
             CancellationToken cancellationToken)
         {
             var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
             await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
-            await executor.HandleRedirectAsync(context, nextPath);
+            var defaultNextPath = isNewAccount
+                ? _configuration.Web.Register.NextUri
+                : _configuration.Web.Login.NextUri;
 
-            return true;
+            return await executor.HandleRedirectAsync(context, nextPath, defaultNextPath);
         }
 
         private async Task<IOauthGrantAuthenticationResult> ExchangeTokenAsync(IApplication application, IJwt jwt, CancellationToken cancellationToken)
