@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Immutable;
@@ -35,13 +36,14 @@ namespace Stormpath.Owin.Middleware
         public async Task<IAccount> HandleRegistrationAsync(
             IOwinEnvironment environment,
             IApplication application,
+            IDictionary<string, string> formData,
             IAccount newAccount,
             Func<string, CancellationToken, Task> errorHandler,
             CancellationToken cancellationToken)
         {
             var defaultAccountStore = await application.GetDefaultAccountStoreAsync(cancellationToken);
 
-            var preRegisterHandlerContext = new PreRegistrationContext(environment, newAccount)
+            var preRegisterHandlerContext = new PreRegistrationContext(environment, newAccount, formData)
             {
                 AccountStore = defaultAccountStore as IDirectory
             };

@@ -180,7 +180,16 @@ namespace Stormpath.Owin.Middleware.Route
                     return true; // Some error occurred and the handler was invoked
                 }
 
-                var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, htmlErrorHandler, cancellationToken);
+                var formDataForHandler = formData
+                    .ToDictionary(kv => kv.Key, kv => string.Join(",", kv.Value));
+
+                var createdAccount = await executor.HandleRegistrationAsync(
+                    context,
+                    application,
+                    formDataForHandler,
+                    newAccount,
+                    htmlErrorHandler,
+                    cancellationToken);
                 if (createdAccount == null)
                 {
                     return true; // Some error occurred and the handler was invoked
@@ -254,7 +263,16 @@ namespace Stormpath.Owin.Middleware.Route
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
 
-            var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, jsonErrorHandler, cancellationToken);
+            var formDataForHandler = formData
+                .ToDictionary(kv => kv.Key, kv => kv.Value?.ToString());
+
+            var createdAccount = await executor.HandleRegistrationAsync(
+                context,
+                application,
+                formDataForHandler,
+                newAccount,
+                jsonErrorHandler,
+                cancellationToken);
             if (createdAccount == null)
             {
                 return true; // Some error occurred and the handler was invoked
