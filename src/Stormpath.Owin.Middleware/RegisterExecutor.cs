@@ -39,6 +39,7 @@ namespace Stormpath.Owin.Middleware
             IOwinEnvironment environment,
             IApplication application,
             IAccount newAccount,
+            Func<string, CancellationToken, Task> errorHandler,
             CancellationToken cancellationToken)
         {
             var defaultAccountStore = await application.GetDefaultAccountStoreAsync(cancellationToken);
@@ -49,6 +50,18 @@ namespace Stormpath.Owin.Middleware
             };
 
             await _handlers.PreRegistrationHandler(preRegisterHandlerContext, cancellationToken);
+
+            if (preRegisterHandlerContext.Result != null)
+            {
+                if (!preRegisterHandlerContext.Result.Success)
+                {
+                    var message = string.IsNullOrEmpty(preRegisterHandlerContext.Result.ErrorMessage)
+                        ? "An error has occurred. Please try again."
+                        : preRegisterHandlerContext.Result.ErrorMessage;
+                    await errorHandler(message, cancellationToken);
+                    return null;
+                }
+            }
 
             IAccount createdAccount;
 

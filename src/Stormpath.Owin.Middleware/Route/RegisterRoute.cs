@@ -175,13 +175,17 @@ namespace Stormpath.Owin.Middleware.Route
                     client,
                     htmlErrorHandler,
                     cancellationToken);
-
                 if (newAccount == null)
                 {
                     return true; // Some error occurred and the handler was invoked
                 }
 
-                var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, cancellationToken);
+                var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, htmlErrorHandler, cancellationToken);
+                if (createdAccount == null)
+                {
+                    return true; // Some error occurred and the handler was invoked
+                }
+
                 await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
 
                 return await executor.HandleRedirectAsync(context, application, createdAccount, model, stateToken, cancellationToken);
@@ -235,7 +239,6 @@ namespace Stormpath.Owin.Middleware.Route
                 client,
                 jsonErrorHandler,
                 cancellationToken);
-
             if (newAccount == null)
             {
                 return true; // Some error occurred and the handler was invoked
@@ -244,7 +247,11 @@ namespace Stormpath.Owin.Middleware.Route
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
 
-            var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, cancellationToken);
+            var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, jsonErrorHandler, cancellationToken);
+            if (createdAccount == null)
+            {
+                return true; // Some error occurred and the handler was invoked
+            }
 
             await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
 
