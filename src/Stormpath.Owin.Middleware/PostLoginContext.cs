@@ -12,5 +12,7 @@ namespace Stormpath.Owin.Middleware
         }
 
         public IAccount Account { get; }
+
+        public PostLoginResult Result { get; set; }
     }
 }

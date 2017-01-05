@@ -35,6 +35,8 @@ namespace Stormpath.Owin.Middleware
         private readonly HandlerConfiguration _handlers;
         private readonly ILogger _logger;
 
+        private string _nextUriFromPostHandler = null;
+
         public LoginExecutor(
             IClient client,
             StormpathConfiguration configuration,
@@ -111,6 +113,9 @@ namespace Stormpath.Owin.Middleware
             var postLoginHandlerContext = new PostLoginContext(context, account);
             await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);
 
+            // Save the custom redirect URI from the handler, if any
+            _nextUriFromPostHandler = postLoginHandlerContext.Result?.RedirectUri;
+
             // Add Stormpath cookies
             Cookies.AddTokenCookiesToResponse(context, _client, grantResult, _configuration, _logger);
         }
@@ -122,15 +127,27 @@ namespace Stormpath.Owin.Middleware
                 defaultNextUri = _configuration.Web.Login.NextUri;
             }
 
-            // Use the provided next URI, or fall back to default
-            var parsedNextUri = string.IsNullOrEmpty(nextUri)
-                ? new Uri(defaultNextUri, UriKind.RelativeOrAbsolute)
-                : new Uri(nextUri, UriKind.RelativeOrAbsolute);
+            string nextLocation;
 
-            // Ensure this is a relative URI
-            var nextLocation = parsedNextUri.IsAbsoluteUri
-                ? parsedNextUri.PathAndQuery
-                : parsedNextUri.OriginalString;
+            // If the post-login handler set a redirect URI, use that
+            if (!string.IsNullOrEmpty(_nextUriFromPostHandler))
+            {
+                nextLocation = _nextUriFromPostHandler;
+            }
+            // Or, use the next URI provided by the route handler (via the state token)
+            else if (!string.IsNullOrEmpty(nextUri))
+            {
+                var parsedNextUri = new Uri(nextUri, UriKind.RelativeOrAbsolute);
+
+                // Ensure this (potentially user-provided) URI is relative
+                nextLocation = parsedNextUri.IsAbsoluteUri
+                    ? parsedNextUri.PathAndQuery
+                    : parsedNextUri.OriginalString;
+            }
+            else
+            {
+                nextLocation = defaultNextUri;
+            }
 
             return HttpResponse.Redirect(context, nextLocation);
         }
