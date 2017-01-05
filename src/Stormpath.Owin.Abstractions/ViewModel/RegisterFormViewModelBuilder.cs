@@ -69,7 +69,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                         }
 
                         var definedField = _configuration.Web.Register.Form.Fields.Where(x => x.Key == kvp.Key).SingleOrDefault();
-                        bool include = !definedField.Value?.Type.Equals("password", StringComparison.OrdinalIgnoreCase) ?? false;
+                        bool include = !definedField.Value?.Type?.Equals("password", StringComparison.OrdinalIgnoreCase) ?? false;
                         return include;
                     })
                     .ToDictionary(kvp => kvp.Key, kvp => string.Join(",", kvp.Value));
