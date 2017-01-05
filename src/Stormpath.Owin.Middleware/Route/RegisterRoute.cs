@@ -182,6 +182,12 @@ namespace Stormpath.Owin.Middleware.Route
                 }
 
                 var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, cancellationToken);
+                if (createdAccount == null)
+                {
+                    //TODO: Create a way to allow users to pass in their own error messages
+                    await htmlErrorHandler("One or more fields could not be validated. Please check your input and try again.", cancellationToken);
+                    return true;
+                }
                 await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
 
                 return await executor.HandleRedirectAsync(context, application, createdAccount, model, stateToken, cancellationToken);
@@ -245,6 +251,11 @@ namespace Stormpath.Owin.Middleware.Route
             var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
 
             var createdAccount = await executor.HandleRegistrationAsync(context, application, newAccount, cancellationToken);
+
+            if (createdAccount == null)
+            {
+                return true;
+            }
 
             await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
 

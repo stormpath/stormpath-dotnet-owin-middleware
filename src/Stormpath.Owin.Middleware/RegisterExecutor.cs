@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
@@ -41,6 +38,7 @@ namespace Stormpath.Owin.Middleware
             IAccount newAccount,
             CancellationToken cancellationToken)
         {
+            var hasPassedPreRegistration = false;
             var defaultAccountStore = await application.GetDefaultAccountStoreAsync(cancellationToken);
 
             var preRegisterHandlerContext = new PreRegistrationContext(environment, newAccount)
@@ -48,7 +46,14 @@ namespace Stormpath.Owin.Middleware
                 AccountStore = defaultAccountStore as IDirectory
             };
 
-            await _handlers.PreRegistrationHandler(preRegisterHandlerContext, cancellationToken);
+            await _handlers.PreRegistrationHandler(preRegisterHandlerContext, cancellationToken).ContinueWith(x =>
+            {
+                var task = x as Task<int>;
+                hasPassedPreRegistration = task != null && task.Result == 0;
+            }, cancellationToken);
+
+            if (!hasPassedPreRegistration)
+                return null;  //TODO: Create way to allow users to return their own error responses from validation
 
             IAccount createdAccount;
 
