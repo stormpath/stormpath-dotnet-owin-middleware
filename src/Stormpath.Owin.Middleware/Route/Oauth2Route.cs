@@ -120,6 +120,10 @@ namespace Stormpath.Owin.Middleware.Route
                 basicHeaderParser.Username, 
                 basicHeaderParser.Password,
                 cancellationToken);
+            if (tokenResult == null)
+            {
+                return true; // Some error occurred and the handler was invoked
+            }
 
             await executor.HandlePostLoginAsync(context, tokenResult, cancellationToken);
 
