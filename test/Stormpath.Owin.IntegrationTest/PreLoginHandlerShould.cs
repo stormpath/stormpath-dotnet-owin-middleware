@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -123,6 +125,160 @@ namespace Stormpath.Owin.IntegrationTest
                 deserializedClaims.Should().ContainKey("org");
                 deserializedClaims["org"].Should().Be(org.Href);
             }
+        }
+
+        [Fact]
+        public async Task ReturnDefaultErrorMessageDuringFormPost()
+        {
+            // Arrange
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreLoginHandler = (ctx, ct) =>
+                    {
+                        ctx.Result = new PreLoginResult()
+                        {
+                            Success = false
+                        };
+                        return Task.FromResult(0);
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+            var csrfToken = await CsrfToken.GetTokenForRoute(server, "/login");
+
+            // Act
+            var payload = new Dictionary<string, string>()
+            {
+                ["login"] = "jyn@testmail.stormpath.com",
+                ["password"] = "Changeme123!!",
+                ["st"] = csrfToken,
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/login")
+            {
+                Content = new FormUrlEncodedContent(payload)
+            };
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+
+            var response = await server.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            (await response.Content.ReadAsStringAsync()).Should().Contain("An error has occurred. Please try again.");
+        }
+
+        [Fact]
+        public async Task ReturnDefaultErrorMessageDuringJsonPost()
+        {
+            // Arrange
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreLoginHandler = (ctx, ct) =>
+                    {
+                        ctx.Result = new PreLoginResult()
+                        {
+                            Success = false
+                        };
+                        return Task.FromResult(0);
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+
+            // Act
+            var payload = new
+            {
+                login = "jyn@testmail.stormpath.com",
+                password = "Changeme123!!",
+            };
+
+            var response = await server.PostAsync("/login", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await response.Content.ReadAsStringAsync()).Should().Contain("An error has occurred. Please try again.");
+        }
+
+        [Fact]
+        public async Task ReturnCustomErrorMessageDuringFormPost()
+        {
+            // Arrange
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreLoginHandler = (ctx, ct) =>
+                    {
+                        ctx.Result = new PreLoginResult()
+                        {
+                            Success = false,
+                            ErrorMessage = "Nice try, rebel scum!"
+                        };
+                        return Task.FromResult(0);
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+            var csrfToken = await CsrfToken.GetTokenForRoute(server, "/login");
+
+            // Act
+            var payload = new Dictionary<string, string>()
+            {
+                ["login"] = "jyn@testmail.stormpath.com",
+                ["password"] = "Changeme123!!",
+                ["st"] = csrfToken,
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/login")
+            {
+                Content = new FormUrlEncodedContent(payload)
+            };
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+
+            var response = await server.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            (await response.Content.ReadAsStringAsync()).Should().Contain("Nice try, rebel scum!");
+        }
+
+        [Fact]
+        public async Task ReturnCustomErrorMessageDuringJsonPost()
+        {
+            // Arrange
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreLoginHandler = (ctx, ct) =>
+                    {
+                        ctx.Result = new PreLoginResult()
+                        {
+                            Success = false,
+                            ErrorMessage = "Nice try, rebel scum!"
+                        };
+                        return Task.FromResult(0);
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+
+            // Act
+            var payload = new
+            {
+                login = "jyn@testmail.stormpath.com",
+                password = "Changeme123!!",
+            };
+
+            var response = await server.PostAsync("/login", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await response.Content.ReadAsStringAsync()).Should().Contain("\"message\": \"Nice try, rebel scum!\"");
         }
     }
 }

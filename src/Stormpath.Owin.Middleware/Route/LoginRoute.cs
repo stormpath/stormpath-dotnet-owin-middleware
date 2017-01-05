@@ -65,35 +65,36 @@ namespace Stormpath.Owin.Middleware.Route
 
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-
             var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var model = PostBodyParser.ToModel<LoginPostModel>(body, bodyContentType, _logger);
             var formData = FormContentParser.Parse(body, _logger);
+
+            var htmlErrorHandler = new Func<string, CancellationToken, Task>((message, ct) =>
+            {
+                var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+                return RenderLoginViewAsync(
+                    client,
+                    context,
+                    cancellationToken,
+                    queryString,
+                    formData,
+                    errors: new[] { message });
+
+            });
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
             var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
-                return await RenderLoginViewAsync(
-                    client,
-                    context,
-                    cancellationToken,
-                    queryString,
-                    formData,
-                    errors: new[] { "An error occurred. Please try again." });
+                await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
+                return true;
             }
 
             bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
             {
-                return await RenderLoginViewAsync(
-                    client,
-                    context,
-                    cancellationToken,
-                    queryString,
-                    formData,
-                    errors: new[] { "The login and password fields are required." });
+                await htmlErrorHandler("The login and password fields are required.", cancellationToken);
+                return true;
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
@@ -101,19 +102,25 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var grantResult = await executor.PasswordGrantAsync(context, application, model.Login, model.Password, cancellationToken);
+                var grantResult = await executor.PasswordGrantAsync(
+                    context, 
+                    application, 
+                    htmlErrorHandler,
+                    model.Login,
+                    model.Password, 
+                    cancellationToken);
+
+                if (grantResult == null)
+                {
+                    return true; // The error handler was invoked
+                }
 
                 await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
             }
             catch (ResourceException rex)
             {
-                return await RenderLoginViewAsync(
-                    client,
-                    context,
-                    cancellationToken,
-                    queryString,
-                    formData,
-                    errors: new[] { rex.Message });
+                await htmlErrorHandler(rex.Message, cancellationToken);
+                return true;
             }
 
             var nextUri = parsedStateToken.Path; // Might be null
@@ -138,18 +145,31 @@ namespace Stormpath.Owin.Middleware.Route
                 return await HandleSocialLogin(context, client, model, cancellationToken);
             }
 
+            var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
+                => Error.Create(context, new BadRequest(message), ct));
+
             bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
             if (missingLoginOrPassword)
             {
-                return await Error.Create(context, new BadRequest("Missing login or password."), cancellationToken);
+                await jsonErrorHandler("Missing login or password.", cancellationToken);
+                return true;
             }
 
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
 
-            var grantResult =
-                await executor.PasswordGrantAsync(context, application, model.Login, model.Password, cancellationToken);
-            // Errors will be caught up in AbstractRouteMiddleware
+            var grantResult = await executor.PasswordGrantAsync(
+                context,
+                application,
+                jsonErrorHandler,
+                model.Login,
+                model.Password,
+                cancellationToken);
+
+            if (grantResult == null)
+            {
+                return true; // The error handler was invoked
+            }
 
             await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 

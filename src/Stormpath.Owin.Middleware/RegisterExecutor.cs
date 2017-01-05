@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Configuration.Abstractions.Immutable;
@@ -12,7 +10,6 @@ using Stormpath.SDK.Application;
 using Stormpath.SDK.Client;
 using Stormpath.SDK.Directory;
 using Stormpath.SDK.Logging;
-using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -97,13 +94,14 @@ namespace Stormpath.Owin.Middleware
             IApplication application,
             IAccount createdAccount,
             RegisterPostModel postModel,
+            Func<string, CancellationToken, Task> errorHandler,
             string stateToken,
             CancellationToken cancellationToken)
         {
             if (_configuration.Web.Register.AutoLogin
                 && createdAccount.Status != AccountStatus.Unverified)
             {
-                return HandleAutologinAsync(environment, application, createdAccount, postModel, stateToken, cancellationToken);
+                return HandleAutologinAsync(environment, application, errorHandler, postModel, stateToken, cancellationToken);
             }
 
             string nextUri;
@@ -141,15 +139,16 @@ namespace Stormpath.Owin.Middleware
         private async Task<bool> HandleAutologinAsync(
             IOwinEnvironment environment,
             IApplication application,
-            IAccount createdAccount,
+            Func<string, CancellationToken, Task> errorHandler,
             RegisterPostModel postModel,
             string stateToken,
             CancellationToken cancellationToken)
         {
             var loginExecutor = new LoginExecutor(_client, _configuration, _handlers, _logger);
             var loginResult = await loginExecutor.PasswordGrantAsync(
-                environment, 
-                application, 
+                environment,
+                application,
+                errorHandler,
                 postModel.Email,
                 postModel.Password, 
                 cancellationToken);

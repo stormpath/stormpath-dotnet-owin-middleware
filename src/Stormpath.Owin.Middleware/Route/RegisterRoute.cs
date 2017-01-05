@@ -188,7 +188,14 @@ namespace Stormpath.Owin.Middleware.Route
 
                 await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
 
-                return await executor.HandleRedirectAsync(context, application, createdAccount, model, stateToken, cancellationToken);
+                return await executor.HandleRedirectAsync(
+                    context,
+                    application,
+                    createdAccount,
+                    model,
+                    htmlErrorHandler,
+                    stateToken,
+                    cancellationToken);
             }
             catch (ResourceException rex)
             {

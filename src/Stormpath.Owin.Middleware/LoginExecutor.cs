@@ -50,6 +50,7 @@ namespace Stormpath.Owin.Middleware
         public async Task<IOauthGrantAuthenticationResult> PasswordGrantAsync(
             IOwinEnvironment environment,
             IApplication application,
+            Func<string, CancellationToken, Task> errorHandler,
             string login,
             string password,
             CancellationToken cancellationToken)
@@ -60,6 +61,18 @@ namespace Stormpath.Owin.Middleware
             };
 
             await _handlers.PreLoginHandler(preLoginHandlerContext, cancellationToken);
+
+            if (preLoginHandlerContext.Result != null)
+            {
+                if (!preLoginHandlerContext.Result.Success)
+                {
+                    var message = string.IsNullOrEmpty(preLoginHandlerContext.Result.ErrorMessage)
+                        ? "An error has occurred. Please try again."
+                        : preLoginHandlerContext.Result.ErrorMessage;
+                    await errorHandler(message, cancellationToken);
+                    return null;
+                }
+            }
 
             var passwordGrantRequest = OauthRequests.NewPasswordGrantRequest()
                 .SetLogin(preLoginHandlerContext.Login)
