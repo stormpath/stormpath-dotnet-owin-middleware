@@ -83,7 +83,6 @@ namespace Stormpath.Owin.Middleware.Route
             var enabledFields = viewModel.Form.Fields.Select(f => f.Name);
 
             var undefinedFields = suppliedFieldNames
-                .Concat(customFields.Select(f => f.Key))
                 .Except(enabledFields);
             if (undefinedFields.Any())
             {
@@ -227,14 +226,18 @@ namespace Stormpath.Owin.Middleware.Route
             var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType, _logger);
             var formData = Serializer.DeserializeDictionary(body);
 
-            var allNonEmptyFieldNames = formData.Where(f => !string.IsNullOrEmpty(f.Value.ToString())).Select(f => f.Key).ToList();
+            // The field name "customData" is a special case, see below
+            var sanitizedFormData = formData
+                .Where(f => !f.Key.Equals("customData", StringComparison.Ordinal))
+                .ToArray();
 
             var providedCustomFields = new Dictionary<string, object>();
-            foreach (var item in formData.Where(x => !DefaultFields.Contains(x.Key)))
+            foreach (var item in sanitizedFormData.Where(x => !DefaultFields.Contains(x.Key)))
             {
                 providedCustomFields.Add(item.Key, item.Value);
             }
 
+            // Look for a root field called "customData"
             var customDataObject = formData.Get<IDictionary<string, object>>("customData");
             if (customDataObject != null && customDataObject.Any())
             {
@@ -243,6 +246,12 @@ namespace Stormpath.Owin.Middleware.Route
                     providedCustomFields.Add(item.Key, item.Value);
                 }
             }
+
+            var allNonEmptyFieldNames = sanitizedFormData
+                .Concat(providedCustomFields)
+                .Where(f => !string.IsNullOrEmpty(f.Value.ToString()))
+                .Select(f => f.Key)
+                .ToArray();
 
             var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct) 
                 => Error.Create(context, new BadRequest(message), ct));
@@ -263,7 +272,8 @@ namespace Stormpath.Owin.Middleware.Route
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
             var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
 
-            var formDataForHandler = formData
+            var formDataForHandler = sanitizedFormData
+                .Concat(providedCustomFields)
                 .ToDictionary(kv => kv.Key, kv => kv.Value?.ToString());
 
             var createdAccount = await executor.HandleRegistrationAsync(
