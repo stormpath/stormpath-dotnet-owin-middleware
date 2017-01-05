@@ -8,6 +8,20 @@ namespace Stormpath.Owin.UnitTest
     {
         public static IntegrationConfiguration CreateFakeConfiguration(StormpathConfiguration config)
         {
+            if (config.Client?.ApiKey == null)
+            {
+                if (config.Client == null)
+                {
+                    config.Client = new ClientConfiguration();
+                }
+
+                config.Client.ApiKey = new ClientApiKeyConfiguration()
+                {
+                    Id = "foo",
+                    Secret = "bar"
+                };
+            };
+
             var compiledConfig = Configuration.ConfigurationLoader.Initialize().Load(config);
 
             var integrationConfig = new IntegrationConfiguration(
