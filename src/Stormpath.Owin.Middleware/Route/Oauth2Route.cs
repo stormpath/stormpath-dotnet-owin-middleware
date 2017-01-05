@@ -98,52 +98,30 @@ namespace Stormpath.Owin.Middleware.Route
 
         private async Task<bool> ExecuteClientCredentialsFlow(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
         {
+            var jsonErrorHandler = new Func<AbstractError, CancellationToken, Task>((err, ct)
+                => Error.Create(context, err, ct));
+
             var basicHeaderParser = new BasicAuthenticationParser(context.Request.Headers.GetString("Authorization"), _logger);
             if (!basicHeaderParser.IsValid)
             {
-                await Error.Create<OauthInvalidRequest>(context, cancellationToken);
+                await jsonErrorHandler(new OauthInvalidRequest(), cancellationToken);
                 return true;
             }
 
-            var preLoginContext = new PreLoginContext(context)
-            {
-                Login = basicHeaderParser.Username
-            };
-            await _handlers.PreLoginHandler(preLoginContext, cancellationToken).ConfigureAwait(false);
-
-            var request = new ClientCredentialsGrantRequest
-            {
-                Id = basicHeaderParser.Username,
-                Secret = basicHeaderParser.Password
-            };
-
-            if (preLoginContext.AccountStore != null)
-            {
-                request.AccountStoreHref = preLoginContext.AccountStore.Href;
-            }
-
+            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
             var application = await client
                 .GetApplicationAsync(_configuration.Application.Href, cancellationToken)
                 .ConfigureAwait(false);
 
-            IOauthGrantAuthenticationResult tokenResult;
-            try
-            {
-                tokenResult = await application
-                    .ExecuteOauthRequestAsync(request, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            // Catch error 10019 (API Authentication failed)
-            catch (ResourceException rex) when (rex.Code == 10019)
-            {
-                return await Error.Create<OauthInvalidClient>(context, cancellationToken).ConfigureAwait(false);
-            }
+            var tokenResult = await executor.ClientCredentialsGrantAsync(
+                context,
+                application,
+                jsonErrorHandler,
+                basicHeaderParser.Username, 
+                basicHeaderParser.Password,
+                cancellationToken);
 
-            var accessToken = await tokenResult.GetAccessTokenAsync(cancellationToken).ConfigureAwait(false);
-            var account = await accessToken.GetAccountAsync(cancellationToken).ConfigureAwait(false);
-
-            var postLoginContext = new PostLoginContext(context, account);
-            await _handlers.PostLoginHandler(postLoginContext, cancellationToken).ConfigureAwait(false);
+            await executor.HandlePostLoginAsync(context, tokenResult, cancellationToken);
 
             var sanitizer = new GrantResultResponseSanitizer();
             return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithoutRefreshToken(tokenResult)).ConfigureAwait(false);
@@ -151,35 +129,24 @@ namespace Stormpath.Owin.Middleware.Route
 
         private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, IClient client, string username, string password, CancellationToken cancellationToken)
         {
-            var preLoginContext = new PreLoginContext(context)
-            {
-                Login = username
-            };
-            await _handlers.PreLoginHandler(preLoginContext, cancellationToken);
-
-            var passwordGrantRequestBuilder = OauthRequests.NewPasswordGrantRequest()
-                .SetLogin(preLoginContext.Login)
-                .SetPassword(password);
-
-            if (preLoginContext.AccountStore != null)
-            {
-                passwordGrantRequestBuilder.SetAccountStore(preLoginContext.AccountStore);
-            }
-
-            var passwordGrantRequest = passwordGrantRequestBuilder.Build();
-
+            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
             var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var tokenResult = await application.NewPasswordGrantAuthenticator()
-                .AuthenticateAsync(passwordGrantRequest, cancellationToken);
 
-            var accessToken = await tokenResult.GetAccessTokenAsync(cancellationToken);
-            var account = await accessToken.GetAccountAsync(cancellationToken);
+            var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
+                => Error.Create(context, new BadRequest(message), ct));
 
-            var postLoginContext = new PostLoginContext(context, account);
-            await _handlers.PostLoginHandler(postLoginContext, cancellationToken);
+            var grantResult = await executor.PasswordGrantAsync(
+                context, 
+                application,
+                jsonErrorHandler,
+                username,
+                password,
+                cancellationToken);
+
+            await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
             var sanitizer = new GrantResultResponseSanitizer();
-            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(tokenResult)).ConfigureAwait(false);
+            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(grantResult)).ConfigureAwait(false);
         }
 
         private async Task<bool> ExecuteRefreshFlow(IOwinEnvironment context, IClient client, string refreshToken, CancellationToken cancellationToken)

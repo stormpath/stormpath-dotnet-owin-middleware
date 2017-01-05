@@ -14,6 +14,8 @@ namespace Stormpath.Owin.Middleware
 
         public IAccountStore AccountStore { get; set; }
 
+        public string OrganizationNameKey { get; set; }
+
         public PreLoginResult Result { get; set; }
     }
 }
