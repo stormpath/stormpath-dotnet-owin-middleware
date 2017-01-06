@@ -10,7 +10,7 @@
     "NSubstitute": "2.0.1-rc",
     "Stormpath.Owin.Middleware": {
       "target": "project",
-      "version": "3.2.0-beta1"
+      "version": "3.2.0"
     },
     "xunit": "2.1.0"
   },
@@ -35,5 +35,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.UnitTest"
   },
-  "version": "3.2.0-beta1"
+  "version": "3.2.0"
 }
