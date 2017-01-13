@@ -21,6 +21,8 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             var baseViewModelBuilder = new ChangePasswordViewModelBuilder(_configuration.Web);
             var result = new ChangePasswordFormViewModel(baseViewModelBuilder.Build());
 
+            result.NextUri = _configuration.Web.ChangePassword.NextUri;
+
             // Add a state (CSRF) token
             result.StateToken = new StateTokenBuilder(_client, _configuration.Client.ApiKey).ToString();
 

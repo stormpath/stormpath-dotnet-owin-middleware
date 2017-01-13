@@ -29,5 +29,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         }
 
         public string StateToken { get; set; }
+
+        public string NextUri { get; set; }
     }
 }
