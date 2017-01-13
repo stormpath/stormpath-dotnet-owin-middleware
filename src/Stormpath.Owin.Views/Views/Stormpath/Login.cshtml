@@ -1,296 +1,55 @@
-﻿@model LoginFormViewModel
-@using System
-@using System.Linq
-@using Stormpath.Owin.Abstractions
-@using Stormpath.Owin.Abstractions.ViewModel
-
-@{
-    bool hasSocialProviders = Model.AccountStores.Any();
-    AccountStoreViewModel facebookProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("facebook", StringComparison.OrdinalIgnoreCase));
-    AccountStoreViewModel googleProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("google", StringComparison.OrdinalIgnoreCase));
-    AccountStoreViewModel githubProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("github", StringComparison.OrdinalIgnoreCase));
-    AccountStoreViewModel linkedInProvider = Model.AccountStores.FirstOrDefault(store => store.Name.Equals("linkedin", StringComparison.OrdinalIgnoreCase));
-}
+﻿@model Stormpath.Owin.Abstractions.ViewModel.LoginFormViewModel
 
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!-->
-<html lang="en" class="no-js">
-<!--<![endif]-->
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Log In</title>
-    <meta content="Log into your account!" name="description">
+    <meta content="Log into your account" name="description">
     <meta content="width=device-width" name="viewport">
-    <link href="//fonts.googleapis.com/css?family=Open+Sans:300italic,300,400italic,400,600italic,600,700italic,700,800italic,800" rel="stylesheet" type="text/css">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        <%$ include: style.css %>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .container {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            display: -webkit-box;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .view { border: 1px solid rgb(183, 194, 205); }
     </style>
-    <!--[if lt IE 9]>
-     <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js'></script>
-     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></script>
-    <![endif]-->
 </head>
-<body class="login">
-    <div class="container custom-container">
-        <div class="va-wrapper">
-            <div class="view login-view container">
-                @if (Stormpath.Owin.Abstractions.ViewModel.LoginFormViewModel.AcceptableStatuses.Any(x => x.Equals(Model.Status, StringComparison.OrdinalIgnoreCase))) {
-                    <div class="box row">
-                        <div class="email-password-area col-xs-12 large col-sm-12">
-                            <div class="header">
-                                @if (Model.Status.Equals("unverified", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <span>Your account verification email has been sent!</span>
-                                    <p>
-                                        Before you can log into your account, you need to activate your
-                                        account by clicking the link we sent to your inbox.
-                                    </p>
-                                    <p>Didn't get the email? <a href="@Model.VerifyEmailUri">Click Here</a>.</p>
-                                    <br>
-                                }
-                                @if (Model.Status.Equals("verified", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <span>Your Account Has Been Verified.</span>
-                                    <p>
-                                        You may now login.
-                                    </p>
-                                }
-                                @if (Model.Status.Equals("created", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <span>Your Account Has Been Created.</span>
-                                    <p>
-                                        You may now login.
-                                    </p>
-                                }
-                                @if (Model.Status.Equals("reset", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <span>Password Reset Successfully.</span>
-                                    <p>
-                                        You can now login with your new password.
-                                    </p>
-                                }
-                                @if (Model.Status.Equals("forgot", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <span>Password Reset Requested.</span>
-                                    <p>
-                                        If an account exists for the email provided, you will receive an email shortly.
-                                    </p>
-                                }
-                                @if (Model.Status.Equals("social_failed", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    <span>Login failed.</span>
-                                    <p>
-                                        An error occurred while trying to log you in. Please try again.
-                                    </p>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                }
-                <br>
-                <div class="box row">
-                    <div class="email-password-area col-xs-12 @(hasSocialProviders ? "small col-sm-8" : "large col-sm-12")">
-                        @if (Model.RegistrationEnabled)
-                        {
-                            <div class="header">
-                                <span>Log In or <a href="@(Model.RegisterUri + "?" + @StringConstants.StateTokenName + "=" + @Model.StateToken)">Create Account</a></span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="header">
-                                <span>Log In</span>
-                            </div>
-                        }
-                        @if (Model.Errors.Any())
-                        {
-                            <div class="alert alert-danger bad-login">
-                                @foreach (var error in Model.Errors)
-                                {
-                                    <p>@error</p>
-                                }
-                            </div>
-                        }
-                        <form method="post" role="form" class="login-form form-horizontal">
-                            <input name="@StringConstants.StateTokenName" type="hidden" value="@Model.StateToken"/>
-
-                            @foreach (var field in Model.Form.Fields)
-                            {
-                                <div class="form-group @($"group-{field.Name}")">
-                                    <label class="@(hasSocialProviders ? "col-sm-12" : "col-sm-4")">
-                                        @field.Label
-                                    </label>
-                                    <div class="@(hasSocialProviders ? "col-sm-12" : "col-sm-8")">
-                                        <input placeholder="@field.Placeholder"
-                                               name="@field.Name"
-                                               type="@field.Type"
-                                               value="@(Model.FormData.Get(field.Name) ?? string.Empty)"
-                                               class="form-control"
-                                               @(field.Required ? "required" : string.Empty)>
-                                    </div>
-                                </div>
-                            }
-                            <div>
-                                <button type="submit" class="login btn btn-login btn-sp-green">Log In</button>
-                            </div>
-                        </form>
-                    </div>
-                    @if (hasSocialProviders)
-                    {
-                        <div class="social-area col-xs-12 col-sm-4">
-                            <div class="header">&nbsp;</div>
-                            <label>Easy 1-click login:</label>
-                            @if (facebookProvider != null)
-                            {
-                                <button class="btn btn-social btn-facebook" onclick="facebookLogin()">Facebook</button>
-                                <script type="text/javascript">
-                                    function facebookLogin() {
-                                        var FB = window.FB;
-                                        var facebookScope = '@facebookProvider.Provider.Scope';
-
-                                        FB.login(function (response) {
-                                            if (response.status === 'connected') {
-                                                var queryString = 'access_token=' + response.authResponse.accessToken;
-
-                                                if ("@Model.StateToken".length !== 0) {
-                                                    queryString += "&@StringConstants.StateTokenName=" + "@Model.StateToken";
-                                                }
-
-                                                window.location.replace('@facebookProvider.Href?' + queryString);
-                                            }
-                                        }, { scope: facebookScope });
-                                    }
-
-                                    window.fbAsyncInit = function () {
-                                        FB.init({
-                                            appId: '@facebookProvider.Provider.ClientId',
-                                            cookie: true,
-                                            xfbml: true,
-                                            version: 'v2.3'
-                                        });
-                                    };
-
-                                    (function (d, s, id) {
-                                        var js, fjs = d.getElementsByTagName(s)[0];
-                                        if (d.getElementById(id)) { return; }
-                                        js = d.createElement(s); js.id = id;
-                                        js.src = "//connect.facebook.net/en_US/sdk.js";
-                                        fjs.parentNode.insertBefore(js, fjs);
-                                    }(document, 'script', 'facebook-jssdk'));
-                                </script>
-                            }
-
-                            @if (googleProvider != null)
-                            {
-                                <button class="btn btn-social btn-google" onclick="googleLogin()">Google</button>
-                                <script type="text/javascript">
-                                    function googleLogin() {
-                                        var clientId = '@googleProvider.Provider.ClientId';
-                                        var googleScope = '@googleProvider.Provider.Scope';
-
-                                        var finalUrl = 'https://accounts.google.com/o/oauth2/auth?response_type=code' +
-                                            '&client_id=' + encodeURIComponent(clientId) +
-                                            '&scope=' + encodeURIComponent(googleScope) +
-                                            '&state=' + encodeURIComponent('@Model.StateToken') +
-                                            '&include_granted_scopes=true' +
-                                            '&redirect_uri=' + encodeURIComponent('@googleProvider.Href');
-
-                                        window.location = finalUrl;
-                                    }
-                                </script>
-                            }
-
-                            @if (githubProvider != null)
-                            {
-                                <button class="btn btn-social btn-github" onclick="githubLogin()">Github</button>
-                                <script type="text/javascript">
-                                    function githubLogin() {
-                                        var clientId = '@githubProvider.Provider.ClientId';
-                                        var gitHubScope = '@githubProvider.Provider.Scope';
-                                        var redirectUri = '@githubProvider.Href';
-                                        var stateToken = '@Model.StateToken';
-
-                                        var url = 'https://github.com/login/oauth/authorize' +
-                                            '?client_id=' + encodeURIComponent(clientId) +
-                                            '&scope=' + encodeURIComponent(gitHubScope) +
-                                            '&redirect_uri=' + encodeURIComponent(redirectUri) +
-                                            '&state=' + encodeURIComponent(stateToken);
-
-                                        window.location = url;
-                                    }
-                                </script>
-                            }
-
-                            @if (linkedInProvider != null)
-                            {
-                                <button class="btn btn-social btn-linkedin" onclick="linkedinLogin()">LinkedIn</button>
-                                <script type="text/javascript">
-                                    function buildUrl(baseUrl, queryString) {
-                                        var result = baseUrl;
-
-                                        if (queryString) {
-                                            var serializedQueryString = '';
-
-                                            for (var key in queryString) {
-                                                var value = queryString[key];
-
-                                                if (serializedQueryString.length) {
-                                                    serializedQueryString += '&';
-                                                }
-
-                                                // Don't include any access_token parameters in
-                                                // the query string as it will be added by LinkedIn.
-                                                if (key === 'access_token') {
-                                                    continue;
-                                                }
-
-                                                serializedQueryString += key + '=' + encodeURIComponent(value);
-                                            }
-
-                                            result += '?' + serializedQueryString;
-                                        }
-
-                                        return result;
-                                    }
-
-                                    function linkedinLogin() {
-                                        var stateToken = '@Model.StateToken';
-                                        var authorizationUrl = 'https://www.linkedin.com/uas/oauth2/authorization';
-
-                                        var clientId = '@linkedInProvider.Provider.ClientId';
-                                        var redirectUri = '@linkedInProvider.Href';
-                                        var linkedinScope = '@linkedInProvider.Provider.Scope';
-
-                                        window.location = buildUrl(authorizationUrl, {
-                                            response_type: 'code',
-                                            client_id: clientId,
-                                            scope: linkedinScope,
-                                            redirect_uri: redirectUri,
-                                            state: stateToken
-                                        });
-                                    }
-                                </script>
-                            }
-                        </div>
-                    }
-                </div>
-                @if (Model.VerifyEmailEnabled)
-                {
-                    <a style="float:left" href="@Model.VerifyEmailUri" class="forgot">Resend Verification Email?</a>
-                }
-
-                @if (Model.ForgotPasswordEnabled)
-                {
-                    <a style="float:right" href="@Model.ForgotPasswordUri" class="forgot">Forgot Password?</a>
-                }
-            </div>
-        </div>
+<body>
+    <div class="container">
+        <div class="view login-view"></div>
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+
+    <script language="javascript">
+        window.onload = function onDocumentReady() {
+            var stormpath = window.stormpath = new Stormpath({
+                container: document.getElementsByClassName('login-view')[0]
+            });
+
+            stormpath.once('loggedIn', function() {
+                window.location = '@Model.NextUri';
+            });
+
+            stormpath.showLogin();
+        };
+    </script>
+    <script language="javascript" src="http://localhost:3000/js/app.js"></script>
 </body>
 </html>

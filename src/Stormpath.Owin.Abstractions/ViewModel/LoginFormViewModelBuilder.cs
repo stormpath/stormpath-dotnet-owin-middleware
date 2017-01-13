@@ -66,6 +66,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             result.RegisterUri = _configuration.Web.Register.Uri;
             result.VerifyEmailEnabled = _verifyEmailEnabled;
             result.VerifyEmailUri = _configuration.Web.VerifyEmail.Uri;
+            result.NextUri = _configuration.Web.Login.NextUri;
 
             // Parameters from querystring
             result.Status = _queryString.GetString("status");

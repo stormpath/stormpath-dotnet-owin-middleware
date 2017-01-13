@@ -38,5 +38,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         public IList<string> Errors { get; set; } = new List<string>();
 
         public string StateToken { get; set; }
+
+        public string NextUri { get; set; }
     }
 }

@@ -56,6 +56,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 
             // Copy values from configuration
             result.LoginUri = _configuration.Web.Login.Uri;
+            result.NextUri = _configuration.Web.Register.NextUri;
 
             // Previous form submission (if any)
             if (_previousFormData != null)

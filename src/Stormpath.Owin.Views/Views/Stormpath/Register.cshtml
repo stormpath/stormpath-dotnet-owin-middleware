@@ -1,79 +1,57 @@
 ﻿@model Stormpath.Owin.Abstractions.ViewModel.RegisterFormViewModel
-@using System
-@using System.Linq
-@using Stormpath.Owin.Abstractions
-
-@*@functions {
-    private Stormpath.Owin.Abstractions.ViewModel.ExtendedRegisterViewModel Model { get; }
-}*@
 
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!-->
-<html lang="en" class="no-js">
-<!--<![endif]-->
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Create an Account</title>
-    <meta content="Create a new account." name="description">
+    <title>Log In</title>
+    <meta content="Sign up for an account" name="description">
     <meta content="width=device-width" name="viewport">
-    <link href="//fonts.googleapis.com/css?family=Open+Sans:300italic,300,400italic,400,600italic,600,700italic,700,800italic,800" rel="stylesheet" type="text/css">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        <%$ include: style.css %>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .container {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            display: -webkit-box;
+            display: -moz-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .view {
+            border: 1px solid rgb(183, 194, 205);
+        }
     </style>
-    <!--[if lt IE 9]>
-     <script src='https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js'></script>
-     <script src='https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js'></script>
-    <![endif]-->
 </head>
-    <body class="register">
-        <div class="container custom-container">
-            <div class="va-wrapper">
-                <div class="view registration-view container">
-                    <div class="box row">
-                        <div class="col-sm-12">
-                            <div class="header">
-                                <span>Create Account</span>
-                            </div>
-                            @if (Model.Errors.Any())
-                            {
-                                <div class="alert alert-danger">
-                                    @foreach (var error in Model.Errors)
-                                    {
-                                        <p>@error</p>
-                                    }
-                                </div>
-                            }
-                            <form method="post" role="form" class="registration-form form-horizontal sp-form">
-                                <input name="@StringConstants.StateTokenName" type="hidden" value="@Model.StateToken"/>
+<body>
+    <div class="container">
+        <div class="view register-view"></div>
+    </div>
 
-                                @foreach (var field in Model.Form.Fields)
-                                {
-                                    <div form-group="true" class="form-group @($"group-{field.Name}")">
-                                        <label class="col-sm-4">@field.Label</label>
-                                        <div class="col-sm-8">
-                                            <input placeholder="@field.Placeholder"
-                                                   name="@field.Name"
-                                                   type="@field.Type"
-                                                   class="form-control"
-                                                   value="@(Model.FormData.Get(field.Name) ?? string.Empty)"
-                                                   @(field.Required ? "required" : string.Empty)>
-                                        </div>
-                                    </div>
+    <script language="javascript">
+        window.onload = function onDocumentReady() {
+            var stormpath = window.stormpath = new Stormpath({
+                container: document.getElementsByClassName('register-view')[0]
+            });
 
-                                }
-                                <button type="submit" class="btn btn-register btn-sp-green">Create Account</button>
-                            </form>
-                        </div>
-                    </div>
-                    <a href="@(Model.LoginUri + "?"+ @StringConstants.StateTokenName + "=" + @Model.StateToken)" class="to-login">Back to Log In</a>
-                </div>
-            </div>
-        </div>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-    </body>
+            stormpath.once('loggedIn', function () {
+                window.location = '@Model.NextUri';
+            });
+
+            stormpath.showRegistration();
+        };
+    </script>
+    <script language="javascript" src="http://localhost:3000/js/app.js"></script>
+</body>
 </html>
