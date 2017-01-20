@@ -27,6 +27,8 @@ namespace Stormpath.Owin.Middleware
 
         public IDirectory AccountStore { get; set; }
 
+        public string OrganizationNameKey { get; set; }
+
         public IAccountCreationOptions Options { get; set; }
 
         public PreRegistrationResult Result { get; set; }
