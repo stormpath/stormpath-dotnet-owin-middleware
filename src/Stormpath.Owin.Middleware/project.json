@@ -46,5 +46,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "3.2.1-beta1"
+  "version": "3.2.1"
 }
