@@ -11,6 +11,7 @@ using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.SDK;
+using Stormpath.SDK.Directory;
 using Stormpath.SDK.Organization;
 using Xunit;
 
@@ -61,6 +62,49 @@ namespace Stormpath.Owin.IntegrationTest
         }
 
         [Fact]
+        public async Task SpecifyAccountStore()
+        {
+            // Arrange
+            var directoryName = $"AnotherDirectory {Guid.NewGuid()}";
+
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreRegistrationHandler = async (ctx, ct) =>
+                    {
+                        ctx.AccountStore = await ctx.Client.GetDirectories().Where(d => d.Name == directoryName).SingleAsync();
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+
+            using (var cleanup = new AutoCleanup(fixture.Client))
+            {
+                // Create a directory
+                var createdDirectory = await fixture.Client.CreateDirectoryAsync(directoryName, $"Test {fixture.TestKey}", DirectoryStatus.Enabled);
+                cleanup.MarkForDeletion(createdDirectory);
+
+                var email = $"its-{fixture.TestKey}@testmail.stormpath.com";
+                var payload = new
+                {
+                    email,
+                    password = "Changeme123!!",
+                    givenName = "Cassian",
+                    surname = "Andor"
+                };
+
+                var response = await server.PostAsync("/register", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+                response.EnsureSuccessStatusCode();
+
+                var account = await createdDirectory.GetAccounts().Where(a => a.Email == email).SingleAsync();
+                account.Should().NotBeNull();
+                cleanup.MarkForDeletion(account);
+
+            }
+        }
+
+        [Fact]
         public async Task SpecifyOrganizationByNameKey()
         {
             // Arrange
@@ -106,7 +150,6 @@ namespace Stormpath.Owin.IntegrationTest
                 cleanup.MarkForDeletion(account);
             }
         }
-
 
         [Fact]
         public async Task ReturnDefaultErrorMessageDuringFormPost()
