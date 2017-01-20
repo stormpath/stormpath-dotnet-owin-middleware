@@ -406,5 +406,50 @@ namespace Stormpath.Owin.IntegrationTest
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             (await response.Content.ReadAsStringAsync()).Should().Contain("\"message\": \"Nice try, rebel scum!\"");
         }
+
+        /// <summary>
+        /// Regression test for https://github.com/stormpath/stormpath-dotnet-owin-middleware/issues/75
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task ReturnCustomErrorMessageDuringOauthTokenPost()
+        {
+            // Arrange
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreLoginHandler = (ctx, ct) =>
+                    {
+                        ctx.Result = new PreLoginResult()
+                        {
+                            Success = false,
+                            ErrorMessage = "Nice try, rebel scum!"
+                        };
+                        return Task.FromResult(0);
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+
+            // Act
+            var payload = new Dictionary<string, string>()
+            {
+                ["login"] = "jyn@testmail.stormpath.com",
+                ["password"] = "Changeme123!!",
+                ["grant_type"] = "password"
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/oauth/token")
+            {
+                Content = new FormUrlEncodedContent(payload)
+            };
+
+            var response = await server.SendAsync(request);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await response.Content.ReadAsStringAsync()).Should().Contain("Nice try, rebel scum!");
+        }
     }
 }
