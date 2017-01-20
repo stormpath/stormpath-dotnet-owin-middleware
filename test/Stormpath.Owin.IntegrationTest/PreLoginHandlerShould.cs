@@ -70,6 +70,57 @@ namespace Stormpath.Owin.IntegrationTest
         }
 
         [Fact]
+        public async Task SpecifyAccountStore()
+        {
+            // Arrange
+            var directoryName = $"AnotherDirectory {Guid.NewGuid()}";
+
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreLoginHandler = async (ctx, ct) =>
+                    {
+                        ctx.AccountStore = await ctx.Client.GetDirectories().Where(d => d.Name == directoryName).SingleAsync();
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+
+            using (var cleanup = new AutoCleanup(fixture.Client))
+            {
+                // Create a directory
+                var createdDirectory = await fixture.Client.CreateDirectoryAsync(directoryName, $"Test {fixture.TestKey}", DirectoryStatus.Enabled);
+                cleanup.MarkForDeletion(createdDirectory);
+
+                // Create an account in the accountStore
+                await createdDirectory.CreateAccountAsync(
+                    nameof(SpecifyAccountStore),
+                    nameof(PreLoginHandlerShould),
+                    $"its-{fixture.TestKey}@testmail.stormpath.com",
+                    "Changeme123!!");
+                // Account will be deleted along with directory
+
+                // Associate the directory with our application
+                var application = await fixture.Client.GetApplicationAsync(fixture.ApplicationHref);
+                await application.AddAccountStoreAsync(createdDirectory);
+
+                var payload = new Dictionary<string, string>()
+                {
+                    ["grant_type"] = "password",
+                    ["username"] = $"its-{fixture.TestKey}@testmail.stormpath.com",
+                    ["password"] = "Changeme123!!"
+                };
+
+                // Act
+                var response = await server.PostAsync("/oauth/token", new FormUrlEncodedContent(payload));
+
+                // Assert
+                response.IsSuccessStatusCode.Should().BeTrue();
+            }
+        }
+
+        [Fact]
         public async Task SpecifyOrganization()
         {
             // Arrange

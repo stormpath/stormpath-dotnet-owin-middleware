@@ -62,24 +62,33 @@ namespace Stormpath.Owin.Middleware
                 }
             }
 
-            IAccount createdAccount;
+            if (!string.IsNullOrEmpty(preRegisterHandlerContext.OrganizationNameKey))
+            {
+                var organization = await _client.GetOrganizationByNameKeyAsync(preRegisterHandlerContext.OrganizationNameKey, cancellationToken);
+                if (organization == null)
+                {
+                    await errorHandler("The specified organization does not exist.", cancellationToken);
+                    return null;
+                }
+
+                return await organization.CreateAccountAsync(
+                    preRegisterHandlerContext.Account,
+                    preRegisterHandlerContext.Options,
+                    cancellationToken);
+            }
 
             if (preRegisterHandlerContext.AccountStore != null)
             {
-                createdAccount = await preRegisterHandlerContext.AccountStore.CreateAccountAsync(
-                    preRegisterHandlerContext.Account,
-                    preRegisterHandlerContext.Options,
-                    cancellationToken);
-            }
-            else
-            {
-                createdAccount = await application.CreateAccountAsync(
+                return await preRegisterHandlerContext.AccountStore.CreateAccountAsync(
                     preRegisterHandlerContext.Account,
                     preRegisterHandlerContext.Options,
                     cancellationToken);
             }
 
-            return createdAccount;
+            return await application.CreateAccountAsync(
+                preRegisterHandlerContext.Account,
+                preRegisterHandlerContext.Options,
+                cancellationToken);
         }
 
         public async Task HandlePostRegistrationAsync(

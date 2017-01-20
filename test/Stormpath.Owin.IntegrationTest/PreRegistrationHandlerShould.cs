@@ -11,6 +11,8 @@ using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.SDK;
+using Stormpath.SDK.Directory;
+using Stormpath.SDK.Organization;
 using Xunit;
 
 namespace Stormpath.Owin.IntegrationTest
@@ -56,6 +58,96 @@ namespace Stormpath.Owin.IntegrationTest
 
                 // Assert
                 account.FullName.Should().Be("Chewbacca the Wookiee");
+            }
+        }
+
+        [Fact]
+        public async Task SpecifyAccountStore()
+        {
+            // Arrange
+            var directoryName = $"AnotherDirectory {Guid.NewGuid()}";
+
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreRegistrationHandler = async (ctx, ct) =>
+                    {
+                        ctx.AccountStore = await ctx.Client.GetDirectories().Where(d => d.Name == directoryName).SingleAsync();
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+
+            using (var cleanup = new AutoCleanup(fixture.Client))
+            {
+                // Create a directory
+                var createdDirectory = await fixture.Client.CreateDirectoryAsync(directoryName, $"Test {fixture.TestKey}", DirectoryStatus.Enabled);
+                cleanup.MarkForDeletion(createdDirectory);
+
+                var email = $"its-{fixture.TestKey}@testmail.stormpath.com";
+                var payload = new
+                {
+                    email,
+                    password = "Changeme123!!",
+                    givenName = "Cassian",
+                    surname = "Andor"
+                };
+
+                var response = await server.PostAsync("/register", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+                response.EnsureSuccessStatusCode();
+
+                var account = await createdDirectory.GetAccounts().Where(a => a.Email == email).SingleAsync();
+                account.Should().NotBeNull();
+                cleanup.MarkForDeletion(account);
+
+            }
+        }
+
+        [Fact]
+        public async Task SpecifyOrganizationByNameKey()
+        {
+            // Arrange
+            var fixture = new OwinTestFixture
+            {
+                Options = new StormpathOwinOptions
+                {
+                    PreRegistrationHandler = (ctx, ct) =>
+                    {
+                        ctx.OrganizationNameKey = "TestOrg";
+                        return Task.CompletedTask;
+                    }
+                }
+            };
+            var server = Helpers.CreateServer(fixture);
+
+            using (var cleanup = new AutoCleanup(fixture.Client))
+            {
+                // Create an organization
+                var org = fixture.Client.Instantiate<IOrganization>()
+                    .SetName($"Test Organization {fixture.TestKey}")
+                    .SetNameKey("TestOrg");
+                await fixture.Client.CreateOrganizationAsync(org, opt => opt.CreateDirectory = true);
+                cleanup.MarkForDeletion(org);
+
+                var createdDirectory = await fixture.Client.GetDirectories().Where(dir => dir.Name.StartsWith($"Test Organization {fixture.TestKey}")).SingleAsync();
+                //cleanup.MarkForDeletion(directory); // TODO
+
+                var email = $"its-{fixture.TestKey}@testmail.stormpath.com";
+                var payload = new
+                {
+                    email,
+                    password = "Changeme123!!",
+                    givenName = "Chewbacca",
+                    surname = "Wookiee"
+                };
+
+                var response = await server.PostAsync("/register", new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"));
+                response.EnsureSuccessStatusCode();
+
+                var account = await org.GetAccounts().Where(a => a.Email == email).SingleAsync();
+                account.Should().NotBeNull();
+                cleanup.MarkForDeletion(account);
             }
         }
 
