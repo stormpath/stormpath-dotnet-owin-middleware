@@ -108,13 +108,15 @@ namespace Stormpath.Owin.IntegrationTest
         public async Task SpecifyOrganizationByNameKey()
         {
             // Arrange
+            var orgNameKey = $"TestOrg-{Guid.NewGuid()}";
+
             var fixture = new OwinTestFixture
             {
                 Options = new StormpathOwinOptions
                 {
                     PreRegistrationHandler = (ctx, ct) =>
                     {
-                        ctx.OrganizationNameKey = "TestOrg";
+                        ctx.OrganizationNameKey = orgNameKey;
                         return Task.CompletedTask;
                     }
                 }
@@ -126,7 +128,7 @@ namespace Stormpath.Owin.IntegrationTest
                 // Create an organization
                 var org = fixture.Client.Instantiate<IOrganization>()
                     .SetName($"Test Organization {fixture.TestKey}")
-                    .SetNameKey("TestOrg");
+                    .SetNameKey(orgNameKey);
                 await fixture.Client.CreateOrganizationAsync(org, opt => opt.CreateDirectory = true);
                 cleanup.MarkForDeletion(org);
 
