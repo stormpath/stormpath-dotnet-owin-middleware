@@ -14,7 +14,7 @@
       "target": "project",
       "version": "1.7.2"
     },
-    "Stormpath.SDK": "0.95.2"
+    "Stormpath.SDK": "0.96.1"
   },
   "description": "Stormpath OWIN middleware library",
   "frameworks": {
@@ -46,5 +46,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "3.2.1"
+  "version": "3.2.2"
 }
