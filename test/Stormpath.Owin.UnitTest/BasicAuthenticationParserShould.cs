@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Threading;
+using FluentAssertions;
 using Stormpath.Owin.Middleware;
 using Xunit;
 
@@ -46,13 +47,15 @@ namespace Stormpath.Owin.UnitTest
             parser.Username.Should().BeNullOrEmpty();
         }
 
-        [Fact]
-        public void ParseValidPayload()
+        [Theory]
+        [InlineData("Basic Zm9vOmJhcg==", "foo", "bar")]
+        [InlineData("Basic NVhHR1I4SVFJVkhKSlBOS0VaUjkzNktYUjo1WFU3Yy9YM0lKRkRtUit6U1pINzdqMVdRdHlKQWtGL0I3N3AwVUN3MEZr", "5XGGR8IQIVHJJPNKEZR936KXR", "5XU7c/X3IJFDmR+zSZH77j1WQtyJAkF/B77p0UCw0Fk")]
+        public void ParseValidPayload(string header, string username, string password)
         {
-            var parser = new BasicAuthenticationParser("Basic Zm9vOmJhcg==", null);
+            var parser = new BasicAuthenticationParser(header, null);
             parser.IsValid.Should().BeTrue();
-            parser.Username.Should().Be("foo");
-            parser.Password.Should().Be("bar");
+            parser.Username.Should().Be(username);
+            parser.Password.Should().Be(password);
         }
     }
 }
