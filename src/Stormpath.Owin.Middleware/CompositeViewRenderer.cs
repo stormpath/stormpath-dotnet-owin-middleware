@@ -19,8 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -52,12 +52,12 @@ namespace Stormpath.Owin.Middleware
             {
                 if (await renderer.RenderAsync(name, model, context, cancellationToken))
                 {
-                    _logger.Info($"Rendered view '{name}' using {_rendererNames[renderer]}", nameof(CompositeViewRenderer));
+                    _logger.LogInformation($"Rendered view '{name}' using {_rendererNames[renderer]}", nameof(CompositeViewRenderer));
                     return true;
                 }
             }
 
-            _logger.Error($"Could not render view '{name}' using any available renderer", nameof(CompositeViewRenderer));
+            _logger.LogError($"Could not render view '{name}' using any available renderer", nameof(CompositeViewRenderer));
             return false;
         }
     }

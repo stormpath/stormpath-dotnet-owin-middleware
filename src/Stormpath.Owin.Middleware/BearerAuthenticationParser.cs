@@ -1,5 +1,6 @@
 ﻿using System;
-using Stormpath.SDK.Logging;
+using Microsoft.Extensions.Logging;
+
 
 namespace Stormpath.Owin.Middleware
 {
@@ -23,7 +24,7 @@ namespace Stormpath.Owin.Middleware
                 && header.StartsWith("Bearer ", StringComparison.Ordinal);
             if (!isValid)
             {
-                _logger.Trace("No Bearer header found", nameof(BearerAuthenticationParser));
+                _logger.LogTrace("No Bearer header found", nameof(BearerAuthenticationParser));
                 IsValid = false;
                 return;
             }
@@ -31,7 +32,7 @@ namespace Stormpath.Owin.Middleware
             var bearerPayload = header.Substring(7); // "Bearer " + (payload)
             if (string.IsNullOrEmpty(bearerPayload))
             {
-                _logger.Info("Found Bearer header, but payload was empty", nameof(BearerAuthenticationParser));
+                _logger.LogInformation("Found Bearer header, but payload was empty", nameof(BearerAuthenticationParser));
                 IsValid = false;
                 return;
             }

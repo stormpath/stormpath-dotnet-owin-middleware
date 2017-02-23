@@ -17,12 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -38,9 +36,8 @@ namespace Stormpath.Owin.Middleware
         public Task<bool> InvokeAsync(IDictionary<string, object> environment)
         {
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
-            var client = environment.Get<IClient>(OwinKeys.StormpathClient);
             var configuration = environment.Get<StormpathConfiguration>(OwinKeys.StormpathConfiguration);
-            var authenticatedUser = environment.Get<IAccount>(OwinKeys.StormpathUser);
+            var authenticatedUser = environment.Get<dynamic>(OwinKeys.StormpathUser);
             var authenticationScheme = environment.Get<string>(OwinKeys.StormpathUserScheme);
 
             var deleteCookieAction = new Action<WebCookieConfiguration>(cookie => Cookies.DeleteTokenCookie(context, cookie, logger));
@@ -49,7 +46,6 @@ namespace Stormpath.Owin.Middleware
             var redirectAction = new Action<string>(location => context.Response.Headers.SetString("Location", location));
 
             var handler = new RouteProtector(
-                client,
                 configuration,
                 deleteCookieAction,
                 setStatusCodeAction,
@@ -62,7 +58,7 @@ namespace Stormpath.Owin.Middleware
                 return TaskConstants.CompletedTask; // Authentication check succeeded
             }
 
-            logger.Info("User attempted to access a protected endpoint with invalid credentials.");
+            logger.LogInformation("User attempted to access a protected endpoint with invalid credentials.");
 
             handler.OnUnauthorized(context.Request.Headers.GetString("Accept"), context.Request.Path);
             return Task.FromResult(false); // Authentication check failed

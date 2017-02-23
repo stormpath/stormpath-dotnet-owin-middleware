@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using Stormpath.SDK.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -26,7 +26,7 @@ namespace Stormpath.Owin.Middleware
                 && header.StartsWith("Basic ", StringComparison.Ordinal);
             if (!isValid)
             {
-                _logger.Trace("No Basic header found", nameof(BasicAuthenticationParser));
+                _logger.LogTrace("No Basic header found", nameof(BasicAuthenticationParser));
                 IsValid = false;
                 return;
             }
@@ -34,7 +34,7 @@ namespace Stormpath.Owin.Middleware
             var basicPayload = header.Substring(6); // "Basic " + (payload)
             if (string.IsNullOrEmpty(basicPayload))
             {
-                _logger.Info("Found Basic header, but payload was empty", nameof(BasicAuthenticationParser));
+                _logger.LogInformation("Found Basic header, but payload was empty", nameof(BasicAuthenticationParser));
                 IsValid = false;
                 return;
             }
@@ -47,14 +47,14 @@ namespace Stormpath.Owin.Middleware
             }
             catch (FormatException fex)
             {
-                _logger.Info($"Found Basic header, but payload was not valid: {fex.Message}");
+                _logger.LogInformation($"Found Basic header, but payload was not valid: {fex.Message}");
                 decodedPayload = string.Empty;
             }
 
             var payloadChunks = decodedPayload.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
             if (payloadChunks.Length != 2)
             {
-                _logger.Info("Found Basic header, but it was malformed", nameof(BasicAuthenticationParser));
+                _logger.LogInformation("Found Basic header, but it was malformed", nameof(BasicAuthenticationParser));
                 IsValid = false;
                 return;
             }

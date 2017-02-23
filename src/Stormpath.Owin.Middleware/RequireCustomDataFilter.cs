@@ -2,8 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Sync;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -25,14 +23,14 @@ namespace Stormpath.Owin.Middleware
             _comparer = comparer ?? new DefaultSmartComparer();
         }
 
-        public bool IsAuthorized(IAccount account)
+        public bool IsAuthorized(dynamic account)
         {
             var customData = account?.GetCustomData();
 
             return _comparer.Equals(customData?[_key], _value);
         }
 
-        public async Task<bool> IsAuthorizedAsync(IAccount account, CancellationToken cancellationToken)
+        public async Task<bool> IsAuthorizedAsync(dynamic account, CancellationToken cancellationToken)
         {
             var customData = account == null
                 ? null

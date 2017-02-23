@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stormpath.SDK.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -49,7 +49,7 @@ namespace Stormpath.Owin.Middleware.Internal
                 }
             }
 
-            logger.Trace($"Could not negotiate Content-Type for header '{acceptHeader}'", "ContentNegotiation.NegotiateAcceptHeader");
+            logger.LogTrace($"Could not negotiate Content-Type for header '{acceptHeader}'", "ContentNegotiation.NegotiateAcceptHeader");
 
             return new ContentNegotiationResult(
                 success: false,
@@ -85,7 +85,7 @@ namespace Stormpath.Owin.Middleware.Internal
 
                     if (!tokens.Any())
                     {
-                        logger.Info($"Malformed media range token in header '{acceptHeader}'", "ContentNegotiation.ParseAndSortHeader");
+                        logger.LogInformation($"Malformed media range token in header '{acceptHeader}'", "ContentNegotiation.ParseAndSortHeader");
                         continue;
                     }
 
@@ -97,7 +97,7 @@ namespace Stormpath.Owin.Middleware.Internal
                     {
                         if (!double.TryParse(qualityFactorToken.Substring(qualityFactorToken.IndexOf("q=") + 2), out qualityFactor))
                         {
-                            logger.Warn($"Could not parse quality factor token '{qualityFactorToken}'", "ContentNegotiation.ParseAndSortHeader");
+                            logger.LogWarning($"Could not parse quality factor token '{qualityFactorToken}'", "ContentNegotiation.ParseAndSortHeader");
                         }
                     }
 
@@ -105,7 +105,7 @@ namespace Stormpath.Owin.Middleware.Internal
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex, $"Could not parse media range token '{mediaRange}'", "ContentNegotiation.ParseAndSortHeader");
+                    logger.LogError(1004, ex, $"Could not parse media range token '{mediaRange}'", "ContentNegotiation.ParseAndSortHeader");
                 }
             }
 

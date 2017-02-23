@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using Stormpath.SDK.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -55,7 +55,7 @@ namespace Stormpath.Owin.Middleware.Internal
                 }
                 catch (Exception ex)
                 {
-                    logger.Warn(ex, $"Error parsing item '{item}'", "FormContentParser.Parse");
+                    logger.LogWarning(1005, ex, $"Error parsing item '{item}'", "FormContentParser.Parse");
                 }
             }
 

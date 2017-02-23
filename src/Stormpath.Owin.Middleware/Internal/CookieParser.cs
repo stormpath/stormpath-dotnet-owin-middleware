@@ -18,8 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Logging;
+
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -34,7 +35,7 @@ namespace Stormpath.Owin.Middleware.Internal
 
             if (!context.Request.Headers.TryGetValue("Cookie", out rawCookies))
             {
-                logger.Trace("No cookie header found", nameof(CookieParser));
+                logger.LogTrace("No cookie header found", nameof(CookieParser));
                 return null;
             }
 
@@ -129,7 +130,7 @@ namespace Stormpath.Owin.Middleware.Internal
                     }
                     catch (Exception ex)
                     {
-                        logger.Error(ex, $"Error parsing cookie content '{text}'", "CookieParser.ParseDelimited");
+                        logger.LogError(1000, ex, $"Error parsing cookie content '{text}'", "CookieParser.ParseDelimited");
                     }
 
                     if (delimiterIndex + 1 < textLength)

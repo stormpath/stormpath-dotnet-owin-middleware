@@ -1,32 +1,25 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Jwt;
-using Stormpath.SDK.Logging;
+
 
 namespace Stormpath.Owin.Middleware
 {
     internal sealed class LogoutExecutor
     {
-        private readonly IClient _client;
         private readonly StormpathConfiguration _configuration;
         private readonly HandlerConfiguration _handlers;
         private readonly ILogger _logger;
 
         public LogoutExecutor(
-            IClient client,
             StormpathConfiguration configuration,
             HandlerConfiguration handlers,
             ILogger logger)
         {
-            _client = client;
             _configuration = configuration;
             _handlers = handlers;
             _logger = logger;
@@ -34,7 +27,7 @@ namespace Stormpath.Owin.Middleware
 
         public async Task HandleLogoutAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var account = context.Request[OwinKeys.StormpathUser] as IAccount;
+            dynamic account = context.Request[OwinKeys.StormpathUser];
             context.Request[OwinKeys.StormpathUser] = null;
 
             string[] rawCookies;
@@ -47,8 +40,8 @@ namespace Stormpath.Owin.Middleware
                 await _handlers.PreLogoutHandler(preLogoutContext, cancellationToken);
 
                 // TODO delete tokens for other types of auth too
-                await RevokeCookieTokens(_client, cookieParser, cancellationToken);
-                await RevokeHeaderToken(context, _client, cancellationToken);
+                await RevokeCookieTokens(cookieParser, cancellationToken);
+                await RevokeHeaderToken(context, cancellationToken);
 
                 var postLogoutContext = new PostLogoutContext(context, account);
                 await _handlers.PostLogoutHandler(postLogoutContext, cancellationToken);
@@ -60,12 +53,12 @@ namespace Stormpath.Owin.Middleware
         public Task<bool> HandleRedirectAsync(IOwinEnvironment context)
             => HttpResponse.Redirect(context, _configuration.Web.Logout.NextUri);
 
-        private async Task RevokeCookieTokens(IClient client, CookieParser cookieParser, CancellationToken cancellationToken)
+        private async Task RevokeCookieTokens(CookieParser cookieParser, CancellationToken cancellationToken)
         {
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
 
-            var revoker = new TokenRevoker(client, _logger)
+            var revoker = new TokenRevoker(_logger)
                 .AddToken(accessToken)
                 .AddToken(refreshToken);
 
@@ -75,11 +68,11 @@ namespace Stormpath.Owin.Middleware
             }
             catch (Exception ex)
             {
-                _logger.Info(ex.Message, source: nameof(RevokeCookieTokens));
+                _logger.LogInformation(ex.Message, nameof(RevokeCookieTokens));
             }
         }
 
-        private async Task RevokeHeaderToken(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        private async Task RevokeHeaderToken(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var bearerHeaderParser = new BearerAuthenticationParser(context.Request.Headers.GetString("Authorization"), _logger);
             if (!bearerHeaderParser.IsValid)
@@ -87,7 +80,7 @@ namespace Stormpath.Owin.Middleware
                 return;
             }
 
-            var revoker = new TokenRevoker(client, _logger)
+            var revoker = new TokenRevoker(_logger)
                 .AddToken(bearerHeaderParser.Token);
 
             try
@@ -96,7 +89,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (Exception ex)
             {
-                _logger.Info(ex.Message, source: nameof(RevokeCookieTokens));
+                _logger.LogInformation(ex.Message, nameof(RevokeCookieTokens));
             }
         }
 

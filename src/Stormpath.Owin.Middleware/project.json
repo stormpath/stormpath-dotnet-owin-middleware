@@ -12,9 +12,9 @@
   "dependencies": {
     "Stormpath.Owin.Abstractions": {
       "target": "project",
-      "version": "1.7.2"
+      "version": "2.0.0-beta1"
     },
-    "Stormpath.SDK": "0.96.1"
+    "Newtonsoft.Json": "9.0.1" 
   },
   "description": "Stormpath OWIN middleware library",
   "frameworks": {
@@ -29,7 +29,7 @@
     },
     "netstandard1.3": {
       "dependencies": {
-        "System.Net.Http": "4.1.0"
+        "System.Net.Http": "4.3.1"
       },
       "imports": "dotnet"
     }
@@ -46,5 +46,5 @@
   "tooling": {
     "defaultNamespace": "Stormpath.Owin.Middleware"
   },
-  "version": "3.2.2"
+  "version": "4.0.0-beta1"
 }

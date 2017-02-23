@@ -1,25 +1,23 @@
-﻿using Stormpath.SDK.Oauth;
-
-namespace Stormpath.Owin.Middleware.Internal
+﻿namespace Stormpath.Owin.Middleware.Internal
 {
     public class GrantResultResponseSanitizer
     {
-        public object SanitizeResponseWithRefreshToken(IOauthGrantAuthenticationResult result)
+        public object SanitizeResponseWithRefreshToken(GrantResult result)
         {
             return new
             {
-                access_token = result.AccessTokenString,
+                access_token = result.AccessToken,
                 expires_in = result.ExpiresIn,
-                refresh_token = result.RefreshTokenString,
+                refresh_token = result.RefreshToken,
                 token_type = result.TokenType
             };
         }
 
-        public object SanitizeResponseWithoutRefreshToken(IOauthGrantAuthenticationResult result)
+        public object SanitizeResponseWithoutRefreshToken(GrantResult result)
         {
             return new
             {
-                access_token = result.AccessTokenString,
+                access_token = result.AccessToken,
                 expires_in = result.ExpiresIn,
                 token_type = result.TokenType
             };

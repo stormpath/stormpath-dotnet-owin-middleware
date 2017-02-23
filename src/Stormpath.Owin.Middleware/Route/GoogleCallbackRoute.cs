@@ -21,9 +21,6 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
-using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -33,52 +30,55 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("google")
                && configuration.Providers.Any(p => p.Key.Equals("google", StringComparison.OrdinalIgnoreCase));
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            // todo how does social login work?
+            throw new Exception("TODO");
 
-            var stateToken = queryString.GetString("state");
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
-            if (!parsedStateToken.Valid)
-            {
-                _logger.Warn("State token was invalid", nameof(GoogleCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
-            }
+            //var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            var code = queryString.GetString("code");
-            if (string.IsNullOrEmpty(code))
-            {
-                _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //var stateToken = queryString.GetString("state");
+            //var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            //if (!parsedStateToken.Valid)
+            //{
+            //    _logger.LogWarning("State token was invalid", nameof(GoogleCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
+            //}
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
+            //var code = queryString.GetString("code");
+            //if (string.IsNullOrEmpty(code))
+            //{
+            //    _logger.LogWarning("Social code was empty", nameof(GithubCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
 
-            try
-            {
-                var providerRequest = client.Providers()
-                    .Google()
-                    .Account()
-                    .SetCode(code)
-                    .Build();
+            //var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            //var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
-                var loginResult =
-                    await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+            //try
+            //{
+            //    var providerRequest = client.Providers()
+            //        .Google()
+            //        .Account()
+            //        .SetCode(code)
+            //        .Build();
 
-                await socialExecutor.HandleLoginResultAsync(
-                    context,
-                    application,
-                    loginResult,
-                    cancellationToken);
+            //    var loginResult =
+            //        await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
-                return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn($"Got '{ex.Message}' during social login request", source: nameof(GoogleCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //    await socialExecutor.HandleLoginResultAsync(
+            //        context,
+            //        application,
+            //        loginResult,
+            //        cancellationToken);
+
+            //    return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogWarning($"Got '{ex.Message}' during social login request", source: nameof(GoogleCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
         }
     }
 }

@@ -15,13 +15,11 @@
 // </copyright>
 
 using System;
+using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
-using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
+
 
 namespace Stormpath.Owin.Middleware
 {
@@ -32,7 +30,6 @@ namespace Stormpath.Owin.Middleware
     {
         public const string AnyScheme = "*";
 
-        private readonly IClient _client;
         private readonly StormpathConfiguration _configuration;
         private readonly ILogger _logger;
 
@@ -44,7 +41,6 @@ namespace Stormpath.Owin.Middleware
         /// <summary>
         /// Creates a new instance of the <see cref="RouteProtector"/> class.
         /// </summary>
-        /// <param name="client">The Stormpath <see cref="IClient">Client</see>.</param>
         /// <param name="stormpathConfiguration">The active Stormpath <see cref="StormpathConfiguration">configuration</see>.</param>
         /// <param name="deleteCookieAction">Delegate to delete cookies in the response.</param>
         /// <param name="setStatusCodeAction">Delegate to set the response status code.</param>
@@ -52,7 +48,6 @@ namespace Stormpath.Owin.Middleware
         /// <param name="redirectAction">Delegate to set the response Location header.</param>
         /// <param name="logger">The <see cref="ILogger"/> to use.</param>
         public RouteProtector(
-            IClient client,
             StormpathConfiguration stormpathConfiguration,
             Action<WebCookieConfiguration> deleteCookieAction,
             Action<int> setStatusCodeAction,
@@ -60,8 +55,6 @@ namespace Stormpath.Owin.Middleware
             Action<string> redirectAction,
             ILogger logger)
         {
-            // TODO: remove after splitting out JWT stuff
-            _client = client;
 
             _configuration = stormpathConfiguration;
             _logger = logger;
@@ -80,7 +73,7 @@ namespace Stormpath.Owin.Middleware
         /// <param name="requiredAuthenticationScheme">The authentication scheme that must be used for this route, or <see cref="AnyScheme"/>.</param>
         /// <param name="account">The Stormpath Account, if any.</param>
         /// <returns><see langword="true"/> if the request is authenticated; <see langword="false"/> otherwise.</returns>
-        public bool IsAuthenticated(string authenticationScheme, string requiredAuthenticationScheme, IAccount account)
+        public bool IsAuthenticated(string authenticationScheme, string requiredAuthenticationScheme, dynamic account)
         {
             if (account == null)
             {
@@ -115,7 +108,7 @@ namespace Stormpath.Owin.Middleware
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)
             {
-                var redirectTokenBuilder = new StateTokenBuilder(_client, _configuration.Client.ApiKey)
+                var redirectTokenBuilder = new StateTokenBuilder(_configuration.Client.ApiKey)
                 {
                     Path = requestPath
                 };

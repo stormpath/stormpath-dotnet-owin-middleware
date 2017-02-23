@@ -1,17 +1,16 @@
 ﻿using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Account;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed class PostLoginContext : HandlerContext
     {
-        public PostLoginContext(IOwinEnvironment environment, IAccount account)
+        public PostLoginContext(IOwinEnvironment environment, dynamic account)
             : base(environment)
         {
             Account = account;
         }
 
-        public IAccount Account { get; }
+        public dynamic Account { get; }
 
         public PostLoginResult Result { get; set; }
     }

@@ -20,8 +20,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Stormpath.SDK.Logging;
+
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -72,7 +73,7 @@ namespace Stormpath.Owin.Middleware.Internal
             }
             catch (Exception ex)
             {
-                _logger.Warn(ex, source: nameof(ExchangeCodeForAccessTokenAsync));
+                _logger.LogWarning(1001, ex, nameof(ExchangeCodeForAccessTokenAsync));
                 return null;
             }
 
@@ -87,7 +88,7 @@ namespace Stormpath.Owin.Middleware.Internal
             string error;
             if (httpResponseBody.TryGetValue("error", out error))
             {
-                _logger.Warn($"OAuth error: '{error}'", nameof(ExchangeCodeForAccessTokenAsync));
+                _logger.LogWarning($"OAuth error: '{error}'", nameof(ExchangeCodeForAccessTokenAsync));
                 return null;
             }
 

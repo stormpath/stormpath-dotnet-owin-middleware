@@ -1,5 +1,4 @@
 ﻿using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.AccountStore;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -11,10 +10,6 @@ namespace Stormpath.Owin.Middleware
         }
 
         public string Login { get; set; }
-
-        public IAccountStore AccountStore { get; set; }
-
-        public string OrganizationNameKey { get; set; }
 
         public PreLoginResult Result { get; set; }
     }

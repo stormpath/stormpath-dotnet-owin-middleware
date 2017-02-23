@@ -21,9 +21,6 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
-using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -33,85 +30,91 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("linkedin")
                && configuration.Providers.Any(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase));
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            // todo how does social login work?
+            throw new Exception("TODO");
 
-            var stateToken = queryString.GetString("state");
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
-            if (!parsedStateToken.Valid)
-            {
-                _logger.Warn("State token was invalid", nameof(LinkedInCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
-            }
+            //var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            if (queryString.ContainsKey("error"))
-            {
-                _logger.Warn($"Error: '{queryString.GetString("error")}'", nameof(LinkedInCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //var stateToken = queryString.GetString("state");
+            //var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            //if (!parsedStateToken.Valid)
+            //{
+            //    _logger.LogWarning("State token was invalid", nameof(LinkedInCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
+            //}
 
-            var code = queryString.GetString("code");
+            //if (queryString.ContainsKey("error"))
+            //{
+            //    _logger.LogWarning($"Error: '{queryString.GetString("error")}'", nameof(LinkedInCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
 
-            if (string.IsNullOrEmpty(code))
-            {
-                _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //var code = queryString.GetString("code");
 
-            var accessToken = await ExchangeCodeAsync(code, cancellationToken);
+            //if (string.IsNullOrEmpty(code))
+            //{
+            //    _logger.LogWarning("Social code was empty", nameof(GithubCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
 
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                _logger.Warn("Exchanged access token was null", source: nameof(LinkedInCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //var accessToken = await ExchangeCodeAsync(code, cancellationToken);
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
+            //if (string.IsNullOrEmpty(accessToken))
+            //{
+            //    _logger.LogWarning("Exchanged access token was null", source: nameof(LinkedInCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
 
-            try
-            {
-                var providerRequest = client.Providers()
-                    .LinkedIn()
-                    .Account()
-                    .SetAccessToken(accessToken)
-                    .Build();
+            //var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            //var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
-                var loginResult =
-                    await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+            //try
+            //{
+            //    var providerRequest = client.Providers()
+            //        .LinkedIn()
+            //        .Account()
+            //        .SetAccessToken(accessToken)
+            //        .Build();
 
-                await socialExecutor.HandleLoginResultAsync(
-                    context,
-                    application,
-                    loginResult,
-                    cancellationToken);
+            //    var loginResult =
+            //        await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
-                return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn($"Got '{ex.Message}' during social login request", source: nameof(LinkedInCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //    await socialExecutor.HandleLoginResultAsync(
+            //        context,
+            //        application,
+            //        loginResult,
+            //        cancellationToken);
+
+            //    return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogWarning($"Got '{ex.Message}' during social login request", source: nameof(LinkedInCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
         }
 
-        private async Task<string> ExchangeCodeAsync(
+        private Task<string> ExchangeCodeAsync(
             string code,
             CancellationToken cancellationToken)
         {
-            var providerData = _configuration.Providers
-                .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
-                .Value;
+            // todo how does social login work?
+            throw new Exception("TODO");
 
-            var oauthCodeExchanger = new OauthCodeExchanger("https://www.linkedin.com/uas/oauth2/accessToken", _logger);
-            var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
-                code, 
-                providerData.CallbackUri, 
-                providerData.ClientId, 
-                providerData.ClientSecret,
-                cancellationToken);
-            return accessToken;
+            //var providerData = _configuration.Providers
+            //    .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
+            //    .Value;
+
+            //var oauthCodeExchanger = new OauthCodeExchanger("https://www.linkedin.com/uas/oauth2/accessToken", _logger);
+            //var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
+            //    code, 
+            //    providerData.CallbackUri, 
+            //    providerData.ClientId, 
+            //    providerData.ClientSecret,
+            //    cancellationToken);
+            //return accessToken;
         }
     }
 }

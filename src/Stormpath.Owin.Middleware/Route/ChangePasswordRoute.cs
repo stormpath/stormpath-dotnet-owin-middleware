@@ -23,9 +23,6 @@ using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -35,7 +32,7 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.ChangePassword.Enabled == true
             || (configuration.Web.ChangePassword.Enabled == null && configuration.Tenant.PasswordResetWorkflowEnabled);
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var spToken = queryString.GetString("sptoken");
@@ -45,25 +42,26 @@ namespace Stormpath.Owin.Middleware.Route
                 return await HttpResponse.Redirect(context, _configuration.Web.ForgotPassword.Uri);
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            // TODO verify password reset token
+            throw new Exception("TODO");
 
-            try
-            {
-                await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+            //try
+            //{
+            //    await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
 
-                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(client, _configuration);
-                var changePasswordViewModel = viewModelBuilder.Build();
+            //    var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
+            //    var changePasswordViewModel = viewModelBuilder.Build();
 
-                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
-                return true;
-            }
-            catch (ResourceException)
-            {
-                return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
-            }
+            //    await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+            //    return true;
+            //}
+            //catch (Exception)
+            //{
+            //    return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
+            //}
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
@@ -72,10 +70,10 @@ namespace Stormpath.Owin.Middleware.Route
             var formData = FormContentParser.Parse(body, _logger);
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
-                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(client, _configuration);
+                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
                 var changePasswordViewModel = viewModelBuilder.Build();
                 changePasswordViewModel.Errors.Add("An error occurred. Please try again.");
 
@@ -85,7 +83,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (!model.Password.Equals(model.ConfirmPassword, StringComparison.Ordinal))
             {
-                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(client, _configuration);
+                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
                 var changePasswordViewModel = viewModelBuilder.Build();
                 changePasswordViewModel.Errors.Add("Passwords do not match.");
 
@@ -93,45 +91,47 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var spToken = queryString.GetString("sptoken");
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            // todo how does the password reset flow work?
+            throw new Exception("TODO");
 
-            IAccount account;
-            try
-            {
-                account = await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
-            }
-            catch (ResourceException)
-            {
-                return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
-            }
+            //var spToken = queryString.GetString("sptoken");
 
-            var preChangePasswordContext = new PreChangePasswordContext(context, account);
-            await _handlers.PreChangePasswordHandler(preChangePasswordContext, cancellationToken);
+            //dynamic account;
+            //try
+            //{
+            //    account = await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+            //}
+            //catch (Exception)
+            //{
+            //    return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
+            //}
 
-            try
-            {
-                await application.ResetPasswordAsync(spToken, model.Password, cancellationToken);
-            }
-            catch (ResourceException rex)
-            {
-                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(client, _configuration);
-                var changePasswordViewModel = viewModelBuilder.Build();
-                changePasswordViewModel.Errors.Add(rex.Message);
+            //var preChangePasswordContext = new PreChangePasswordContext(context, account);
+            //await _handlers.PreChangePasswordHandler(preChangePasswordContext, cancellationToken);
 
-                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
-                return true;
-            }
+            //try
+            //{
+            //    await application.ResetPasswordAsync(spToken, model.Password, cancellationToken);
+            //}
+            //catch (ResourceException rex)
+            //{
+            //    var viewModelBuilder = new ChangePasswordFormViewModelBuilder(client, _configuration);
+            //    var changePasswordViewModel = viewModelBuilder.Build();
+            //    changePasswordViewModel.Errors.Add(rex.Message);
 
-            var postChangePasswordContext = new PostChangePasswordContext(context, account);
-            await _handlers.PostChangePasswordHandler(postChangePasswordContext, cancellationToken);
+            //    await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+            //    return true;
+            //}
 
-            // TODO autologin
+            //var postChangePasswordContext = new PostChangePasswordContext(context, account);
+            //await _handlers.PostChangePasswordHandler(postChangePasswordContext, cancellationToken);
 
-            return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.NextUri);
+            //// TODO autologin
+
+            //return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.NextUri);
         }
 
-        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var spToken = queryString.GetString("sptoken");
@@ -141,33 +141,38 @@ namespace Stormpath.Owin.Middleware.Route
                 return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            // todo how does the password reset flow work?
+            throw new Exception("TODO");
 
-            await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
-            // Errors are caught in AbstractRouteMiddleware
+            //var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
-            return await JsonResponse.Ok(context);
+            //await application.VerifyPasswordResetTokenAsync(spToken, cancellationToken);
+            //// Errors are caught in AbstractRouteMiddleware
+
+            //return await JsonResponse.Ok(context);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
 
-            var account = await application.VerifyPasswordResetTokenAsync(model.SpToken, cancellationToken);
-            // Errors are caught in AbstractRouteMiddleware
+            // todo how does the password reset flow work?
+            throw new Exception("TODO");
 
-            var preChangePasswordContext = new PreChangePasswordContext(context, account);
-            await _handlers.PreChangePasswordHandler(preChangePasswordContext, cancellationToken);
+            //var account = await application.VerifyPasswordResetTokenAsync(model.SpToken, cancellationToken);
+            //// Errors are caught in AbstractRouteMiddleware
 
-            await application.ResetPasswordAsync(model.SpToken, model.Password, cancellationToken);
+            //var preChangePasswordContext = new PreChangePasswordContext(context, account);
+            //await _handlers.PreChangePasswordHandler(preChangePasswordContext, cancellationToken);
 
-            var postChangePasswordContext = new PostChangePasswordContext(context, account);
-            await _handlers.PostChangePasswordHandler(postChangePasswordContext, cancellationToken);
+            //await application.ResetPasswordAsync(model.SpToken, model.Password, cancellationToken);
 
-            // TODO autologin
+            //var postChangePasswordContext = new PostChangePasswordContext(context, account);
+            //await _handlers.PostChangePasswordHandler(postChangePasswordContext, cancellationToken);
 
-            return await JsonResponse.Ok(context);
+            //// TODO autologin
+
+            //return await JsonResponse.Ok(context);
         }
     }
 }
