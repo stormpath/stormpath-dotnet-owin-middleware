@@ -1,25 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.Middleware", "src\Stormpath.Owin.Middleware\Stormpath.Owin.Middleware.xproj", "{BFBC0BAE-281E-40E9-9BCA-6EFBF6DBBCF6}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{213BB7A9-5C1C-4917-BC65-0C20F0627CF2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B26DCAB1-697E-47B3-9BD2-74B4B7839248}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.NowinHarness", "test\Stormpath.Owin.NowinHarness\Stormpath.Owin.NowinHarness.xproj", "{6254C765-AC3A-4674-8ED3-73B8F7F90C90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stormpath.Owin.Middleware", "src\Stormpath.Owin.Middleware\Stormpath.Owin.Middleware.csproj", "{BFBC0BAE-281E-40E9-9BCA-6EFBF6DBBCF6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.UnitTest", "test\Stormpath.Owin.UnitTest\Stormpath.Owin.UnitTest.xproj", "{9EF26564-74DF-4019-A69A-7FF698B60D89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stormpath.Owin.NowinHarness", "test\Stormpath.Owin.NowinHarness\Stormpath.Owin.NowinHarness.csproj", "{6254C765-AC3A-4674-8ED3-73B8F7F90C90}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorPrecompiler", "src\RazorPrecompiler\RazorPrecompiler.xproj", "{CF40F794-1891-442D-A2BA-0DBF5C883A86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stormpath.Owin.UnitTest", "test\Stormpath.Owin.UnitTest\Stormpath.Owin.UnitTest.csproj", "{9EF26564-74DF-4019-A69A-7FF698B60D89}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.Abstractions", "src\Stormpath.Owin.Abstractions\Stormpath.Owin.Abstractions.xproj", "{3615FE0D-5B58-4A37-AD9C-9FC32DFD84CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPrecompiler", "src\RazorPrecompiler\RazorPrecompiler.csproj", "{CF40F794-1891-442D-A2BA-0DBF5C883A86}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.Views", "src\Stormpath.Owin.Views\Stormpath.Owin.Views.xproj", "{237B0525-BE8F-43EC-92EF-D8E43352368D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stormpath.Owin.Abstractions", "src\Stormpath.Owin.Abstractions\Stormpath.Owin.Abstractions.csproj", "{3615FE0D-5B58-4A37-AD9C-9FC32DFD84CD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Stormpath.Owin.Views.Precompiled", "src\Stormpath.Owin.Views.Precompiled\Stormpath.Owin.Views.Precompiled.xproj", "{763034BD-D324-4E12-B503-6C1F9E560DC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stormpath.Owin.Views", "src\Stormpath.Owin.Views\Stormpath.Owin.Views.csproj", "{237B0525-BE8F-43EC-92EF-D8E43352368D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stormpath.Owin.Views.Precompiled", "src\Stormpath.Owin.Views.Precompiled\Stormpath.Owin.Views.Precompiled.csproj", "{763034BD-D324-4E12-B503-6C1F9E560DC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

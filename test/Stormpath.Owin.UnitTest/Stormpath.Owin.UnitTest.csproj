@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Unit Tests for Stormpath OWIN middleware.</Description>
+    <VersionPrefix>3.2.0</VersionPrefix>
+    <Authors>Nate Barbettini</Authors>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <AssemblyName>Stormpath.Owin.UnitTest</AssemblyName>
+    <PackageId>Stormpath.Owin.UnitTest</PackageId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <PackageProjectUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</RepositoryUrl>
+    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50;portable-net45+win8</PackageTargetFallback>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Stormpath.Owin.Middleware\Stormpath.Owin.Middleware.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta5-build1225" />
+    <PackageReference Include="FluentAssertions" Version="4.14.0" />
+    <PackageReference Include="NSubstitute" Version="2.0.1-rc" />
+    <PackageReference Include="xunit" Version="2.2.0-beta5-build3474" />
+  </ItemGroup>
+
+</Project>
