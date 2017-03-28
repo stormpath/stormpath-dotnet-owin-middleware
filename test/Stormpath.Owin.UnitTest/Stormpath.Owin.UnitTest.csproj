@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Unit Tests for Stormpath OWIN middleware.</Description>
-    <VersionPrefix>3.2.0</VersionPrefix>
+    <VersionPrefix>4.0.0-beta1</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <AssemblyName>Stormpath.Owin.UnitTest</AssemblyName>
@@ -20,11 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0-beta5-build1225" />
-    <PackageReference Include="FluentAssertions" Version="4.14.0" />
-    <PackageReference Include="NSubstitute" Version="2.0.1-rc" />
-    <PackageReference Include="xunit" Version="2.2.0-beta5-build3474" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+    <PackageReference Include="FluentAssertions" Version="4.19.2" />
+    <PackageReference Include="NSubstitute" Version="2.0.2" />
+    <PackageReference Include="xunit" Version="2.2.0" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,4 @@
 ﻿using System;
-using Stormpath.Configuration.Abstractions.Immutable;
 
 namespace Stormpath.Owin.Abstractions
 {
@@ -10,11 +9,11 @@ namespace Stormpath.Owin.Abstractions
 
         // TODO: replace with direct JWT library usage
 
-        private readonly ClientApiKeyConfiguration _apiKeyConfiguration;
+        private readonly string _secret;
 
-        public StateTokenBuilder(ClientApiKeyConfiguration apiKeyConfiguration)
+        public StateTokenBuilder(string secret)
         {
-            _apiKeyConfiguration = apiKeyConfiguration;
+            _secret = secret;
         }
 
         public string Path { get; set; }

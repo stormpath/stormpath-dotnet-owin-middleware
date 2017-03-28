@@ -147,71 +147,74 @@ namespace Stormpath.Owin.Middleware.Route
             });
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, stateToken, _logger);
-            if (!parsedStateToken.Valid)
-            {
-                await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
-                return true;
-            }
+            // TODO - use Okta Client secret
+            throw new Exception("TODO");
 
-            var allNonEmptyFieldNames = formData
-                .Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value)))
-                .Select(f => f.Key)
-                .Except(new []{ StringConstants.StateTokenName })
-                .ToList();
+            //var parsedStateToken = new StateTokenParser(oktaClientSecret, stateToken, _logger);
+            //if (!parsedStateToken.Valid)
+            //{
+            //    await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
+            //    return true;
+            //}
 
-            var providedCustomFields = new Dictionary<string, string>();
-            var nonCustomFields = DefaultFields.Concat(new[] {StringConstants.StateTokenName}).ToArray();
-            foreach (var item in formData.Where(f => !nonCustomFields.Contains(f.Key)))
-            {
-                providedCustomFields.Add(item.Key, string.Join(",", item.Value));
-            }
+            //var allNonEmptyFieldNames = formData
+            //    .Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value)))
+            //    .Select(f => f.Key)
+            //    .Except(new []{ StringConstants.StateTokenName })
+            //    .ToList();
 
-            var executor = new RegisterExecutor(_configuration, _handlers, _logger);
+            //var providedCustomFields = new Dictionary<string, string>();
+            //var nonCustomFields = DefaultFields.Concat(new[] {StringConstants.StateTokenName}).ToArray();
+            //foreach (var item in formData.Where(f => !nonCustomFields.Contains(f.Key)))
+            //{
+            //    providedCustomFields.Add(item.Key, string.Join(",", item.Value));
+            //}
 
-            try
-            {
-                var newAccount = await InstantiateLocalAccount(
-                    context,
-                    model,
-                    allNonEmptyFieldNames,
-                    providedCustomFields,
-                    htmlErrorHandler,
-                    cancellationToken);
-                if (newAccount == null)
-                {
-                    return true; // Some error occurred and the handler was invoked
-                }
+            //var executor = new RegisterExecutor(_configuration, _handlers, _logger);
 
-                var formDataForHandler = formData
-                    .ToDictionary(kv => kv.Key, kv => string.Join(",", kv.Value));
+            //try
+            //{
+            //    var newAccount = await InstantiateLocalAccount(
+            //        context,
+            //        model,
+            //        allNonEmptyFieldNames,
+            //        providedCustomFields,
+            //        htmlErrorHandler,
+            //        cancellationToken);
+            //    if (newAccount == null)
+            //    {
+            //        return true; // Some error occurred and the handler was invoked
+            //    }
 
-                var createdAccount = await executor.HandleRegistrationAsync(
-                    context,
-                    formDataForHandler,
-                    newAccount,
-                    htmlErrorHandler,
-                    cancellationToken);
-                if (createdAccount == null)
-                {
-                    return true; // Some error occurred and the handler was invoked
-                }
+            //    var formDataForHandler = formData
+            //        .ToDictionary(kv => kv.Key, kv => string.Join(",", kv.Value));
 
-                await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
+            //    var createdAccount = await executor.HandleRegistrationAsync(
+            //        context,
+            //        formDataForHandler,
+            //        newAccount,
+            //        htmlErrorHandler,
+            //        cancellationToken);
+            //    if (createdAccount == null)
+            //    {
+            //        return true; // Some error occurred and the handler was invoked
+            //    }
 
-                return await executor.HandleRedirectAsync(
-                    context,
-                    createdAccount,
-                    model,
-                    htmlErrorHandler,
-                    stateToken,
-                    cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                await htmlErrorHandler(ex.Message, cancellationToken);
-                return true;
-            }
+            //    await executor.HandlePostRegistrationAsync(context, createdAccount, cancellationToken);
+
+            //    return await executor.HandleRedirectAsync(
+            //        context,
+            //        createdAccount,
+            //        model,
+            //        htmlErrorHandler,
+            //        stateToken,
+            //        cancellationToken);
+            //}
+            //catch (Exception ex)
+            //{
+            //    await htmlErrorHandler(ex.Message, cancellationToken);
+            //    return true;
+            //}
         }
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)

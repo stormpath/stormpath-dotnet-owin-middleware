@@ -1,16 +1,15 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
-using Stormpath.Configuration.Abstractions.Immutable;
 namespace Stormpath.Owin.Abstractions
 {
     public sealed class StateTokenParser
     {
         public StateTokenParser(
-            ClientApiKeyConfiguration apiKeyConfiguration,
+            string secret,
             string token,
             ILogger logger)
         {
-            DecodeToken(apiKeyConfiguration, token, logger);
+            DecodeToken(secret, token, logger);
         }
 
         public string Path { get; private set; }
@@ -20,7 +19,7 @@ namespace Stormpath.Owin.Abstractions
         public bool Valid { get; private set; } = false;
 
         private  void DecodeToken(
-            ClientApiKeyConfiguration apiKeyConfiguration,
+            string secret,
             string token,
             ILogger logger)
         {

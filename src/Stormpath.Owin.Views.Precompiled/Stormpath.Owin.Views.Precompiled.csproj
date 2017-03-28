@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Precompiled Razor views for the Stormpath.Owin library</Description>
     <Copyright>(c) 2016 Stormpath, Inc.</Copyright>
-    <VersionPrefix>0.4.4</VersionPrefix>
+    <VersionPrefix>1.0.0-beta1</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
     <TargetFrameworks>net45;netstandard1.1</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -19,10 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Stormpath.Owin.Abstractions\Stormpath.Owin.Abstractions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Stormpath.SDK.Abstractions" Version="0.95.1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">

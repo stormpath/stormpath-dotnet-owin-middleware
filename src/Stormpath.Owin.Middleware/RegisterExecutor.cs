@@ -128,11 +128,14 @@ namespace Stormpath.Owin.Middleware
 
             await loginExecutor.HandlePostLoginAsync(environment, loginResult, cancellationToken);
 
-            var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, stateToken, _logger);
-            return await loginExecutor.HandleRedirectAsync(
-                environment,
-                parsedStateToken.Path,
-                _configuration.Web.Register.NextUri);
+            // TODO - use Okta Client secret
+            throw new Exception("TODO");
+
+            //var parsedStateToken = new StateTokenParser(oktaClientSecret, stateToken, _logger);
+            //return await loginExecutor.HandleRedirectAsync(
+            //    environment,
+            //    parsedStateToken.Path,
+            //    _configuration.Web.Register.NextUri);
         }
     }
 }

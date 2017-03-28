@@ -108,20 +108,26 @@ namespace Stormpath.Owin.Middleware
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)
             {
-                var redirectTokenBuilder = new StateTokenBuilder(_configuration.Client.ApiKey)
-                {
-                    Path = requestPath
-                };
+                // TODO - use Okta Client Secret
+                throw new Exception("TODO");
 
-                var loginUri = $"{_configuration.Web.Login.Uri}?{StringConstants.StateTokenName}={redirectTokenBuilder}";
 
-                _setStatusCode(302);
-                _redirect(loginUri);
+                //var redirectTokenBuilder = new StateTokenBuilder(oktaClientSecret)
+                //{
+                //    Path = requestPath
+                //};
+
+                //var loginUri = $"{_configuration.Web.Login.Uri}?{StringConstants.StateTokenName}={redirectTokenBuilder}";
+
+                //_setStatusCode(302);
+                //_redirect(loginUri);
             }
             else
             {
                 _setStatusCode(401);
-                _setHeader("WWW-Authenticate", $"Bearer realm=\"{_configuration.Application.Name}\"");
+                // TODO - use Okta application ID
+                throw new Exception("TODO");
+                //_setHeader("WWW-Authenticate", $"Bearer realm=\"{_configuration.Application.Name}\"");
             }
         }
     }

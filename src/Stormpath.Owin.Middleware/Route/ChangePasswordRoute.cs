@@ -70,26 +70,29 @@ namespace Stormpath.Owin.Middleware.Route
             var formData = FormContentParser.Parse(body, _logger);
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, stateToken, _logger);
-            if (!parsedStateToken.Valid)
-            {
-                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
-                var changePasswordViewModel = viewModelBuilder.Build();
-                changePasswordViewModel.Errors.Add("An error occurred. Please try again.");
+            // TODO - use Okta Client secret
+            //var oktaClientSecret = "";
+            throw new Exception("TODO");
+            //var parsedStateToken = new StateTokenParser(oktaClientSecret, stateToken, _logger);
+            //if (!parsedStateToken.Valid)
+            //{
+            //    var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
+            //    var changePasswordViewModel = viewModelBuilder.Build();
+            //    changePasswordViewModel.Errors.Add("An error occurred. Please try again.");
 
-                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
-                return true;
-            }
+            //    await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+            //    return true;
+            //}
 
-            if (!model.Password.Equals(model.ConfirmPassword, StringComparison.Ordinal))
-            {
-                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
-                var changePasswordViewModel = viewModelBuilder.Build();
-                changePasswordViewModel.Errors.Add("Passwords do not match.");
+            //if (!model.Password.Equals(model.ConfirmPassword, StringComparison.Ordinal))
+            //{
+            //    var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
+            //    var changePasswordViewModel = viewModelBuilder.Build();
+            //    changePasswordViewModel.Errors.Add("Passwords do not match.");
 
-                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
-                return true;
-            }
+            //    await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+            //    return true;
+            //}
 
             // todo how does the password reset flow work?
             throw new Exception("TODO");
