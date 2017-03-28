@@ -16,8 +16,9 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Logging;
+
 
 namespace Stormpath.Owin.Views.Precompiled
 {
@@ -35,13 +36,13 @@ namespace Stormpath.Owin.Views.Precompiled
             var view = ViewResolver.GetView(name);
             if (view == null)
             {
-                _logger.Trace($"View '{name}' is not a precompiled view", nameof(PrecompiledViewRenderer));
+                _logger.LogTrace($"View '{name}' is not a precompiled view", nameof(PrecompiledViewRenderer));
                 return false;
             }
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            _logger.Trace($"Rendering precompiled view '{name}'", nameof(PrecompiledViewRenderer));
+            _logger.LogTrace($"Rendering precompiled view '{name}'", nameof(PrecompiledViewRenderer));
 
             await view.ExecuteAsync(model, context.Response.Body);
             return true;

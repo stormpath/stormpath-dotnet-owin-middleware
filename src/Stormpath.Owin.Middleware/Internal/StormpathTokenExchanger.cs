@@ -15,66 +15,56 @@
 // </copyright>
 
 using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Application;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
-using Stormpath.SDK.Oauth;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     public sealed class StormpathTokenExchanger
     {
-        private readonly IClient _client;
-        private readonly IApplication _application;
         private readonly StormpathConfiguration _configuration;
         private readonly ILogger _logger;
 
         public StormpathTokenExchanger(
-            IClient client,
-            IApplication application,
             StormpathConfiguration configuration,
             ILogger logger)
         {
-            _client = client;
-            _application = application;
             _configuration = configuration;
             _logger = logger;
         }
 
-        public Task<IOauthGrantAuthenticationResult> ExchangeAsync(IAccount account, CancellationToken cancellationToken)
+        public Task<GrantResult> ExchangeAsync(CancellationToken cancellationToken)
         {
-            var oauthExchangeJwt = _client.NewJwtBuilder()
-                .SetSubject(account.Href)
-                .SetIssuedAt(DateTimeOffset.UtcNow.AddSeconds(-5))
-                .SetExpiration(DateTimeOffset.UtcNow.AddMinutes(1)) // very short
-                .SetIssuer(_application.Href)
-                .SetClaim("status", "AUTHENTICATED")
-                .SetAudience(_configuration.Client.ApiKey.Id)
-                .SignWith(_configuration.Client.ApiKey.Secret, Encoding.UTF8)
-                .Build();
+            //var oauthExchangeJwt = _client.NewJwtBuilder()
+            //    .SetSubject(account.Href)
+            //    .SetIssuedAt(DateTimeOffset.UtcNow.AddSeconds(-5))
+            //    .SetExpiration(DateTimeOffset.UtcNow.AddMinutes(1)) // very short
+            //    .SetIssuer(_application.Href)
+            //    .SetClaim("status", "AUTHENTICATED")
+            //    .SetAudience(_configuration.Client.ApiKey.Id)
+            //    .SignWith(_configuration.Client.ApiKey.Secret, Encoding.UTF8)
+            //    .Build();
 
-            var exchangeRequest = OauthRequests.NewIdSiteTokenAuthenticationRequest()
-                .SetJwt(oauthExchangeJwt.ToString())
-                .Build();
+            //var exchangeRequest = OauthRequests.NewIdSiteTokenAuthenticationRequest()
+            //    .SetJwt(oauthExchangeJwt.ToString())
+            //    .Build();
 
-            try
-            {
-                return _application
-                    .NewIdSiteTokenAuthenticator()
-                    .AuthenticateAsync(exchangeRequest, cancellationToken);
-            }
-            catch (ResourceException rex)
-            {
-                _logger.Warn(rex, source: nameof(StormpathTokenExchanger));
+            //try
+            //{
+            //    return _application
+            //        .NewIdSiteTokenAuthenticator()
+            //        .AuthenticateAsync(exchangeRequest, cancellationToken);
+            //}
+            //catch (ResourceException rex)
+            //{
+            //    _logger.LogWarning(rex, source: nameof(StormpathTokenExchanger));
 
-                return Task.FromResult<IOauthGrantAuthenticationResult>(null);
-            }
+            //    return Task.FromResult<GrantResult>(null);
+            //}
+            // todo remove
+            throw new Exception();
         }
     }
 }

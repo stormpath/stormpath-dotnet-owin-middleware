@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Common views for the Stormpath OWIN middleware library</Description>
+    <VersionPrefix>0.4.4</VersionPrefix>
+    <Authors>Nate Barbettini</Authors>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <AssemblyName>Stormpath.Owin.Views</AssemblyName>
+    <PackageId>Stormpath.Owin.Views</PackageId>
+    <PackageIconUrl>https://raw.githubusercontent.com/stormpath/stormpath-sdk-dotnet/develop/icon.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="Views\Stormpath\*.cshtml">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stormpath.Owin.Abstractions\Stormpath.Owin.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

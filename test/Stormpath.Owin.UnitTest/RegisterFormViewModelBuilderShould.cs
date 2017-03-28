@@ -3,7 +3,6 @@ using FluentAssertions;
 using NSubstitute;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions.ViewModel;
-using Stormpath.SDK.Client;
 using Xunit;
 
 namespace Stormpath.Owin.UnitTest
@@ -16,7 +15,6 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void NotThrowForMissingFieldTypeOnFormResubmission()
         {
-            var client = Substitute.For<IClient>();
             var config = new StormpathConfiguration()
             {
                 Web = new WebConfiguration
@@ -43,7 +41,6 @@ namespace Stormpath.Owin.UnitTest
             };
 
             var viewModelBuilder = new RegisterFormViewModelBuilder(
-                client,
                 ConfigurationHelper.CreateFakeConfiguration(config),
                 new Dictionary<string, string[]>(),
                 previousFormData,

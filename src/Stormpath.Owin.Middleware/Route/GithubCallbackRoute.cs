@@ -18,12 +18,10 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
-using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -33,76 +31,82 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("github")
                && configuration.Providers.Any(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase));
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            // todo how does social login work?
+            throw new Exception("TODO");
 
-            var stateToken = queryString.GetString("state");
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
-            if (!parsedStateToken.Valid)
-            {
-                _logger.Warn("State token was invalid", nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
-            }
+            //var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            var code = queryString.GetString("code");
-            if (string.IsNullOrEmpty(code))
-            {
-                _logger.Warn("Social code was empty", nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //var stateToken = queryString.GetString("state");
+            //var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, stateToken, _logger);
+            //if (!parsedStateToken.Valid)
+            //{
+            //    _logger.LogWarning("State token was invalid", nameof(GithubCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
+            //}
 
-            var accessToken = await ExchangeCodeAsync(code, cancellationToken);
+            //var code = queryString.GetString("code");
+            //if (string.IsNullOrEmpty(code))
+            //{
+            //    _logger.LogWarning("Social code was empty", nameof(GithubCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
 
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                _logger.Warn("Exchanged access token was null", source: nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //var accessToken = await ExchangeCodeAsync(code, cancellationToken);
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
+            //if (string.IsNullOrEmpty(accessToken))
+            //{
+            //    _logger.LogWarning("Exchanged access token was null", nameof(GithubCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
 
-            try
-            {
-                var providerRequest = client.Providers()
-                    .Github()
-                    .Account()
-                    .SetAccessToken(accessToken)
-                    .Build();
+            //var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            //var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
-                var loginResult =
-                    await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+            //try
+            //{
+            //    var providerRequest = client.Providers()
+            //        .Github()
+            //        .Account()
+            //        .SetAccessToken(accessToken)
+            //        .Build();
 
-                await socialExecutor.HandleLoginResultAsync(
-                    context,
-                    application,
-                    loginResult,
-                    cancellationToken);
+            //    var loginResult =
+            //        await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
-                return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn($"Got '{ex.Message}' during social login request", source: nameof(GithubCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //    await socialExecutor.HandleLoginResultAsync(
+            //        context,
+            //        application,
+            //        loginResult,
+            //        cancellationToken);
+
+            //    return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogWarning($"Got '{ex.Message}' during social login request", nameof(GithubCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
         }
 
-        private async Task<string> ExchangeCodeAsync(string code, CancellationToken cancellationToken)
+        private Task<string> ExchangeCodeAsync(string code, CancellationToken cancellationToken)
         {
-            var providerData = _configuration.Providers
-                .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
-                .Value;
+            // todo how does social login work?
+            throw new Exception("TODO");
 
-            var oauthCodeExchanger = new OauthCodeExchanger("https://github.com/login/oauth/access_token", _logger);
-            var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
-                code, 
-                providerData.CallbackUri,
-                providerData.ClientId, 
-                providerData.ClientSecret,
-                cancellationToken);
-            return accessToken;
+            //var providerData = _configuration.Providers
+            //    .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
+            //    .Value;
+
+            //var oauthCodeExchanger = new OauthCodeExchanger("https://github.com/login/oauth/access_token", _logger);
+            //var accessToken = await oauthCodeExchanger.ExchangeCodeForAccessTokenAsync(
+            //    code, 
+            //    providerData.CallbackUri,
+            //    providerData.ClientId, 
+            //    providerData.ClientSecret,
+            //    cancellationToken);
+            //return accessToken;
         }
     }
 }

@@ -16,7 +16,8 @@
 
 using System;
 using System.Reflection;
-using Stormpath.SDK.Logging;
+using Microsoft.Extensions.Logging;
+
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -55,13 +56,13 @@ namespace Stormpath.Owin.Middleware.Internal
             {
                 if (property.PropertyType != typeof(string))
                 {
-                    logger.Trace($"Skipping property '{property.Name}' with unsupported type '{property.PropertyType}' while binding {typeof(T).Name}", "PocoBinder.Bind");
+                    logger.LogTrace($"Skipping property '{property.Name}' with unsupported type '{property.PropertyType}' while binding {typeof(T).Name}", "PocoBinder.Bind");
                     continue;
                 }
 
                 if (!hasValue(property.Name))
                 {
-                    logger.Trace($"Skipping property '{property.Name}' while binding {typeof(T).Name} because no value was found", "PocoBinder.Bind");
+                    logger.LogTrace($"Skipping property '{property.Name}' while binding {typeof(T).Name} because no value was found", "PocoBinder.Bind");
                     continue;
                 }
 

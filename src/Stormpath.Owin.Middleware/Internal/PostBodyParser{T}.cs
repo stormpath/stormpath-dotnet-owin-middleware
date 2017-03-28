@@ -17,8 +17,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Logging;
+
 
 namespace Stormpath.Owin.Middleware.Internal
 {

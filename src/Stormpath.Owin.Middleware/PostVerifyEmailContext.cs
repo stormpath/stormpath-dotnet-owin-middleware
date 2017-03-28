@@ -1,16 +1,15 @@
 ﻿using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Account;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed class PostVerifyEmailContext : HandlerContext
     {
-        public PostVerifyEmailContext(IOwinEnvironment environment, IAccount account)
+        public PostVerifyEmailContext(IOwinEnvironment environment, dynamic account)
             : base(environment)
         {
             Account = account;
         }
 
-        public IAccount Account { get; }
+        public dynamic Account { get; }
     }
 }

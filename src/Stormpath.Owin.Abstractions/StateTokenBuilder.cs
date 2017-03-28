@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Text;
 using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.Abstractions
 {
@@ -11,13 +9,11 @@ namespace Stormpath.Owin.Abstractions
         public const string StateClaimName = "state";
 
         // TODO: replace with direct JWT library usage
-        private readonly IClient _client;
 
         private readonly ClientApiKeyConfiguration _apiKeyConfiguration;
 
-        public StateTokenBuilder(IClient client, ClientApiKeyConfiguration apiKeyConfiguration)
+        public StateTokenBuilder(ClientApiKeyConfiguration apiKeyConfiguration)
         {
-            _client = client;
             _apiKeyConfiguration = apiKeyConfiguration;
         }
 
@@ -30,22 +26,22 @@ namespace Stormpath.Owin.Abstractions
         public override string ToString()
         {
             // TODO: replace with direct JWT library usage
-            var jwtBuilder = _client.NewJwtBuilder();
+            throw new Exception("TODO");
 
-            if (!string.IsNullOrEmpty(Path))
-            {
-                jwtBuilder.SetClaim("path", Path);
-            }
+            //if (!string.IsNullOrEmpty(Path))
+            //{
+            //    jwtBuilder.SetClaim("path", Path);
+            //}
 
-            if (!string.IsNullOrEmpty(State))
-            {
-                jwtBuilder.SetClaim("state", State);
-            }
+            //if (!string.IsNullOrEmpty(State))
+            //{
+            //    jwtBuilder.SetClaim("state", State);
+            //}
             
-            jwtBuilder.SetExpiration(DateTimeOffset.Now.Add(ExpiresIn));
-            jwtBuilder.SignWith(_apiKeyConfiguration.Secret, Encoding.UTF8);
+            //jwtBuilder.SetExpiration(DateTimeOffset.Now.Add(ExpiresIn));
+            //jwtBuilder.SignWith(_apiKeyConfiguration.Secret, Encoding.UTF8);
 
-            return jwtBuilder.Build().ToString();
+            //return jwtBuilder.Build().ToString();
         }
     }
 }

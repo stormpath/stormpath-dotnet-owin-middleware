@@ -1,13 +1,13 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.SDK.Account;
 
 namespace Stormpath.Owin.Abstractions
 {
+    // todo revisit
     public interface IAuthorizationFilter
     {
-        bool IsAuthorized(IAccount account);
+        //    bool IsAuthorized(dynamic account);
 
-        Task<bool> IsAuthorizedAsync(IAccount account, CancellationToken cancellationToken);
+        //    Task<bool> IsAuthorizedAsync(dynamic account, CancellationToken cancellationToken);
     }
 }

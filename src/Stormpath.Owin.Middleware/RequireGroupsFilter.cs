@@ -4,9 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Sync;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -24,47 +21,53 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
-        public bool IsAuthorized(IAccount account)
+        public bool IsAuthorized(dynamic account)
         {
             if (account == null)
             {
                 return false;
             }
 
-            var matchedGroup = false;
+            // todo rewrite group authz logic
+            throw new Exception("TODO");
 
-            foreach (var group in account.GetGroups().Synchronously())
-            {
-                matchedGroup = _allowedGroups.Contains(group.Name, StringComparer.Ordinal)
-                    || _allowedGroups.Contains(group.Href, StringComparer.Ordinal);
+            //var matchedGroup = false;
 
-                if (matchedGroup)
-                {
-                    break;
-                }
-            }
+            //foreach (var group in account.GetGroups().Synchronously())
+            //{
+            //    matchedGroup = _allowedGroups.Contains(group.Name, StringComparer.Ordinal)
+            //        || _allowedGroups.Contains(group.Href, StringComparer.Ordinal);
 
-            return matchedGroup;
+            //    if (matchedGroup)
+            //    {
+            //        break;
+            //    }
+            //}
+
+            //return matchedGroup;
         }
 
-        public async Task<bool> IsAuthorizedAsync(IAccount account, CancellationToken cancellationToken)
+        public Task<bool> IsAuthorizedAsync(dynamic account, CancellationToken cancellationToken)
         {
-            if (account == null)
-            {
-                return false;
-            }
+            // todo rewrite group authz logic
+            throw new Exception("TODO");
 
-            var matchedGroup = false;
+            //if (account == null)
+            //{
+            //    return false;
+            //}
 
-            await account.GetGroups().ForEachAsync(group =>
-                {
-                    matchedGroup = _allowedGroups.Contains(group.Name, StringComparer.Ordinal)
-                                   || _allowedGroups.Contains(group.Href, StringComparer.Ordinal);
-                    return matchedGroup;
-                },
-                cancellationToken).ConfigureAwait(false);
+            //var matchedGroup = false;
 
-            return matchedGroup;
+            //await account.GetGroups().ForEachAsync(group =>
+            //    {
+            //        matchedGroup = _allowedGroups.Contains(group.Name, StringComparer.Ordinal)
+            //                       || _allowedGroups.Contains(group.Href, StringComparer.Ordinal);
+            //        return matchedGroup;
+            //    },
+            //    cancellationToken).ConfigureAwait(false);
+
+            //return matchedGroup;
         }
     }
 }

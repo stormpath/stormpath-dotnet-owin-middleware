@@ -21,9 +21,6 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
-using Stormpath.SDK.Provider;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -33,53 +30,56 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.Social.ContainsKey("facebook")
                && configuration.Providers.Any(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase));
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client,
+        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context,
             CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            // todo rewrite  login
+            throw new Exception("TODO");
 
-            var stateToken = queryString.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
-            if (!parsedStateToken.Valid)
-            {
-                _logger.Warn("State token was invalid", nameof(FacebookCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
-            }
+            //var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            var accessToken = queryString.GetString("access_token");
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                _logger.Warn("Social access_token was empty", nameof(FacebookCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //var stateToken = queryString.GetString(StringConstants.StateTokenName);
+            //var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            //if (!parsedStateToken.Valid)
+            //{
+            //    _logger.LogWarning("State token was invalid", nameof(FacebookCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken: null));
+            //}
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
+            //var accessToken = queryString.GetString("access_token");
+            //if (string.IsNullOrEmpty(accessToken))
+            //{
+            //    _logger.LogWarning("Social access_token was empty", nameof(FacebookCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
 
-            try
-            {
-                var providerRequest = client.Providers()
-                    .Facebook()
-                    .Account()
-                    .SetAccessToken(accessToken)
-                    .Build();
+            //var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            //var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
-                var loginResult =
-                    await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+            //try
+            //{
+            //    var providerRequest = client.Providers()
+            //        .Facebook()
+            //        .Account()
+            //        .SetAccessToken(accessToken)
+            //        .Build();
 
-                await socialExecutor.HandleLoginResultAsync(
-                    context,
-                    application,
-                    loginResult,
-                    cancellationToken);
+            //    var loginResult =
+            //        await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
-                return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.Warn($"Got '{ex.Message}' during social login request", source: nameof(FacebookCallbackRoute));
-                return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
-            }
+            //    await socialExecutor.HandleLoginResultAsync(
+            //        context,
+            //        application,
+            //        loginResult,
+            //        cancellationToken);
+
+            //    return await socialExecutor.HandleRedirectAsync(client, context, loginResult, parsedStateToken.Path, cancellationToken);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogWarning($"Got '{ex.Message}' during social login request", source: nameof(FacebookCallbackRoute));
+            //    return await HttpResponse.Redirect(context, SocialExecutor.CreateErrorUri(_configuration.Web.Login, stateToken));
+            //}
         }
     }
 }

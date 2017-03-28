@@ -19,8 +19,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.SDK.Error;
-
 namespace Stormpath.Owin.Middleware.Internal
 {
     public static class Error
@@ -50,9 +48,6 @@ namespace Stormpath.Owin.Middleware.Internal
                 return true;
             }
         }
-
-        public static Task<bool> CreateFromApiError(IOwinEnvironment context, ResourceException rex, CancellationToken cancellationToken)
-            => Create(context, rex.HttpStatus, rex.Message, cancellationToken);
 
         public static async Task<bool> Create(IOwinEnvironment context, int statusCode, string message, CancellationToken cancellationToken)
         {

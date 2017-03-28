@@ -55,8 +55,6 @@ namespace Stormpath.Owin.Abstractions
 
         public static readonly string OnSendingHeaders = "server.OnSendingHeaders";
 
-        public static readonly string StormpathClient = "stormpath.RequestClient";
-
         public static readonly string StormpathUser = "stormpath.RequestUser";
 
         public static readonly string StormpathUserScheme = "stormpath.RequestUserScheme";

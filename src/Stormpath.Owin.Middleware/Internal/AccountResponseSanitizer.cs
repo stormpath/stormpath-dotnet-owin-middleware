@@ -1,24 +1,26 @@
-﻿using Stormpath.SDK.Account;
+﻿using System;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     internal sealed class AccountResponseSanitizer
     {
-        public object Sanitize(IAccount account)
+        public object Sanitize(dynamic account)
         {
-            return new
-            {
-                account.Href,
-                account.Username,
-                account.ModifiedAt,
-                Status = account.Status.ToString(),
-                account.CreatedAt,
-                account.Email,
-                account.MiddleName,
-                account.Surname,
-                account.GivenName,
-                account.FullName
-            };
+            // TODO
+            throw new Exception("TODO");
+            //return new
+            //{
+            //    account.Href,
+            //    account.Username,
+            //    account.ModifiedAt,
+            //    Status = account.Status.ToString(),
+            //    account.CreatedAt,
+            //    account.Email,
+            //    account.MiddleName,
+            //    account.Surname,
+            //    account.GivenName,
+            //    account.FullName
+            //};
         }
     }
 }

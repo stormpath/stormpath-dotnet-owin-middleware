@@ -23,9 +23,7 @@ using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
+
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -35,144 +33,156 @@ namespace Stormpath.Owin.Middleware.Route
             => configuration.Web.VerifyEmail.Enabled == true
             || (configuration.Web.VerifyEmail.Enabled == null && configuration.Tenant.EmailVerificationWorkflowEnabled);
 
-        private async Task<bool> ResendVerification(
+        private Task<bool> ResendVerification(
             string email,
-            IClient client,
             IOwinEnvironment environment,
             Func<string, CancellationToken, Task<bool>> errorHandler,
             Func<CancellationToken, Task<bool>> successHandler,
             CancellationToken cancellationToken)
         {
-            var preVerifyEmailContext = new PreVerifyEmailContext(environment)
-            {
-                Email = email
-            };
-            await _handlers.PreVerifyEmailHandler(preVerifyEmailContext, cancellationToken);
+            // todo how will email verification work?
+            throw new Exception("TODO");
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            //var preVerifyEmailContext = new PreVerifyEmailContext(environment)
+            //{
+            //    Email = email
+            //};
+            //await _handlers.PreVerifyEmailHandler(preVerifyEmailContext, cancellationToken);
 
-            try
-            {
-                await application.SendVerificationEmailAsync(email, cancellationToken);
-            }
-            catch (ResourceException rex) when (rex.Code == 2016)
-            {
-                // Code 2016 means that an account does not exist for the given email
-                // address.  We don't want to leak information about the account
-                // list, so allow this continue without error.
-                _logger.Info($"A user tried to resend their account verification email, but failed: {rex.DeveloperMessage}");
-                return await successHandler(cancellationToken);
-            }
-            catch (ResourceException rex) when (errorHandler != null)
-            {
-                return await errorHandler(rex.Message, cancellationToken);
-            }
+            //try
+            //{
+            //    await application.SendVerificationEmailAsync(email, cancellationToken);
+            //}
+            //catch (ResourceException rex) when (rex.Code == 2016)
+            //{
+            //    // Code 2016 means that an account does not exist for the given email
+            //    // address.  We don't want to leak information about the account
+            //    // list, so allow this continue without error.
+            //    _logger.LogInformation($"A user tried to resend their account verification email, but failed: {rex.DeveloperMessage}");
+            //    return await successHandler(cancellationToken);
+            //}
+            //catch (ResourceException rex) when (errorHandler != null)
+            //{
+            //    return await errorHandler(rex.Message, cancellationToken);
+            //}
 
-            return await successHandler(cancellationToken);
+            //return await successHandler(cancellationToken);
         }
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            var spToken = queryString.GetString("sptoken");
+            // todo how will email verification work?
+            throw new Exception("TODO");
 
-            if (string.IsNullOrEmpty(spToken))
-            {
-                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
-                var verifyViewModel = viewModelBuilder.Build();
+            //var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            //var spToken = queryString.GetString("sptoken");
 
-                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
-                return true;
-            }
+            //if (string.IsNullOrEmpty(spToken))
+            //{
+            //    var viewModelBuilder = new VerifyEmailFormViewModelBuilder(_configuration);
+            //    var verifyViewModel = viewModelBuilder.Build();
 
-            try
-            {
-                var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+            //    await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
+            //    return true;
+            //}
 
-                var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
-                await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
+            //try
+            //{
+            //    var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
 
-                return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}");
-            }
-            catch (ResourceException)
-            {
-                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
-                var verifyViewModel = viewModelBuilder.Build();
-                verifyViewModel.InvalidSpToken = true;
+            //    var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
+            //    await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
 
-                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
-                return true;
-            }
+            //    return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}");
+            //}
+            //catch (ResourceException)
+            //{
+            //    var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
+            //    var verifyViewModel = viewModelBuilder.Build();
+            //    verifyViewModel.InvalidSpToken = true;
+
+            //    await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
+            //    return true;
+            //}
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var htmlErrorHandler = new Func<string, CancellationToken, Task<bool>>(async (error, ct) =>
-            {
-                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
-                var verifyEmailViewModel = viewModelBuilder.Build();
-                verifyEmailViewModel.Errors.Add(error);
+            // todo how will email verification work?
+            throw new Exception("TODO");
 
-                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyEmailViewModel, cancellationToken);
-                return true;
-            });
+            //var htmlErrorHandler = new Func<string, CancellationToken, Task<bool>>(async (error, ct) =>
+            //{
+            //    var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
+            //    var verifyEmailViewModel = viewModelBuilder.Build();
+            //    verifyEmailViewModel.Errors.Add(error);
 
-            var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            var model = PostBodyParser.ToModel<VerifyEmailPostModel>(body, bodyContentType, _logger);
+            //    await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyEmailViewModel, cancellationToken);
+            //    return true;
+            //});
 
-            var formData = FormContentParser.Parse(body, _logger);
-            var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
-            if (!parsedStateToken.Valid)
-            {
-                await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
-                return true;
-            }
+            //var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            //var model = PostBodyParser.ToModel<VerifyEmailPostModel>(body, bodyContentType, _logger);
 
-            var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(
-                ct => HttpResponse.Redirect(context, $"{_configuration.Web.Login.Uri}?status=unverified"));
+            //var formData = FormContentParser.Parse(body, _logger);
+            //var stateToken = formData.GetString(StringConstants.StateTokenName);
+            //var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            //if (!parsedStateToken.Valid)
+            //{
+            //    await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
+            //    return true;
+            //}
 
-            return await ResendVerification(
-                model.Email,
-                client,
-                context,
-                htmlErrorHandler,
-                htmlSuccessHandler,
-                cancellationToken);
+            //var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(
+            //    ct => HttpResponse.Redirect(context, $"{_configuration.Web.Login.Uri}?status=unverified"));
+
+            //return await ResendVerification(
+            //    model.Email,
+            //    client,
+            //    context,
+            //    htmlErrorHandler,
+            //    htmlSuccessHandler,
+            //    cancellationToken);
         }
 
-        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            var spToken = queryString.GetString("sptoken");
+            // todo how will email verification work?
+            throw new Exception("TODO");
 
-            if (string.IsNullOrEmpty(spToken))
-            {
-                return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
-            }
+            //var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            //var spToken = queryString.GetString("sptoken");
 
-            var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
-            // Errors are caught in AbstractRouteMiddleware
+            //if (string.IsNullOrEmpty(spToken))
+            //{
+            //    return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
+            //}
 
-            var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
-            await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
+            //var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+            //// Errors are caught in AbstractRouteMiddleware
 
-            return await JsonResponse.Ok(context);
+            //var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
+            //await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
+
+            //return await JsonResponse.Ok(context);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
+            // todo how will email verification work?
+            throw new Exception("TODO");
 
-            var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct => JsonResponse.Ok(context));
+            //var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
 
-            return await ResendVerification(
-                email: model.Email,
-                client: client,
-                environment: context,
-                errorHandler: null, // Errors are caught in AbstractRouteMiddleware
-                successHandler: jsonSuccessHandler,
-                cancellationToken: cancellationToken);
+            //var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct => JsonResponse.Ok(context));
+
+            //return await ResendVerification(
+            //    email: model.Email,
+            //    client: client,
+            //    environment: context,
+            //    errorHandler: null, // Errors are caught in AbstractRouteMiddleware
+            //    successHandler: jsonSuccessHandler,
+            //    cancellationToken: cancellationToken);
         }
     }
 }

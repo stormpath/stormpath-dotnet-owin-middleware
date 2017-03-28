@@ -1,10 +1,8 @@
-﻿using Stormpath.SDK.Account;
-
-namespace Stormpath.Owin.Middleware
+﻿namespace Stormpath.Owin.Middleware
 {
     internal sealed class ExternalLoginResult
     {
-        public IAccount Account { get; set; }
+        public dynamic Account { get; set; }
 
         public bool IsNewAccount { get; set; }
     }

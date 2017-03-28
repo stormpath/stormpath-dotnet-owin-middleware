@@ -17,28 +17,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions.Configuration;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
-
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public sealed class RegisterFormViewModelBuilder
     {
-        private readonly IClient _client;
         private readonly IntegrationConfiguration _configuration;
         private readonly IDictionary<string, string[]> _queryString;
         private readonly IDictionary<string, string[]> _previousFormData;
         private readonly ILogger _logger;
 
         public RegisterFormViewModelBuilder(
-            IClient client, // TODO remove when refactoring JWT
             IntegrationConfiguration configuration,
             IDictionary<string, string[]> queryString,
             IDictionary<string, string[]> previousFormData,
             ILogger logger)
         {
-            _client = client;
             _configuration = configuration;
             _queryString = queryString;
             _previousFormData = previousFormData;
@@ -86,7 +81,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             // If a state token exists (from the querystring or a previous submission), make sure it is valid
             if (!string.IsNullOrEmpty(result.StateToken))
             {
-                var parsedStateToken = new StateTokenParser(_client, _configuration.Client.ApiKey, result.StateToken, _logger);
+                var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, result.StateToken, _logger);
                 if (!parsedStateToken.Valid)
                 {
                     result.StateToken = null; // Will be regenerated below
@@ -96,7 +91,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             // If a state token isn't in the querystring or form, create one
             if (string.IsNullOrEmpty(result.StateToken))
             {
-                result.StateToken = new StateTokenBuilder(_client, _configuration.Client.ApiKey).ToString();
+                result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
             }
 
             return result;
