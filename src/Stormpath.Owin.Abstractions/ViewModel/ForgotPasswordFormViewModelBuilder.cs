@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Stormpath.Owin.Abstractions.Configuration;
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
@@ -21,9 +22,12 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             var result = new ForgotPasswordFormViewModel(baseViewModelBuilder.Build());
 
             // Add a state (CSRF) token
-            result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
+            // Add a state (CSRF) token
+            throw new NotImplementedException("TODO");
 
-            return result;
+            //result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
+
+            //return result;
         }
     }
 }

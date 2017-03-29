@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
-using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 
 

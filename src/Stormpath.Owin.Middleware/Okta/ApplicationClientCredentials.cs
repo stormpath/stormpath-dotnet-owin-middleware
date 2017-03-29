@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
-    public class ApplicationClientCredentials
+    public sealed class ApplicationClientCredentials
     {
-        public string client_id { get; set; }
-        public string client_secret { get; set; }
-        public string token_endpoint_auth_method { get; set; }
+        [JsonProperty("client_id")]
+        public string ClientId { get; set; }
+
+        [JsonProperty("client_secret")]
+        public string ClientSecret { get; set; }
+
+        [JsonProperty("token_endpoint_auth_method")]
+        public string TokenEndpointAuthMethod { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Stormpath.Owin.Abstractions.Configuration;
+﻿using System;
+using Stormpath.Owin.Abstractions.Configuration;
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public sealed class ChangePasswordFormViewModelBuilder
@@ -17,9 +18,10 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             var result = new ChangePasswordFormViewModel(baseViewModelBuilder.Build());
 
             // Add a state (CSRF) token
-            result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
+            throw new NotImplementedException("TODO");
+            //result.StateToken = new StateTokenBuilder(oktaClientSecret).ToString();
 
-            return result;
+            //return result;
         }
     }
 }

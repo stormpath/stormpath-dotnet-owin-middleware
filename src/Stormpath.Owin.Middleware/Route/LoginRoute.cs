@@ -163,15 +163,17 @@ namespace Stormpath.Owin.Middleware.Route
 
             await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
-            var account = GetIdTokenAsync(); // todo
+            throw new NotImplementedException("TODO");
 
-            var sanitizer = new AccountResponseSanitizer();
-            var responseModel = new
-            {
-                account = sanitizer.Sanitize(account)
-            };
+            //var account = GetIdTokenAsync(); // todo
 
-            return await JsonResponse.Ok(context, responseModel);
+            //var sanitizer = new AccountResponseSanitizer();
+            //var responseModel = new
+            //{
+            //    account = sanitizer.Sanitize(account)
+            //};
+
+            //return await JsonResponse.Ok(context, responseModel);
         }
 
         private Task<bool> HandleSocialLogin(IOwinEnvironment context, LoginPostModel model,

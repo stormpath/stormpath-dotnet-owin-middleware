@@ -20,7 +20,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
-using Stormpath.Owin.Middleware.Internal;
 
 namespace Stormpath.Owin.Middleware.Route
 {

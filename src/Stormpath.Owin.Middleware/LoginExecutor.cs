@@ -69,9 +69,10 @@ namespace Stormpath.Owin.Middleware
             }
 
             // TODO password grant request.
-            var grantResult = ExecutePasswordGrantAsync();
+            throw new NotImplementedException("TODO");
+            //var grantResult = ExecutePasswordGrantAsync();
 
-            return grantResult;
+            //return grantResult;
         }
 
         // TODO restore
@@ -84,23 +85,25 @@ namespace Stormpath.Owin.Middleware
         //    return await tokenExchanger.ExchangeAsync(account, cancellationToken);
         //}
 
-        public async Task HandlePostLoginAsync(
+        public Task HandlePostLoginAsync(
             IOwinEnvironment context,
             GrantResult grantResult,
             CancellationToken cancellationToken)
         {
             // TODO get ID token
-            var account = GetIdTokenAsync(grantResult.AccessToken);
+            throw new NotImplementedException("TODO");
 
-            var postLoginHandlerContext = new PostLoginContext(context, account);
-            await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);
+            //var account = GetIdTokenAsync(grantResult.AccessToken);
 
-            // Save the custom redirect URI from the handler, if any
-            _nextUriFromPostHandler = postLoginHandlerContext.Result?.RedirectUri;
+            //var postLoginHandlerContext = new PostLoginContext(context, account);
+            //await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);
 
-            // Add Stormpath cookies
-            //Cookies.AddTokenCookiesToResponse(context, grantResult, _configuration, _logger);
-            throw new Exception("TODO");
+            //// Save the custom redirect URI from the handler, if any
+            //_nextUriFromPostHandler = postLoginHandlerContext.Result?.RedirectUri;
+
+            //// Add Stormpath cookies
+            ////Cookies.AddTokenCookiesToResponse(context, grantResult, _configuration, _logger);
+            //throw new Exception("TODO");
         }
 
         public Task<bool> HandleRedirectAsync(IOwinEnvironment context, string nextUri = null, string defaultNextUri = null)

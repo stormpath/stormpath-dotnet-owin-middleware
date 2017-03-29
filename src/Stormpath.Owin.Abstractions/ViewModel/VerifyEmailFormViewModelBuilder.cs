@@ -1,4 +1,5 @@
-﻿using Stormpath.Owin.Abstractions.Configuration;
+﻿using System;
+using Stormpath.Owin.Abstractions.Configuration;
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public sealed class VerifyEmailFormViewModelBuilder
@@ -17,9 +18,12 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             var result = new VerifyEmailFormViewModel(baseViewModelBuilder.Build());
 
             // Add a state (CSRF) token
-            result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
+            // Add a state (CSRF) token
+            throw new NotImplementedException("TODO");
 
-            return result;
+            //result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
+
+            //return result;
         }
     }
 }

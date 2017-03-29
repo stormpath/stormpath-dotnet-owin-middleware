@@ -22,14 +22,14 @@ using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 
-
 namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class ForgotPasswordRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
-            => configuration.Web.ForgotPassword.Enabled == true
-                || (configuration.Web.ForgotPassword.Enabled == null && configuration.Tenant.PasswordResetWorkflowEnabled);
+            => configuration.Web.ForgotPassword.Enabled == true;
+                //|| (configuration.Web.ForgotPassword.Enabled == null && configuration.Tenant.PasswordResetWorkflowEnabled);
+                // TODO - any reason this needs to be dynamic now?
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {

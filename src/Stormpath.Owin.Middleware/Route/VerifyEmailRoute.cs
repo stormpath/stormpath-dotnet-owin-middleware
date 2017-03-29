@@ -19,10 +19,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
-using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Model;
-using Stormpath.Owin.Middleware.Model.Error;
 
 
 namespace Stormpath.Owin.Middleware.Route
@@ -30,8 +27,9 @@ namespace Stormpath.Owin.Middleware.Route
     public sealed class VerifyEmailRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
-            => configuration.Web.VerifyEmail.Enabled == true
-            || (configuration.Web.VerifyEmail.Enabled == null && configuration.Tenant.EmailVerificationWorkflowEnabled);
+            => configuration.Web.VerifyEmail.Enabled == true;
+            //|| (configuration.Web.VerifyEmail.Enabled == null && configuration.Tenant.EmailVerificationWorkflowEnabled);
+            // TODO - any reason this needs to be dynamic now?
 
         private Task<bool> ResendVerification(
             string email,

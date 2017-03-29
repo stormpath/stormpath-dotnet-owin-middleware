@@ -16,13 +16,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
 using Stormpath.Configuration;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -46,7 +46,10 @@ namespace Stormpath.Owin.Middleware
             options.Logger.LogInformation("Stormpath middleware starting up", nameof(StormpathMiddleware));
 
             var baseConfiguration = ConfigurationLoader.Initialize().Load();
-            var integrationConfiguration = GetAdditionalConfigFromServer(baseConfiguration);
+            ThrowIfOktaConfigurationMissing(baseConfiguration);
+            var oktaClient = new OktaClient(baseConfiguration.Okta.Org, baseConfiguration.Okta.ApiToken, options.Logger);
+
+            var integrationConfiguration = GetAdditionalConfigFromServer(baseConfiguration, oktaClient, options.Logger);
 
             options.Logger.LogTrace("Stormpath middleware ready!", nameof(StormpathMiddleware));
 
@@ -70,9 +73,45 @@ namespace Stormpath.Owin.Middleware
                 handlerConfiguration);
         }
 
-        private static IntegrationConfiguration GetAdditionalConfigFromServer(StormpathConfiguration existingConfig)
+        private static void ThrowIfOktaConfigurationMissing(StormpathConfiguration config)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(config?.Okta?.ApiToken))
+            {
+                throw new ArgumentNullException("stormpath.okta.apiToken");
+            }
+
+            if (string.IsNullOrEmpty(config?.Okta?.Org))
+            {
+                throw new ArgumentNullException("stormpath.okta.org");
+            }
+
+            if (string.IsNullOrEmpty(config?.Okta?.Application?.Id))
+            {
+                throw new ArgumentNullException("stormpath.okta.application.id");
+            }
+        }
+
+        private static IntegrationConfiguration GetAdditionalConfigFromServer(
+            StormpathConfiguration existingConfig,
+            OktaClient client,
+            ILogger logger)
+        {
+            try
+            {
+                var credentials = client.GetClientCredentials(existingConfig.Okta.Application.Id).Result;
+
+                // TODO get AS info as well
+
+                return new IntegrationConfiguration(
+                    existingConfig,
+                    new OktaEnvironmentConfiguration(credentials.ClientId, credentials.ClientSecret),
+                    new KeyValuePair<string, ProviderConfiguration>[0]);
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(1000, ex, "Could not get application information from Okta");
+                throw new Exception("Could not get application information from Okta", ex);
+            }
         }
 
         private AbstractRoute InitializeRoute<T>(RouteOptionsBase options = null)

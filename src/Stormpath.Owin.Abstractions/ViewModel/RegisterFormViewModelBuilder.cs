@@ -81,20 +81,26 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             // If a state token exists (from the querystring or a previous submission), make sure it is valid
             if (!string.IsNullOrEmpty(result.StateToken))
             {
-                var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, result.StateToken, _logger);
-                if (!parsedStateToken.Valid)
-                {
-                    result.StateToken = null; // Will be regenerated below
-                }
+                // Add a state (CSRF) token
+                throw new NotImplementedException("TODO");
+
+                //var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, result.StateToken, _logger);
+                //if (!parsedStateToken.Valid)
+                //{
+                //    result.StateToken = null; // Will be regenerated below
+                //}
             }
 
             // If a state token isn't in the querystring or form, create one
-            if (string.IsNullOrEmpty(result.StateToken))
-            {
-                result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
-            }
+            // Add a state (CSRF) token
+            throw new NotImplementedException("TODO");
 
-            return result;
+            //if (string.IsNullOrEmpty(result.StateToken))
+            //{
+            //    result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
+            //}
+
+            //return result;
         }
     }
 }

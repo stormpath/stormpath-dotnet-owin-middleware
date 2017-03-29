@@ -17,7 +17,6 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 
 
