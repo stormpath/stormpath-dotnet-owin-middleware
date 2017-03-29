@@ -92,9 +92,10 @@ namespace Stormpath.Owin.Middleware.Okta
             }
         }
 
+        public Task<Application> GetApplication(string appId)
+            => GetResource<Application>($"apps/{appId}");
+
         public Task<ApplicationClientCredentials> GetClientCredentials(string appId)
-        {
-            return GetResource<ApplicationClientCredentials>($"internal/apps/{appId}/settings/clientcreds");
-        }
+            => GetResource<ApplicationClientCredentials>($"internal/apps/{appId}/settings/clientcreds");
     }
 }

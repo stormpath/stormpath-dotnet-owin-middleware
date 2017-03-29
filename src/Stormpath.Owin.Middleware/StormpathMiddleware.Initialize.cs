@@ -98,13 +98,25 @@ namespace Stormpath.Owin.Middleware
         {
             try
             {
+                var appDetails = client.GetApplication(existingConfig.Okta.Application.Id).Result;
                 var credentials = client.GetClientCredentials(existingConfig.Okta.Application.Id).Result;
 
-                // TODO get AS info as well
+                if (string.IsNullOrEmpty(appDetails?.Settings?.Notifications?.Vpn?.Message))
+                {
+                    throw new ArgumentNullException("The Okta application must be configured with a link to the Authorization Server");
+                }
+
+                if (string.IsNullOrEmpty(credentials?.ClientId) || string.IsNullOrEmpty(credentials?.ClientSecret))
+                {
+                    throw new ArgumentNullException("The Okta application must be configured with a Client ID and Secret");
+                }
 
                 return new IntegrationConfiguration(
                     existingConfig,
-                    new OktaEnvironmentConfiguration(credentials.ClientId, credentials.ClientSecret),
+                    new OktaEnvironmentConfiguration(
+                        appDetails.Settings.Notifications.Vpn.Message, // Workaround to store AS id in app resource
+                        credentials.ClientId,
+                        credentials.ClientSecret),
                     new KeyValuePair<string, ProviderConfiguration>[0]);
             }
             catch (Exception ex)

@@ -3,15 +3,19 @@
     public sealed class OktaEnvironmentConfiguration
     {
         public OktaEnvironmentConfiguration(
+            string authorizationServerId,
             string clientId,
             string clientSecret)
         {
+            AuthorizationServerId = authorizationServerId;
             ClientId = clientId;
             ClientSecret = clientSecret;
         }
 
-        public string ClientId { get; set; }
+        public string AuthorizationServerId { get; }
 
-        public string ClientSecret { get; set; }
+        public string ClientId { get; }
+
+        public string ClientSecret { get; }
     }
 }
