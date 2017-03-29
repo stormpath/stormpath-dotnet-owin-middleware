@@ -19,7 +19,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
-using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
@@ -29,8 +28,9 @@ namespace Stormpath.Owin.Middleware.Route
     public sealed class ChangePasswordRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
-            => configuration.Web.ChangePassword.Enabled == true
-            || (configuration.Web.ChangePassword.Enabled == null && configuration.Tenant.PasswordResetWorkflowEnabled);
+            => configuration.Web.ChangePassword.Enabled == true;
+            //|| (configuration.Web.ChangePassword.Enabled == null && configuration.Tenant.PasswordResetWorkflowEnabled);
+            // TODO - will any part of this be autoconfigured?
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {

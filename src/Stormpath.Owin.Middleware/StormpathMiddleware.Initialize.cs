@@ -22,18 +22,12 @@ using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
+using Stormpath.Configuration;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
-        private static readonly string[] NonSocialProviderIds =
-        {
-            "stormpath",
-            "ad",
-            "ldap"
-        };
-
         public static StormpathMiddleware Create(StormpathOwinOptions options)
         {
             if (string.IsNullOrEmpty(options.LibraryUserAgent))
@@ -51,10 +45,8 @@ namespace Stormpath.Owin.Middleware
 
             options.Logger.LogInformation("Stormpath middleware starting up", nameof(StormpathMiddleware));
 
-            // todo use dotnet-config to load config?
-            var integrationConfiguration = GetConfiguration();
-
-            // TODO inspect server configuration if necessary
+            var baseConfiguration = ConfigurationLoader.Initialize().Load();
+            var integrationConfiguration = GetAdditionalConfigFromServer(baseConfiguration);
 
             options.Logger.LogTrace("Stormpath middleware ready!", nameof(StormpathMiddleware));
 
@@ -76,6 +68,11 @@ namespace Stormpath.Owin.Middleware
                 userAgentBuilder,
                 integrationConfiguration,
                 handlerConfiguration);
+        }
+
+        private static IntegrationConfiguration GetAdditionalConfigFromServer(StormpathConfiguration existingConfig)
+        {
+            throw new NotImplementedException();
         }
 
         private AbstractRoute InitializeRoute<T>(RouteOptionsBase options = null)
