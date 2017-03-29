@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
-    class OktaClient
+    internal sealed class OktaClient
     {
     }
 }
