@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -33,34 +33,22 @@ namespace Stormpath.Owin.Middleware.Route
         private IViewRenderer _viewRenderer;
         protected ILogger _logger;
         protected RouteOptionsBase _options;
+        protected IOktaClient _oktaClient;
 
         public void Initialize(
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
             IViewRenderer viewRenderer,
             ILogger logger,
-            RouteOptionsBase options)
+            RouteOptionsBase options,
+            IOktaClient oktaClient)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            if (viewRenderer == null)
-            {
-                throw new ArgumentNullException(nameof(viewRenderer));
-            }
-
-            if (handlers == null)
-            {
-                throw new ArgumentNullException(nameof(handlers));
-            }
-
-            _configuration = configuration;
-            _viewRenderer = viewRenderer;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
+            _handlers = handlers ?? throw new ArgumentNullException(nameof(handlers));
             _logger = logger;
-            _handlers = handlers;
             _options = options;
+            _oktaClient = oktaClient ?? throw new ArgumentNullException(nameof(oktaClient));
 
             _initialized = true;
         }

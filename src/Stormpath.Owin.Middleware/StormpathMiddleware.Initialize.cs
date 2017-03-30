@@ -66,6 +66,7 @@ namespace Stormpath.Owin.Middleware
                 options.PostVerifyEmailHandler ?? DefaultHandlers.PostVerifyEmailHandler);
 
             return new StormpathMiddleware(
+                oktaClient,
                 options.ViewRenderer,
                 options.Logger,
                 userAgentBuilder,
@@ -131,7 +132,7 @@ namespace Stormpath.Owin.Middleware
         {
             var route = new T();
             options = options ?? new RouteOptionsBase();
-            route.Initialize(Configuration, Handlers, viewRenderer, logger, options);
+            route.Initialize(Configuration, Handlers, viewRenderer, logger, options, oktaClient);
 
             return route;
         }

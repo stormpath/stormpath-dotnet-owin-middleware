@@ -75,49 +75,47 @@ namespace Stormpath.Owin.Middleware.Route
             });
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            // TODO - use Okta Client secret
-            throw new Exception("TODO");
-            //var parsedStateToken = new StateTokenParser(oktaClientSecret, stateToken, _logger);
-            //if (!parsedStateToken.Valid)
-            //{
-            //    await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
-            //    return true;
-            //}
+            var parsedStateToken = new StateTokenParser(_configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
+                return true;
+            }
 
-            //bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
-            //if (missingLoginOrPassword)
-            //{
-            //    await htmlErrorHandler("The login and password fields are required.", cancellationToken);
-            //    return true;
-            //}
+            bool missingLoginOrPassword = string.IsNullOrEmpty(model.Login) || string.IsNullOrEmpty(model.Password);
+            if (missingLoginOrPassword)
+            {
+                await htmlErrorHandler("The login and password fields are required.", cancellationToken);
+                return true;
+            }
 
-            //var executor = new LoginExecutor(_configuration, _handlers, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
 
-            //try
-            //{
-            //    var grantResult = await executor.PasswordGrantAsync(
-            //        context, 
-            //        htmlErrorHandler,
-            //        model.Login,
-            //        model.Password, 
-            //        cancellationToken);
+            try
+            {
+                var grantResult = await executor.PasswordGrantAsync(
+                    context,
+                    htmlErrorHandler,
+                    model.Login,
+                    model.Password,
+                    cancellationToken);
 
-            //    if (grantResult == null)
-            //    {
-            //        return true; // The error handler was invoked
-            //    }
+                if (grantResult == null)
+                {
+                    return true; // The error handler was invoked
+                }
 
-            //    await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
-            //}
-            //catch (Exception ex)
-            //{
-            //    await htmlErrorHandler(ex.Message, cancellationToken);
-            //    return true;
-            //}
+                await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await htmlErrorHandler(ex.Message, cancellationToken);
+                return true;
+            }
 
-            //var nextUri = parsedStateToken.Path; // Might be null
+            var nextUri = parsedStateToken.Path; // Might be null
 
-            //return await executor.HandleRedirectAsync(context, nextUri);
+            return await executor.HandleRedirectAsync(context, nextUri);
         }
 
         protected override Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
@@ -147,7 +145,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var executor = new LoginExecutor(_configuration, _handlers, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
 
             var grantResult = await executor.PasswordGrantAsync(
                 context,
@@ -163,17 +161,16 @@ namespace Stormpath.Owin.Middleware.Route
 
             await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
-            throw new NotImplementedException("TODO");
+            // TODO actually get the account details
+            var account = new { };
 
-            //var account = GetIdTokenAsync(); // todo
+            var sanitizer = new AccountResponseSanitizer();
+            var responseModel = new
+            {
+                account = sanitizer.Sanitize(account)
+            };
 
-            //var sanitizer = new AccountResponseSanitizer();
-            //var responseModel = new
-            //{
-            //    account = sanitizer.Sanitize(account)
-            //};
-
-            //return await JsonResponse.Ok(context, responseModel);
+            return await JsonResponse.Ok(context, responseModel);
         }
 
         private Task<bool> HandleSocialLogin(IOwinEnvironment context, LoginPostModel model,

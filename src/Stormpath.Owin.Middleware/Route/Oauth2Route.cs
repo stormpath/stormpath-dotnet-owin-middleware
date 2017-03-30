@@ -88,7 +88,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         private Task<bool> ExecutePasswordFlow(IOwinEnvironment context, string username, string password, CancellationToken cancellationToken)
         {
-            var executor = new LoginExecutor(_configuration, _handlers, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
 
             // todo proxy OAuth flows
             throw new Exception("TODO");

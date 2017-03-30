@@ -132,7 +132,7 @@ namespace Stormpath.Owin.Middleware.Route
             string nextPath,
             CancellationToken cancellationToken)
         {
-            var executor = new LoginExecutor(_configuration, _handlers, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
             await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
             var defaultNextPath = isNewAccount

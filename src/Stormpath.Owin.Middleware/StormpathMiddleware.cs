@@ -24,6 +24,7 @@ using Stormpath.Owin.Middleware.Route;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Configuration.Abstractions.Immutable;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -31,6 +32,7 @@ namespace Stormpath.Owin.Middleware
 
     public sealed partial class StormpathMiddleware
     {
+        private readonly IOktaClient oktaClient;
         private readonly IViewRenderer viewRenderer;
         private readonly ILogger logger;
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
@@ -38,12 +40,14 @@ namespace Stormpath.Owin.Middleware
         private AppFunc _next;
 
         private StormpathMiddleware(
+            IOktaClient oktaClient,
             IViewRenderer viewRenderer,
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers)
         {
+            this.oktaClient = oktaClient;
             this.viewRenderer = viewRenderer;
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;

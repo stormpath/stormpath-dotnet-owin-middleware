@@ -20,25 +20,30 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
     internal sealed class LoginExecutor
     {
-        private readonly StormpathConfiguration _configuration;
+        private readonly IntegrationConfiguration _configuration;
         private readonly HandlerConfiguration _handlers;
+        private readonly IOktaClient _oktaClient;
         private readonly ILogger _logger;
 
         private string _nextUriFromPostHandler = null;
 
         public LoginExecutor(
-            StormpathConfiguration configuration,
+            IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
+            IOktaClient oktaClient,
             ILogger logger)
         {
             _configuration = configuration;
             _handlers = handlers;
+            _oktaClient = oktaClient;
             _logger = logger;
         }
 
@@ -68,11 +73,12 @@ namespace Stormpath.Owin.Middleware
                 }
             }
 
-            // TODO password grant request.
-            throw new NotImplementedException("TODO");
-            //var grantResult = ExecutePasswordGrantAsync();
-
-            //return grantResult;
+            return await _oktaClient.PostPasswordGrant(
+                _configuration.OktaEnvironment.AuthorizationServerId,
+                _configuration.OktaEnvironment.ClientId,
+                _configuration.OktaEnvironment.ClientSecret,
+                preLoginHandlerContext.Login,
+                password);
         }
 
         // TODO restore
@@ -90,20 +96,17 @@ namespace Stormpath.Owin.Middleware
             GrantResult grantResult,
             CancellationToken cancellationToken)
         {
-            // TODO get ID token
-            throw new NotImplementedException("TODO");
-
-            //var account = GetIdTokenAsync(grantResult.AccessToken);
+            // TODO actually get account
+            //var account = GetAccount(grantResult.AccessToken);
 
             //var postLoginHandlerContext = new PostLoginContext(context, account);
             //await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);
 
-            //// Save the custom redirect URI from the handler, if any
+            // Save the custom redirect URI from the handler, if any
             //_nextUriFromPostHandler = postLoginHandlerContext.Result?.RedirectUri;
 
-            //// Add Stormpath cookies
-            ////Cookies.AddTokenCookiesToResponse(context, grantResult, _configuration, _logger);
-            //throw new Exception("TODO");
+            // Add Stormpath cookies
+            Cookies.AddTokenCookiesToResponse(context, grantResult, _configuration, _logger);
         }
 
         public Task<bool> HandleRedirectAsync(IOwinEnvironment context, string nextUri = null, string defaultNextUri = null)

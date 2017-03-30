@@ -16,6 +16,6 @@ namespace Stormpath.Owin.Middleware
         [JsonProperty("expires_in")]
         public long ExpiresIn { get; set; }
 
-        public string Scopes { get; set; }
+        public string Scope { get; set; }
     }
 }

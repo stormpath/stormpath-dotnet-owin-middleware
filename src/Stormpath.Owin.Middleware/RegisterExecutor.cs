@@ -5,24 +5,28 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Model;
-
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
     internal sealed class RegisterExecutor
     {
-        private readonly StormpathConfiguration _configuration;
+        private readonly IntegrationConfiguration _configuration;
         private readonly HandlerConfiguration _handlers;
+        private readonly IOktaClient _oktaClient;
         private readonly ILogger _logger;
 
         public RegisterExecutor(
-            StormpathConfiguration configuration,
+            IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
+            IOktaClient oktaClient,
             ILogger logger)
         {
             _configuration = configuration;
             _handlers = handlers;
+            _oktaClient = oktaClient;
             _logger = logger;
         }
 
@@ -117,7 +121,7 @@ namespace Stormpath.Owin.Middleware
             string stateToken,
             CancellationToken cancellationToken)
         {
-            var loginExecutor = new LoginExecutor(_configuration, _handlers, _logger);
+            var loginExecutor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
             var loginResult = await loginExecutor.PasswordGrantAsync(
                 environment,
                 errorHandler,
