@@ -18,8 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
-namespace Stormpath.Owin.Abstractions.ViewModel
+using Stormpath.Owin.Abstractions.ViewModel;
+
+namespace Stormpath.Owin.Middleware.ViewModelBuilder
 {
     public sealed class LoginFormViewModelBuilder
     {
@@ -102,26 +105,20 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             // If a state token exists (from the querystring or a previous submission), make sure it is valid
             if (!string.IsNullOrEmpty(result.StateToken))
             {
-                // Add a state (CSRF) token
-                throw new NotImplementedException("TODO");
-
-                //var parsedStateToken = new StateTokenParser(_configuration.Client.ApiKey, result.StateToken, _logger);
-                //if (!parsedStateToken.Valid)
-                //{
-                //    result.StateToken = null; // Will be regenerated below
-                //}
+                var parsedStateToken = new StateTokenParser(_configuration.OktaEnvironment.ClientSecret, result.StateToken, _logger);
+                if (!parsedStateToken.Valid)
+                {
+                    result.StateToken = null; // Will be regenerated below
+                }
             }
 
             // If a state token isn't in the querystring or form, create one
-            // Add a state (CSRF) token
-            throw new NotImplementedException("TODO");
+            if (string.IsNullOrEmpty(result.StateToken))
+            {
+                result.StateToken = new StateTokenBuilder(_configuration.OktaEnvironment.ClientSecret).ToString();
+            }
 
-            //if (string.IsNullOrEmpty(result.StateToken))
-            //{
-            //    result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
-            //}
-
-            //return result;
+            return result;
         }
     }
 }

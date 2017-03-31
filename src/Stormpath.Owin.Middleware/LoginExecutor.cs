@@ -107,6 +107,9 @@ namespace Stormpath.Owin.Middleware
 
             // Add Stormpath cookies
             Cookies.AddTokenCookiesToResponse(context, grantResult, _configuration, _logger);
+
+            // TODO remove when async
+            return Task.FromResult(true);
         }
 
         public Task<bool> HandleRedirectAsync(IOwinEnvironment context, string nextUri = null, string defaultNextUri = null)

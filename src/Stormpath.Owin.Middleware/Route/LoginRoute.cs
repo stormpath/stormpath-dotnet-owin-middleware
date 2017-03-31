@@ -23,6 +23,7 @@ using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
+using Stormpath.Owin.Middleware.ViewModelBuilder;
 
 namespace Stormpath.Owin.Middleware.Route
 {

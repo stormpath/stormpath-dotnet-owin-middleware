@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="JWT" Version="2.2.0-beta" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="Stormpath.Configuration" Version="7.0.0-beta1" />
   </ItemGroup>
