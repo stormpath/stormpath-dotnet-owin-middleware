@@ -1,6 +1,7 @@
-﻿using System;
-using Stormpath.Owin.Abstractions.Configuration;
-namespace Stormpath.Owin.Abstractions.ViewModel
+﻿using Stormpath.Owin.Abstractions.Configuration;
+using Stormpath.Owin.Abstractions.ViewModel;
+
+namespace Stormpath.Owin.Middleware.ViewModelBuilder
 {
     public sealed class VerifyEmailFormViewModelBuilder
     {
@@ -18,12 +19,9 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             var result = new VerifyEmailFormViewModel(baseViewModelBuilder.Build());
 
             // Add a state (CSRF) token
-            // Add a state (CSRF) token
-            throw new NotImplementedException("TODO");
+            result.StateToken = new StateTokenBuilder(_configuration.OktaEnvironment.ClientSecret).ToString();
 
-            //result.StateToken = new StateTokenBuilder(_configuration.Client.ApiKey).ToString();
-
-            //return result;
+            return result;
         }
     }
 }

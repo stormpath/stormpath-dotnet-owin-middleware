@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
-using NSubstitute;
 using Stormpath.Configuration.Abstractions;
-using Stormpath.Owin.Abstractions.ViewModel;
+using Stormpath.Owin.Middleware.ViewModelBuilder;
 using Xunit;
 
 namespace Stormpath.Owin.UnitTest
