@@ -1,23 +1,33 @@
-﻿using System;
+﻿using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
-using JWT;
-using JWT.Algorithms;
-using JWT.Serializers;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed class StateTokenBuilder
     {
-        public static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
         public const string PathClaimName = "path";
         public const string StateClaimName = "state";
-        public const string ExpClaimName = "exp";
 
         private readonly string _secret;
+        private readonly string _appId;
 
-        public StateTokenBuilder(string secret)
+        public StateTokenBuilder(string appId, string secret)
         {
+            if (string.IsNullOrEmpty(appId))
+            {
+                throw new ArgumentNullException(nameof(appId));
+            }
+
+            if (string.IsNullOrEmpty(secret))
+            {
+                throw new ArgumentNullException(nameof(secret));
+            }
+
+            _appId = appId;
             _secret = secret;
         }
 
@@ -29,27 +39,31 @@ namespace Stormpath.Owin.Middleware
 
         public override string ToString()
         {
-            var now = new UtcDateTimeProvider().GetNow();
-            var expiry = now.Add(ExpiresIn);
-            var expirySecondsSinceEpoch = Math.Round((expiry - UnixEpoch).TotalSeconds);
+            var expiry = DateTime.UtcNow.Add(ExpiresIn);
 
-            var payload = new Dictionary<string, object>
-            {
-                [ExpClaimName] = expirySecondsSinceEpoch
-            };
+            var customClaims = new List<Claim>();
 
             if (!string.IsNullOrEmpty(Path))
             {
-                payload.Add(PathClaimName, Path);
+                customClaims.Add(new Claim(PathClaimName, Path));
             }
 
             if (!string.IsNullOrEmpty(State))
             {
-                payload.Add(StateClaimName, State);
+                customClaims.Add(new Claim(StateClaimName, State));
             }
 
-            var encoder = new JwtEncoder(new HMACSHA256Algorithm(), new JsonNetSerializer());
-            return encoder.Encode(payload, _secret);
+            var signingCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_secret)), SecurityAlgorithms.HmacSha256);
+
+            var jwt = new JwtSecurityToken(
+                claims: customClaims,
+                expires: expiry,
+                notBefore: DateTime.UtcNow,
+                audience: _appId,
+                signingCredentials: signingCredentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
     }
 }

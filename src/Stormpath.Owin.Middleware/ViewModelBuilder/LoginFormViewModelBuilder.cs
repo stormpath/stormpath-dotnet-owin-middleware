@@ -105,7 +105,7 @@ namespace Stormpath.Owin.Middleware.ViewModelBuilder
             // If a state token exists (from the querystring or a previous submission), make sure it is valid
             if (!string.IsNullOrEmpty(result.StateToken))
             {
-                var parsedStateToken = new StateTokenParser(_configuration.OktaEnvironment.ClientSecret, result.StateToken, _logger);
+                var parsedStateToken = new StateTokenParser(_configuration.Okta.Application.Id, _configuration.OktaEnvironment.ClientSecret, result.StateToken, _logger);
                 if (!parsedStateToken.Valid)
                 {
                     result.StateToken = null; // Will be regenerated below
@@ -115,7 +115,7 @@ namespace Stormpath.Owin.Middleware.ViewModelBuilder
             // If a state token isn't in the querystring or form, create one
             if (string.IsNullOrEmpty(result.StateToken))
             {
-                result.StateToken = new StateTokenBuilder(_configuration.OktaEnvironment.ClientSecret).ToString();
+                result.StateToken = new StateTokenBuilder(_configuration.Okta.Application.Id, _configuration.OktaEnvironment.ClientSecret).ToString();
             }
 
             return result;

@@ -19,7 +19,7 @@ namespace Stormpath.Owin.Middleware.ViewModelBuilder
             var result = new VerifyEmailFormViewModel(baseViewModelBuilder.Build());
 
             // Add a state (CSRF) token
-            result.StateToken = new StateTokenBuilder(_configuration.OktaEnvironment.ClientSecret).ToString();
+            result.StateToken = new StateTokenBuilder(_configuration.Okta.Application.Id, _configuration.OktaEnvironment.ClientSecret).ToString();
 
             return result;
         }
