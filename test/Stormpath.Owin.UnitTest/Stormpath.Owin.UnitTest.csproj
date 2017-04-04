@@ -4,7 +4,7 @@
     <Description>Unit Tests for Stormpath OWIN middleware.</Description>
     <VersionPrefix>4.0.0-beta1</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>Stormpath.Owin.UnitTest</AssemblyName>
     <PackageId>Stormpath.Owin.UnitTest</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>

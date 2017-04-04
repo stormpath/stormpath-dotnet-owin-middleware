@@ -5,7 +5,7 @@
     <Copyright>(c) 2016 Stormpath, Inc.</Copyright>
     <VersionPrefix>4.0.0-beta1</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
-    <TargetFramework>net45</TargetFramework>
+    <TargetFramework>net451</TargetFramework>
     <AssemblyName>Stormpath.Owin.NowinHarness</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Stormpath.Owin.NowinHarness</PackageId>
