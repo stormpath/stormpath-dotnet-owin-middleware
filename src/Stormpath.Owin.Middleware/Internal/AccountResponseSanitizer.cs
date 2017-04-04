@@ -7,7 +7,8 @@ namespace Stormpath.Owin.Middleware.Internal
         public object Sanitize(dynamic account)
         {
             // TODO
-            throw new Exception("TODO");
+            return account;
+
             //return new
             //{
             //    account.Href,

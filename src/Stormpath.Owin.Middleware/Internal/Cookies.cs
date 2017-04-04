@@ -20,6 +20,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -35,18 +36,16 @@ namespace Stormpath.Owin.Middleware.Internal
         {
             if (!string.IsNullOrEmpty(grantResult.AccessToken))
             {
-                // TODO parse JWTs using a library
-                throw new Exception("TODO");
-                //var expirationDate = client.NewJwtParser().Parse(grantResult.AccessTokenString).Body.Expiration;
-                //SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessTokenString, expirationDate, IsSecureRequest(context), logger);
+                var handler = new JwtSecurityTokenHandler().ReadJwtToken(grantResult.AccessToken);
+                var expValue = handler.Payload.Exp;
+                var expirationDate = expValue == null ? (DateTimeOffset?)null : Epoch.AddSeconds(expValue.Value);
+
+                SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessToken, expirationDate, IsSecureRequest(context), logger);
             }
 
             if (!string.IsNullOrEmpty(grantResult.RefreshToken))
             {
-                // TODO parse JWTs using a library
-                throw new Exception("TODO");
-                //var expirationDate = client.NewJwtParser().Parse(grantResult.RefreshTokenString).Body.Expiration;
-                //SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshTokenString, expirationDate, IsSecureRequest(context), logger);
+                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshToken, null, IsSecureRequest(context), logger);
             }
         }
 
