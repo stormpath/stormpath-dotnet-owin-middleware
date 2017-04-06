@@ -91,7 +91,7 @@ namespace Stormpath.Owin.Middleware.Okta
                 }
 
                 stormpathAccount.CustomData = customData as ExpandoObject;
-                stormpathAccount.GetCustomDataAsync = new Func<Task<dynamic>, CancellationToken>((_) => Task.FromResult(stormpathAccount.CustomData));
+                stormpathAccount.GetCustomDataAsync = new Func<CancellationToken, Task<dynamic>>((_) => Task.FromResult<dynamic>(stormpathAccount.CustomData));
                 stormpathAccount.GetCustomData = new Func<dynamic>(() => stormpathAccount.CustomData);
 
                 return stormpathAccount;
