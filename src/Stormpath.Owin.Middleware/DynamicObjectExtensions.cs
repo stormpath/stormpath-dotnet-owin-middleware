@@ -4,12 +4,11 @@ using System.Reflection;
 
 namespace Stormpath.Owin.Middleware
 {
-    public static class ObjectExtensions
+    public static class DynamicObjectExtensions
     {
         public static dynamic ToDynamic(this object obj)
         {
-            var asDictionary = obj as IDictionary<string, object>;
-            if (asDictionary != null)
+            if (obj is IDictionary<string, object> asDictionary)
             {
                 return DictionaryToDynamic(asDictionary);
             }
