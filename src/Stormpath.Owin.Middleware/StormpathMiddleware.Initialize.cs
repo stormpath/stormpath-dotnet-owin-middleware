@@ -52,6 +52,9 @@ namespace Stormpath.Owin.Middleware
 
             var integrationConfiguration = GetAdditionalConfigFromServer(baseConfiguration, oktaClient, options.Logger);
 
+            var oidcConfigurationEndpoint = $"{integrationConfiguration.Okta.Org}/oauth2/{integrationConfiguration.OktaEnvironment.AuthorizationServerId}/.well-known/openid-configuration?client_id={integrationConfiguration.OktaEnvironment.ClientId}";
+            var jwksKeyProvider = new CachingJwksKeyProvider(oidcConfigurationEndpoint, options.Logger);
+
             options.Logger.LogTrace("Stormpath middleware ready!", nameof(StormpathMiddleware));
 
             var handlerConfiguration = new HandlerConfiguration(
@@ -68,6 +71,7 @@ namespace Stormpath.Owin.Middleware
 
             return new StormpathMiddleware(
                 oktaClient,
+                jwksKeyProvider,
                 options.ViewRenderer,
                 options.Logger,
                 userAgentBuilder,
