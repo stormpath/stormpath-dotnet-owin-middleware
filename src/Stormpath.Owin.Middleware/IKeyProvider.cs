@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Stormpath.Owin.Middleware
 {
-    interface IKeyProvider
+    public interface IKeyProvider
     {
         Task<IssuerSigningKeyResolver> GetSigningKeyResolver(CancellationToken cancellationToken);
     }

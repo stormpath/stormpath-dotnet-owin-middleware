@@ -134,20 +134,9 @@ namespace Stormpath.Owin.Middleware
 
         private async Task<dynamic> ValidateAccessTokenAsync(IOwinEnvironment context, string accessTokenJwt)
         {
-            // todo local validation
-            //if (Configuration.Web.Oauth2.Password.ValidationStrategy == WebOauth2TokenValidationStrategy.Local)
-            //{
-            //    authenticator.WithLocalValidation();
-            //}
-            //else
+            var accessTokenValidator = new AccessTokenValidator(oktaClient, keyProvider, Configuration);
 
-            var remoteValidator = new RemoteAccessTokenValidator(
-                oktaClient, 
-                Configuration.OktaEnvironment.AuthorizationServerId,
-                Configuration.OktaEnvironment.ClientId,
-                Configuration.OktaEnvironment.ClientSecret);
-
-            var validationResult = await remoteValidator.ValidateAsync(accessTokenJwt, TokenType.Access, context.CancellationToken);
+            var validationResult = await accessTokenValidator.ValidateAsync(accessTokenJwt, context.CancellationToken);
             if (!validationResult.Active)
             {
                 logger.LogInformation("Failed to authenticate the request due to a malformed or expired access token.");

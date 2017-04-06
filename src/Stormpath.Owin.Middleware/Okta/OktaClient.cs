@@ -147,6 +147,7 @@ namespace Stormpath.Owin.Middleware.Okta
 
                 var exceptionFormatter = new Func<string, Exception>(json =>
                 {
+                    // TODO this always says "Invalid grant" for bad username/password
                     var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                     if (!data.TryGetValue("error_description", out string message))
                     {

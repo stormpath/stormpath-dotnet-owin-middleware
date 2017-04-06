@@ -74,7 +74,7 @@ namespace Stormpath.Owin.Middleware
                 }
             }
 
-            return await _oktaClient.PostPasswordGrantAsync(
+            var grantResult = await _oktaClient.PostPasswordGrantAsync(
                 _configuration.OktaEnvironment.AuthorizationServerId,
                 _configuration.OktaEnvironment.ClientId,
                 _configuration.OktaEnvironment.ClientSecret,
@@ -82,7 +82,21 @@ namespace Stormpath.Owin.Middleware
                 password,
                 cancellationToken);
 
-            // TODO verify signature
+            // todo move this into a new class TokenValidator
+            var remoteValidator = new RemoteTokenValidator(
+                _oktaClient,
+                _configuration.OktaEnvironment.AuthorizationServerId,
+                _configuration.OktaEnvironment.ClientId,
+                _configuration.OktaEnvironment.ClientSecret);
+
+            var validationResult = await remoteValidator.ValidateAsync(grantResult.AccessToken, TokenType.Access, cancellationToken);
+            if (!validationResult.Active)
+            {
+                _logger.LogWarning("The user's token was invalid.");
+                return null;
+            }
+
+            return grantResult;
         }
 
         // TODO restore

@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Middleware
 {
-    public sealed class RemoteAccessTokenValidator
+    public sealed class RemoteTokenValidator
     {
         private readonly IOktaClient _oktaClient;
         private readonly string _authorizationServerId;
         private readonly string _clientId;
         private readonly string _clientSecret;
 
-        public RemoteAccessTokenValidator(
+        public RemoteTokenValidator(
             IOktaClient oktaClient,
             string authorizationServerId,
             string clientId,
