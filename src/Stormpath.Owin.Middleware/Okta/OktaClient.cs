@@ -160,6 +160,45 @@ namespace Stormpath.Owin.Middleware.Okta
             }
         }
 
+        public async Task<GrantResult> PostRefreshGrantAsync(
+            string authorizationServerId,
+            string clientId,
+            string clientSecret,
+            string refreshToken,
+            CancellationToken cancellationToken)
+        {
+            var url = $"oauth2/{authorizationServerId}/v1/token";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+
+                var parameters = new Dictionary<string, string>()
+                {
+                    ["grant_type"] = "refresh_token",
+                    ["refresh_token"] = refreshToken
+                };
+                request.Content = new FormUrlEncodedContent(parameters);
+
+                _logger.LogTrace($"Executing refresh grant flow with token {refreshToken}");
+
+                var exceptionFormatter = new Func<string, Exception>(json =>
+                {
+                    var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+                    if (!data.TryGetValue("error_description", out string message))
+                    {
+                        message = "Invalid request";
+                    }
+
+                    return new Exception(message);
+                });
+
+                return await SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
+            }
+        }
+
+
         public async Task<TokenIntrospectionResult> IntrospectTokenAsync(
             string authorizationServerId,
             string clientId,
@@ -182,6 +221,7 @@ namespace Stormpath.Owin.Middleware.Okta
                 };
                 request.Content = new FormUrlEncodedContent(parameters);
 
+                // todo why can't I remove this await?
                 return await SendAsync<TokenIntrospectionResult>(request, cancellationToken);
             }
         }

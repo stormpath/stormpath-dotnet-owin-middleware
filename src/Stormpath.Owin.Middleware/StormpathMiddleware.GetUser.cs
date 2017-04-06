@@ -167,62 +167,40 @@ namespace Stormpath.Owin.Middleware
             return account;
         }
 
-        private Task<dynamic> RefreshAccessTokenAsync(IOwinEnvironment context, string refreshTokenJwt)
+        private async Task<dynamic> RefreshAccessTokenAsync(IOwinEnvironment context, string refreshTokenJwt)
         {
-            // todo refresh flow
-            throw new Exception("TODO");
+            GrantResult grantResult = null;
+            try
+            {
+                grantResult = await oktaClient.PostRefreshGrantAsync(
+                    Configuration.OktaEnvironment.AuthorizationServerId,
+                    Configuration.OktaEnvironment.ClientId,
+                    Configuration.OktaEnvironment.ClientSecret,
+                    refreshTokenJwt,
+                    context.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(1000, ex, $"Failed to refresh an access_token given refresh_token {refreshTokenJwt}.");
+                return null;
+            }
 
-            //// Attempt refresh grant against Stormpath
-            //var request = OauthRequests.NewRefreshGrantRequest()
-            //    .SetRefreshToken(refreshTokenJwt)
-            //    .Build();
+            // Get the account details
+            dynamic account = null;
+            try
+            {
+                account = await UserHelper.GetUserFromAccessTokenAsync(oktaClient, grantResult.AccessToken, logger, context.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(1000, ex, $"Failed to get account from new access_token");
+                return null;
+            }
 
-            //var application = await client.GetApplicationAsync(this.Configuration.Application.Href, context.CancellationToken);
-            //var authenticator = application.NewRefreshGrantAuthenticator();
+            logger.LogTrace("Access token refreshed using Refresh token. Adding cookies to response");
+            Cookies.AddTokenCookiesToResponse(context, grantResult, Configuration, logger);
 
-            //IOauthGrantAuthenticationResult grantResult = null;
-            //try
-            //{
-            //    grantResult = await authenticator.AuthenticateAsync(request, context.CancellationToken);
-            //}
-            //catch (InvalidJwtException jwex)
-            //{
-            //    logger.LogInformation($"Failed to authenticate the request due to a malformed or expired refresh token. Message: '{jwex.Message}'", nameof(RefreshAccessTokenAsync));
-            //    return null;
-            //}
-            //catch (ResourceException rex)
-            //{
-            //    logger.LogWarning(rex, "Failed to refresh an access_token given a refresh_token.");
-            //    return null;
-            //}
-
-            //// Get a new access token
-            //IAccessToken newAccessToken = null;
-            //try
-            //{
-            //    newAccessToken = await grantResult.GetAccessTokenAsync(context.CancellationToken);
-            //}
-            //catch (ResourceException rex)
-            //{
-            //    logger.LogError(rex, "Failed to get a new access token after receiving grant response.", nameof(RefreshAccessTokenAsync));
-            //}
-
-            //// Get the account details
-            //dynamic account = null;
-            //try
-            //{
-            //    account = await GetExpandedAccountAsync(client, newAccessToken, context.CancellationToken);
-            //}
-            //catch (ResourceException rex)
-            //{
-            //    logger.LogError(rex, $"Failed to get account {newAccessToken.AccountHref}", nameof(RefreshAccessTokenAsync));
-            //    return null;
-            //}
-
-            //logger.LogTrace("Access token refreshed using Refresh token. Adding cookies to response", nameof(RefreshAccessTokenAsync));
-            //Cookies.AddTokenCookiesToResponse(context, client, grantResult, this.Configuration, logger);
-
-            //return account;
+            return account;
         }
     }
 }
