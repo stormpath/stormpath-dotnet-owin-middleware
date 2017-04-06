@@ -74,12 +74,13 @@ namespace Stormpath.Owin.Middleware
                 }
             }
 
-            return await _oktaClient.PostPasswordGrant(
+            return await _oktaClient.PostPasswordGrantAsync(
                 _configuration.OktaEnvironment.AuthorizationServerId,
                 _configuration.OktaEnvironment.ClientId,
                 _configuration.OktaEnvironment.ClientSecret,
                 preLoginHandlerContext.Login,
-                password);
+                password,
+                cancellationToken);
 
             // TODO verify signature
         }
@@ -99,15 +100,7 @@ namespace Stormpath.Owin.Middleware
             GrantResult grantResult,
             CancellationToken cancellationToken)
         {
-            var token = new JwtSecurityTokenHandler().ReadJwtToken(grantResult.AccessToken);
-            token.Payload.TryGetValue("uid", out object rawUid);
-            if (rawUid == null)
-            {
-                throw new Exception("Could not get user information");
-            }
-
-            var oktaUser = await _oktaClient.GetUser(rawUid.ToString());
-            var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(oktaUser);
+            dynamic stormpathCompatibleUser = await UserHelper.GetUserFromAccessTokenAsync(_oktaClient, grantResult.AccessToken, _logger, cancellationToken);
 
             var postLoginHandlerContext = new PostLoginContext(context, stormpathCompatibleUser);
             await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);

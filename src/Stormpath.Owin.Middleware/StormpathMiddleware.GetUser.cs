@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
-
+using Stormpath.Configuration.Abstractions;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -132,50 +132,39 @@ namespace Stormpath.Owin.Middleware
             return null;
         }
 
-        private Task<dynamic> ValidateAccessTokenAsync(IOwinEnvironment context, string accessTokenJwt)
+        private async Task<dynamic> ValidateAccessTokenAsync(IOwinEnvironment context, string accessTokenJwt)
         {
-            // todo verify access token using jwt library
-            throw new Exception("TODO");
-
-            //var request = OauthRequests.NewJwtAuthenticationRequest()
-            //    .SetJwt(accessTokenJwt)
-            //    .Build();
-
-            //var application = await client.GetApplicationAsync(this.Configuration.Application.Href, context.CancellationToken);
-            //var authenticator = application.NewJwtAuthenticator();
-            //if (this.Configuration.Web.Oauth2.Password.ValidationStrategy == WebOauth2TokenValidationStrategy.Local)
+            // todo local validation
+            //if (Configuration.Web.Oauth2.Password.ValidationStrategy == WebOauth2TokenValidationStrategy.Local)
             //{
             //    authenticator.WithLocalValidation();
             //}
+            //else
 
-            //IAccessToken result = null;
-            //try
-            //{
-            //    result = await authenticator.AuthenticateAsync(request, context.CancellationToken);
+            var remoteValidator = new RemoteAccessTokenValidator(
+                oktaClient, 
+                Configuration.OktaEnvironment.AuthorizationServerId,
+                Configuration.OktaEnvironment.ClientId,
+                Configuration.OktaEnvironment.ClientSecret);
 
-            //}
-            //catch (InvalidJwtException jwex)
-            //{
-            //    logger.LogInformation($"Failed to authenticate the request due to a malformed or expired access token. Message: '{jwex.Message}'", nameof(ValidateAccessTokenAsync));
-            //    return null;
-            //}
-            //catch (ResourceException rex)
-            //{
-            //    logger.LogWarning(rex, "Failed to authenticate the request. Invalid access_token found.", nameof(ValidateAccessTokenAsync));
-            //    return null;
-            //}
+            var validationResult = await remoteValidator.ValidateAsync(accessTokenJwt, TokenType.Access, context.CancellationToken);
+            if (!validationResult.Active)
+            {
+                logger.LogInformation("Failed to authenticate the request due to a malformed or expired access token.");
+                return null;
+            }
 
-            //dynamic account = null;
-            //try
-            //{
-            //    account = await GetExpandedAccountAsync(client, result, context.CancellationToken);
-            //}
-            //catch (ResourceException ex)
-            //{
-            //    logger.LogError(ex, $"Failed to get account {result.AccountHref}", nameof(ValidateAccessTokenAsync));
-            //}
+            dynamic account = null;
+            try
+            {
+                account = await UserHelper.GetUserFromAccessTokenAsync(oktaClient, accessTokenJwt, logger, context.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(1000, ex, $"Failed to get account {validationResult.Uid}", nameof(ValidateAccessTokenAsync));
+            }
 
-            //return account;
+            return account;
         }
 
         private Task<dynamic> RefreshAccessTokenAsync(IOwinEnvironment context, string refreshTokenJwt)

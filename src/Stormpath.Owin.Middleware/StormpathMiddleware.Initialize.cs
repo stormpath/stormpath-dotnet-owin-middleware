@@ -23,6 +23,7 @@ using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
 using Stormpath.Configuration;
 using Stormpath.Owin.Middleware.Okta;
+using System.Threading;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -99,8 +100,8 @@ namespace Stormpath.Owin.Middleware
         {
             try
             {
-                var appDetails = client.GetApplication(existingConfig.Okta.Application.Id).Result;
-                var credentials = client.GetClientCredentials(existingConfig.Okta.Application.Id).Result;
+                var appDetails = client.GetApplicationAsync(existingConfig.Okta.Application.Id, CancellationToken.None).Result;
+                var credentials = client.GetClientCredentialsAsync(existingConfig.Okta.Application.Id, CancellationToken.None).Result;
 
                 if (string.IsNullOrEmpty(appDetails?.Settings?.Notifications?.Vpn?.Message))
                 {
