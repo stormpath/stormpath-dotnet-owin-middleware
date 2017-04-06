@@ -6,22 +6,19 @@ namespace Stormpath.Owin.Middleware.Internal
     {
         public object Sanitize(dynamic account)
         {
-            // TODO
-            return account;
-
-            //return new
-            //{
-            //    account.Href,
-            //    account.Username,
-            //    account.ModifiedAt,
-            //    Status = account.Status.ToString(),
-            //    account.CreatedAt,
-            //    account.Email,
-            //    account.MiddleName,
-            //    account.Surname,
-            //    account.GivenName,
-            //    account.FullName
-            //};
+            return new
+            {
+                account.Href,
+                account.Username,
+                account.ModifiedAt,
+                Status = account.Status?.ToString(),
+                account.CreatedAt,
+                account.Email,
+                account.MiddleName,
+                account.Surname,
+                account.GivenName,
+                account.FullName
+            };
         }
     }
 }

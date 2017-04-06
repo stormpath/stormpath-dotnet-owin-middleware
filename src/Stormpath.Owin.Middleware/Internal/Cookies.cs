@@ -36,8 +36,8 @@ namespace Stormpath.Owin.Middleware.Internal
         {
             if (!string.IsNullOrEmpty(grantResult.AccessToken))
             {
-                var handler = new JwtSecurityTokenHandler().ReadJwtToken(grantResult.AccessToken);
-                var expValue = handler.Payload.Exp;
+                var token = new JwtSecurityTokenHandler().ReadJwtToken(grantResult.AccessToken);
+                var expValue = token.Payload.Exp;
                 var expirationDate = expValue == null ? (DateTimeOffset?)null : Epoch.AddSeconds(expValue.Value);
 
                 SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessToken, expirationDate, IsSecureRequest(context), logger);

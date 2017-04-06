@@ -62,14 +62,9 @@ namespace Stormpath.Owin.Middleware.Okta
         public string Type { get; set; }
     }
 
-    public sealed class Link
-    {
-        public string Href { get; set; }
-    }
-
     public sealed class ApplicationLinks
     {
-        public List<AppLink> appLinks { get; set; }
+        public List<AppLink> AppLinks { get; set; }
         public Link Users { get; set; }
         public Link Deactivate { get; set; }
         public Link Groups { get; set; }

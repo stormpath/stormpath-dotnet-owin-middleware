@@ -160,10 +160,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true; // The error handler was invoked
             }
 
-            await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
-
-            // TODO actually get the account details
-            var account = new { };
+            var account = await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
             var sanitizer = new AccountResponseSanitizer();
             var responseModel = new

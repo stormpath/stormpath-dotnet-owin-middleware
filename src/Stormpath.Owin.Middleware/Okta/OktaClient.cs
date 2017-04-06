@@ -85,7 +85,7 @@ namespace Stormpath.Owin.Middleware.Okta
             }
         }
 
-        private static Exception DefaultExceptionFormatter(string _) => new Exception("Invalid request");
+        private static Exception DefaultExceptionFormatter(string _) => new Exception("HTTP request failure");
 
         private async Task<T> SendAsync<T>(HttpRequestMessage request, Func<string, Exception> exceptionFormatter = null)
         {
@@ -110,6 +110,9 @@ namespace Stormpath.Owin.Middleware.Okta
 
         public Task<ApplicationClientCredentials> GetClientCredentials(string appId)
             => GetResource<ApplicationClientCredentials>($"{ApiPrefix}/internal/apps/{appId}/settings/clientcreds");
+
+        public Task<User> GetUser(string userId)
+            => GetResource<User>($"{ApiPrefix}/users/{userId}");
 
         public async Task<GrantResult> PostPasswordGrant(
             string authorizationServerId,

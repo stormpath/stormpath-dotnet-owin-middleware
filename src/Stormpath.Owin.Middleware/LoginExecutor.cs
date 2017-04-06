@@ -23,6 +23,7 @@ using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Okta;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -79,6 +80,8 @@ namespace Stormpath.Owin.Middleware
                 _configuration.OktaEnvironment.ClientSecret,
                 preLoginHandlerContext.Login,
                 password);
+
+            // TODO verify signature
         }
 
         // TODO restore
@@ -91,25 +94,31 @@ namespace Stormpath.Owin.Middleware
         //    return await tokenExchanger.ExchangeAsync(account, cancellationToken);
         //}
 
-        public Task HandlePostLoginAsync(
+        public async Task<dynamic> HandlePostLoginAsync(
             IOwinEnvironment context,
             GrantResult grantResult,
             CancellationToken cancellationToken)
         {
-            // TODO actually get account
-            //var account = GetAccount(grantResult.AccessToken);
+            var token = new JwtSecurityTokenHandler().ReadJwtToken(grantResult.AccessToken);
+            token.Payload.TryGetValue("uid", out object rawUid);
+            if (rawUid == null)
+            {
+                throw new Exception("Could not get user information");
+            }
 
-            //var postLoginHandlerContext = new PostLoginContext(context, account);
-            //await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);
+            var oktaUser = await _oktaClient.GetUser(rawUid.ToString());
+            var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(oktaUser);
 
-            // Save the custom redirect URI from the handler, if any
-            //_nextUriFromPostHandler = postLoginHandlerContext.Result?.RedirectUri;
+            var postLoginHandlerContext = new PostLoginContext(context, stormpathCompatibleUser);
+            await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);
+
+            //Save the custom redirect URI from the handler, if any
+            _nextUriFromPostHandler = postLoginHandlerContext.Result?.RedirectUri;
 
             // Add Stormpath cookies
             Cookies.AddTokenCookiesToResponse(context, grantResult, _configuration, _logger);
 
-            // TODO remove when async
-            return Task.FromResult(true);
+            return stormpathCompatibleUser;
         }
 
         public Task<bool> HandleRedirectAsync(IOwinEnvironment context, string nextUri = null, string defaultNextUri = null)
