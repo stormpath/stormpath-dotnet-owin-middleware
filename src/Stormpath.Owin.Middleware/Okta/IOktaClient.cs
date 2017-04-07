@@ -32,6 +32,11 @@ namespace Stormpath.Owin.Middleware.Okta
             string userId,
             CancellationToken cancellationToken);
 
+        Task<User> CreateUserAsync(
+            dynamic profile,
+            string password,
+            CancellationToken cancellationToken);
+
         Task<TokenIntrospectionResult> IntrospectTokenAsync(
             string authorizationServerId,
             string clientId,
@@ -39,5 +44,7 @@ namespace Stormpath.Owin.Middleware.Okta
             string token,
             string tokenType,
             CancellationToken cancelationToken);
+
+        Task AddUserToAppAsync(string appId, string userId, string email, CancellationToken cancellationToken);
     }
 }

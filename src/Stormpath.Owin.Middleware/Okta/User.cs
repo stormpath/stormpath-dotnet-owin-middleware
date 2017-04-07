@@ -17,21 +17,10 @@ namespace Stormpath.Owin.Middleware.Okta
         public IDictionary<string, object> Profile { get; set; }
 
         [JsonProperty("_links")]
-        public Links Links { get; set; }
+        public UserLinks Links { get; set; }
     }
 
-    // todo
-    //public class UserProfile
-    //{
-    //    public string FirstName { get; set; }
-    //    public string LastName { get; set; }
-    //    public object MobilePhone { get; set; }
-    //    public string Email { get; set; }
-    //    public object SecondEmail { get; set; }
-    //    public string Login { get; set; }
-    //}
-
-    public class Links
+    public class UserLinks
     {
         public Link Suspend { get; set; }
         public Link ResetPassword { get; set; }

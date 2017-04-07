@@ -61,7 +61,7 @@ namespace Stormpath.Owin.NowinHarness
                 Logger = logger,
                 PreRegistrationHandler = (ctx, ct) =>
                 {
-                    ctx.Account.CustomData["source"] = "Nowin";
+                    //ctx.Account.CustomData["source"] = "Nowin"; //todo
                     return Task.FromResult(true);
                 },
                 PostRegistrationHandler = async (ctx, ct) =>

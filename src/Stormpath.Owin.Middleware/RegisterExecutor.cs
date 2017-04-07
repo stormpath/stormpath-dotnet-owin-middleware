@@ -8,6 +8,7 @@ using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Okta;
+using Stormpath.Owin.Middleware.Internal;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -33,11 +34,12 @@ namespace Stormpath.Owin.Middleware
         public async Task<dynamic> HandleRegistrationAsync(
             IOwinEnvironment environment,
             IDictionary<string, string> formData,
-            dynamic newAccount,
+            dynamic newProfile,
+            string password,
             Func<string, CancellationToken, Task> errorHandler,
             CancellationToken cancellationToken)
         {
-            var preRegisterHandlerContext = new PreRegistrationContext(environment, newAccount, formData);
+            var preRegisterHandlerContext = new PreRegistrationContext(environment, newProfile, formData);
 
             await _handlers.PreRegistrationHandler(preRegisterHandlerContext, cancellationToken);
 
@@ -53,8 +55,28 @@ namespace Stormpath.Owin.Middleware
                 }
             }
 
-            // todo create an account
-            throw new Exception("TODO");
+            // Map CustomData.* to root-level profile fields
+            var newProfileAsDictionary = (IDictionary<string, object>)newProfile;
+            var customDataAsDictionary = (IDictionary<string, object>)newProfile.CustomData;
+
+            foreach (var item in customDataAsDictionary)
+            {
+                newProfile[item.Key] = item.Value;
+            }
+
+            newProfileAsDictionary.Remove("CustomData");
+
+            var createdUser = await _oktaClient.CreateUserAsync(newProfile, password, cancellationToken);
+            if (createdUser == null)
+            {
+                return null;
+            }
+
+            // Assign user to application
+            await _oktaClient.AddUserToAppAsync(_configuration.Okta.Application.Id, createdUser.Id, newProfile.email, cancellationToken);
+
+            var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(createdUser);
+            return stormpathCompatibleUser;
         }
 
         public async Task HandlePostRegistrationAsync(
@@ -74,44 +96,42 @@ namespace Stormpath.Owin.Middleware
             string stateToken,
             CancellationToken cancellationToken)
         {
-            // todo some way to check account status
-            throw new Exception("TODO");
-            //if (_configuration.Web.Register.AutoLogin
-            //    && createdAccount.Status != AccountStatus.Unverified)
-            //{
-            //    return HandleAutologinAsync(environment, errorHandler, postModel, stateToken, cancellationToken);
-            //}
+            if (_configuration.Web.Register.AutoLogin
+                && createdAccount.Status != StormpathUserTransformer.AccountUnverified)
+            {
+                return HandleAutologinAsync(environment, errorHandler, postModel, stateToken, cancellationToken);
+            }
 
-            //string nextUri;
-            //if (createdAccount.Status == AccountStatus.Enabled)
-            //{
-            //    nextUri = $"{_configuration.Web.Login.Uri}?status=created";
-            //}
-            //else if (createdAccount.Status == AccountStatus.Unverified)
-            //{
-            //    nextUri = $"{_configuration.Web.Login.Uri}?status=unverified";
-            //}
-            //else
-            //{
-            //    nextUri = _configuration.Web.Login.Uri;
-            //}
+            string nextUri;
+            if (createdAccount.Status == StormpathUserTransformer.AccountEnabled)
+            {
+                nextUri = $"{_configuration.Web.Login.Uri}?status=created";
+            }
+            else if (createdAccount.Status == StormpathUserTransformer.AccountUnverified)
+            {
+                nextUri = $"{_configuration.Web.Login.Uri}?status=unverified";
+            }
+            else
+            {
+                nextUri = _configuration.Web.Login.Uri;
+            }
 
-            //// Preserve the state token so that the login page can redirect after login if necessary
-            //if (!string.IsNullOrEmpty(stateToken))
-            //{
-            //    if (nextUri.Contains("?"))
-            //    {
-            //        nextUri += "&";
-            //    }
-            //    else
-            //    {
-            //        nextUri += "?";
-            //    }
+            // Preserve the state token so that the login page can redirect after login if necessary
+            if (!string.IsNullOrEmpty(stateToken))
+            {
+                if (nextUri.Contains("?"))
+                {
+                    nextUri += "&";
+                }
+                else
+                {
+                    nextUri += "?";
+                }
 
-            //    nextUri += $"{StringConstants.StateTokenName}={stateToken}";
-            //}
+                nextUri += $"{StringConstants.StateTokenName}={stateToken}";
+            }
 
-            //return HttpResponse.Redirect(environment, nextUri);
+            return HttpResponse.Redirect(environment, nextUri);
         }
 
         private async Task<bool> HandleAutologinAsync(
@@ -131,14 +151,16 @@ namespace Stormpath.Owin.Middleware
 
             await loginExecutor.HandlePostLoginAsync(environment, loginResult, cancellationToken);
 
-            // TODO - use Okta Client secret
-            throw new Exception("TODO");
+            var parsedStateToken = new StateTokenParser(
+                _configuration.Okta.Application.Id,
+                _configuration.OktaEnvironment.ClientSecret,
+                stateToken,
+                _logger);
 
-            //var parsedStateToken = new StateTokenParser(oktaClientSecret, stateToken, _logger);
-            //return await loginExecutor.HandleRedirectAsync(
-            //    environment,
-            //    parsedStateToken.Path,
-            //    _configuration.Web.Register.NextUri);
+            return await loginExecutor.HandleRedirectAsync(
+                environment,
+                parsedStateToken.Path,
+                _configuration.Web.Register.NextUri);
         }
     }
 }

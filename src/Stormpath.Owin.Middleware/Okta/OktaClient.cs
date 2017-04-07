@@ -115,9 +115,59 @@ namespace Stormpath.Owin.Middleware.Okta
         public Task<ApplicationClientCredentials> GetClientCredentialsAsync(string appId, CancellationToken cancellationToken)
             => GetResource<ApplicationClientCredentials>($"{ApiPrefix}/internal/apps/{appId}/settings/clientcreds", cancellationToken);
 
-        // TODO rename as async
         public Task<User> GetUserAsync(string userId, CancellationToken cancellationToken)
             => GetResource<User>($"{ApiPrefix}/users/{userId}", cancellationToken);
+
+        public async Task<User> CreateUserAsync(
+            dynamic profile,
+            string password,
+            CancellationToken cancellationToken)
+        {
+            var url = $"{ApiPrefix}/users?activate=true";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+
+                var payload = new
+                {
+                    profile,
+                    credentials = new
+                    {
+                        password = new { value = password }
+                    }
+                };
+
+                request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+                
+                return await SendAsync<User>(request, cancellationToken);
+            }
+        }
+
+        public async Task AddUserToAppAsync(string appId, string userId, string email, CancellationToken cancellationToken)
+        {
+            var url = $"{ApiPrefix}/apps/{appId}/users";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+
+                var payload = new
+                {
+                    id = userId,
+                    scope = "USER",
+                    credentials = new
+                    {
+                        userName = email
+                    }
+                };
+
+                request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+
+                await SendAsync<IDictionary<string, object>>(request, cancellationToken);
+                return;
+            }
+        }
 
         public async Task<GrantResult> PostPasswordGrantAsync(
             string authorizationServerId,
@@ -198,7 +248,6 @@ namespace Stormpath.Owin.Middleware.Okta
                 return await SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
             }
         }
-
 
         public async Task<TokenIntrospectionResult> IntrospectTokenAsync(
             string authorizationServerId,
