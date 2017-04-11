@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Hosting;
 using Owin;
+using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.Owin.Views.Precompiled;
@@ -75,6 +76,20 @@ namespace Stormpath.Owin.NowinHarness
                 PostLoginHandler = async (ctx, ct) =>
                 {
                     var customData = await ctx.Account.GetCustomDataAsync(ct);
+                },
+                Configuration = new StormpathConfiguration
+                {
+                    Web = new WebConfiguration
+                    {
+                        ForgotPassword = new WebForgotPasswordRouteConfiguration
+                        {
+                            Enabled = true
+                        },
+                        ChangePassword = new WebChangePasswordRouteConfiguration
+                        {
+                            Enabled = true
+                        }
+                    }
                 }
             });
 

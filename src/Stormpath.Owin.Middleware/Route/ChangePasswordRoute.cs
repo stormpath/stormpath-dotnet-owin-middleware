@@ -66,11 +66,21 @@ namespace Stormpath.Owin.Middleware.Route
                 return await HttpResponse.Redirect(context, _configuration.Web.ForgotPassword.Uri);
             }
 
-            var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
-            var changePasswordViewModel = viewModelBuilder.Build();
+            try
+            {
+                var recoveryTransaction = await _oktaClient.VerifyRecoveryTokenAsync(spToken, cancellationToken);
 
-            await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
-            return true;
+                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
+                var changePasswordViewModel = viewModelBuilder.Build();
+
+                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(1006, ex, "Error during sptoken validation");
+                return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
+            }
         }
 
         protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)

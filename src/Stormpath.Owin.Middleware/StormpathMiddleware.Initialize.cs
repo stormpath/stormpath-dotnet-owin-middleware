@@ -46,7 +46,7 @@ namespace Stormpath.Owin.Middleware
 
             options.Logger.LogInformation("Stormpath middleware starting up", nameof(StormpathMiddleware));
 
-            var baseConfiguration = ConfigurationLoader.Initialize().Load();
+            var baseConfiguration = ConfigurationLoader.Initialize().Load(options.Configuration);
             ThrowIfOktaConfigurationMissing(baseConfiguration);
             var oktaClient = new OktaClient(baseConfiguration.Okta.Org, baseConfiguration.Okta.ApiToken, options.Logger);
 
@@ -81,6 +81,7 @@ namespace Stormpath.Owin.Middleware
 
         private static void ThrowIfOktaConfigurationMissing(StormpathConfiguration config)
         {
+            // TODO update after changing configuration model
             if (string.IsNullOrEmpty(config?.Okta?.ApiToken))
             {
                 throw new ArgumentNullException("stormpath.okta.apiToken");
@@ -116,6 +117,8 @@ namespace Stormpath.Owin.Middleware
                 {
                     throw new ArgumentNullException("The Okta application must be configured with a Client ID and Secret");
                 }
+
+                logger.LogInformation($"Using Okta application '{appDetails.Label}'");
 
                 return new IntegrationConfiguration(
                     existingConfig,

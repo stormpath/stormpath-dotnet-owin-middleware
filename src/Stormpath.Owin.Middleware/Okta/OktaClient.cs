@@ -309,65 +309,57 @@ namespace Stormpath.Owin.Middleware.Okta
         {
             var url = $"{ApiPrefix}/authn/recovery/password";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            var body = new
             {
-                var body = new
-                {
-                    username = login,
-                    factorType = "EMAIL"
-                };
-                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+                username = login,
+                factorType = "EMAIL"
+            };
+            request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-                return SendAsync(request, cancellationToken);
-            }
+            return SendAsync(request, cancellationToken);
         }
 
         public Task<RecoveryTransactionObject> VerifyRecoveryTokenAsync(string token, CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/authn/recovery/token";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+
+            var body = new
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+                recoveryToken = token
+            };
+            request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-                var body = new
-                {
-                    recoveryToken = token
-                };
-                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
-
-                return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
-            }
+            return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
         }
 
         public Task<RecoveryTransactionObject> AnswerRecoveryQuestionAsync(string stateToken, string answer, CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/authn/recovery/answer";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
 
-                var body = new { stateToken, answer };
-                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+            var body = new { stateToken, answer };
+            request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-                return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
-            }
+            return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
         }
 
         public Task<RecoveryTransactionObject> ResetPasswordAsync(string stateToken, string newPassword, CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/authn/credentials/reset_password";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
 
-                var body = new { stateToken, newPassword };
-                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+            var body = new { stateToken, newPassword };
+            request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-                return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
-            }
+            return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
         }
     }
 }
