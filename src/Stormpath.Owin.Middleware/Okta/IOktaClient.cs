@@ -45,6 +45,20 @@ namespace Stormpath.Owin.Middleware.Okta
             string tokenType,
             CancellationToken cancelationToken);
 
-        Task AddUserToAppAsync(string appId, string userId, string email, CancellationToken cancellationToken);
+        Task AddUserToAppAsync(
+            string appId,
+            string userId,
+            string email,
+            CancellationToken cancellationToken);
+
+        Task SendPasswordResetEmailAsync(
+            string login,
+            CancellationToken cancellationToken);
+
+        Task<RecoveryTransactionObject> VerifyRecoveryTokenAsync(string token, CancellationToken cancellationToken);
+
+        Task<RecoveryTransactionObject> AnswerRecoveryQuestionAsync(string stateToken, string answer, CancellationToken cancellationToken);
+
+        Task<RecoveryTransactionObject> ResetPasswordAsync(string stateToken, string newPassword, CancellationToken cancellationToken);
     }
 }

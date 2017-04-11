@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.Threading;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
@@ -86,12 +86,41 @@ namespace Stormpath.Owin.Middleware.Okta
             }
         }
 
-        private static Exception DefaultExceptionFormatter(string _) => new Exception("HTTP request failure");
+        private const string DefaultErrorMessage = "HTTP request failure";
+
+        private Exception DefaultExceptionFormatter(int statusCode, string body)
+        {
+            _logger.LogWarning($"{statusCode} {body}");
+            return new InvalidOperationException(DefaultErrorMessage);
+        }
+
+        private Exception SummaryFormatter(int statusCode, string body)
+        {
+            _logger.LogWarning($"{statusCode} {body}");
+
+            try
+            {
+                var deserialized = JsonConvert.DeserializeObject<ApiError>(body);
+                if (string.IsNullOrEmpty(deserialized?.ErrorSummary)) return DefaultExceptionFormatter(statusCode, body);
+                return new InvalidOperationException(deserialized.ErrorSummary);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(1005, ex, "Error while formatting error response");
+                return DefaultExceptionFormatter(statusCode, body);
+            }
+        }
+
+        private Task SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken,
+            Func<int, string, Exception> exceptionFormatter = null)
+            => SendAsync<IDictionary<string, object>>(request, cancellationToken, exceptionFormatter);
 
         private async Task<T> SendAsync<T>(
             HttpRequestMessage request,
             CancellationToken cancellationToken,
-            Func<string, Exception> exceptionFormatter = null)
+            Func<int, string, Exception> exceptionFormatter = null)
         {
             exceptionFormatter = exceptionFormatter ?? DefaultExceptionFormatter;
 
@@ -105,7 +134,7 @@ namespace Stormpath.Owin.Middleware.Okta
 
                 return response.IsSuccessStatusCode
                     ? JsonConvert.DeserializeObject<T>(json)
-                    : throw exceptionFormatter(json);
+                    : throw exceptionFormatter((int)response.StatusCode, json);
             }
         }
 
@@ -164,7 +193,7 @@ namespace Stormpath.Owin.Middleware.Okta
 
                 request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
 
-                await SendAsync<IDictionary<string, object>>(request, cancellationToken);
+                await SendAsync(request, cancellationToken);
                 return;
             }
         }
@@ -195,7 +224,7 @@ namespace Stormpath.Owin.Middleware.Okta
 
                 _logger.LogTrace($"Executing password grant flow for subject {username}");
 
-                var exceptionFormatter = new Func<string, Exception>(json =>
+                var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
                 {
                     // TODO this always says "Invalid grant" for bad username/password
                     var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
@@ -234,7 +263,7 @@ namespace Stormpath.Owin.Middleware.Okta
 
                 _logger.LogTrace($"Executing refresh grant flow with token {refreshToken}");
 
-                var exceptionFormatter = new Func<string, Exception>(json =>
+                var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
                 {
                     var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                     if (!data.TryGetValue("error_description", out string message))
@@ -273,6 +302,71 @@ namespace Stormpath.Owin.Middleware.Okta
 
                 // todo why can't I remove this await?
                 return await SendAsync<TokenIntrospectionResult>(request, cancellationToken);
+            }
+        }
+
+        public Task SendPasswordResetEmailAsync(string login, CancellationToken cancellationToken)
+        {
+            var url = $"{ApiPrefix}/authn/recovery/password";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                var body = new
+                {
+                    username = login,
+                    factorType = "EMAIL"
+                };
+                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                return SendAsync(request, cancellationToken);
+            }
+        }
+
+        public Task<RecoveryTransactionObject> VerifyRecoveryTokenAsync(string token, CancellationToken cancellationToken)
+        {
+            var url = $"{ApiPrefix}/authn/recovery/token";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+
+                var body = new
+                {
+                    recoveryToken = token
+                };
+                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
+            }
+        }
+
+        public Task<RecoveryTransactionObject> AnswerRecoveryQuestionAsync(string stateToken, string answer, CancellationToken cancellationToken)
+        {
+            var url = $"{ApiPrefix}/authn/recovery/answer";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+
+                var body = new { stateToken, answer };
+                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
+            }
+        }
+
+        public Task<RecoveryTransactionObject> ResetPasswordAsync(string stateToken, string newPassword, CancellationToken cancellationToken)
+        {
+            var url = $"{ApiPrefix}/authn/credentials/reset_password";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+
+                var body = new { stateToken, newPassword };
+                request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+
+                return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
             }
         }
     }

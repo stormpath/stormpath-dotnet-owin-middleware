@@ -75,6 +75,8 @@ namespace Stormpath.Owin.Middleware
             // Assign user to application
             await _oktaClient.AddUserToAppAsync(_configuration.Okta.Application.Id, createdUser.Id, newProfile.email, cancellationToken);
 
+            // TODO - add recovery question for self-service password reset
+
             var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(createdUser);
             return stormpathCompatibleUser;
         }
