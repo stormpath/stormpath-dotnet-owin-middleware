@@ -28,7 +28,7 @@ namespace Stormpath.Owin.Middleware.Route
             ContentNegotiationResult acceptContentNegotiationResult,
             CancellationToken cancellationToken)
         {
-            var executor = new LogoutExecutor(_configuration, _handlers, _logger);
+            var executor = new LogoutExecutor(_oktaClient, _configuration, _handlers, _logger);
             await executor.HandleLogoutAsync(context, cancellationToken);
 
             if (acceptContentNegotiationResult.ContentType == ContentType.Html)

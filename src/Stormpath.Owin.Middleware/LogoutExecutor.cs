@@ -5,21 +5,25 @@ using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
-
+using Stormpath.Owin.Middleware.Okta;
+using Stormpath.Owin.Abstractions.Configuration;
 
 namespace Stormpath.Owin.Middleware
 {
     internal sealed class LogoutExecutor
     {
-        private readonly StormpathConfiguration _configuration;
+        private readonly IOktaClient _oktaClient;
+        private readonly IntegrationConfiguration _configuration;
         private readonly HandlerConfiguration _handlers;
         private readonly ILogger _logger;
 
         public LogoutExecutor(
-            StormpathConfiguration configuration,
+            IOktaClient oktaClient,
+            IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
             ILogger logger)
         {
+            _oktaClient = oktaClient;
             _configuration = configuration;
             _handlers = handlers;
             _logger = logger;
@@ -58,13 +62,13 @@ namespace Stormpath.Owin.Middleware
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
 
-            var revoker = new TokenRevoker(_logger)
-                .AddToken(accessToken)
-                .AddToken(refreshToken);
+            var revoker = new TokenRevoker(_oktaClient, _configuration, _logger)
+                .AddToken(accessToken, TokenType.Access)
+                .AddToken(refreshToken, TokenType.Refresh);
 
             try
             {
-                await revoker.Revoke(cancellationToken);
+                await revoker.RevokeAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -80,12 +84,12 @@ namespace Stormpath.Owin.Middleware
                 return;
             }
 
-            var revoker = new TokenRevoker(_logger)
-                .AddToken(bearerHeaderParser.Token);
+            var revoker = new TokenRevoker(_oktaClient, _configuration, _logger)
+                .AddToken(bearerHeaderParser.Token, TokenType.Access);
 
             try
             {
-                await revoker.Revoke(cancellationToken);
+                await revoker.RevokeAsync(cancellationToken);
             }
             catch (Exception ex)
             {

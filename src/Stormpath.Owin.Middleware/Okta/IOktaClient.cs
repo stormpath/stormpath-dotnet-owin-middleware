@@ -47,6 +47,14 @@ namespace Stormpath.Owin.Middleware.Okta
             string tokenType,
             CancellationToken cancelationToken);
 
+        Task RevokeTokenAsync(
+            string authorizationServerId,
+            string clientId,
+            string clientSecret,
+            string token,
+            string tokenType,
+            CancellationToken cancellationToken);
+
         Task AddUserToAppAsync(
             string appId,
             string userId,

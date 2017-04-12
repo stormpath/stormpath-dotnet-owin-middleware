@@ -34,7 +34,7 @@ namespace Stormpath.Owin.Middleware
             _clientSecret = clientSecret;
         }
 
-        public async Task<TokenIntrospectionResult> ValidateAsync(string token, CancellationToken cancellationToken)
+        public async Task<JwtSecurityToken> ValidateSecurityTokenAsync(string token, CancellationToken cancellationToken)
         {
             // TODO need ITs for this
 
@@ -54,7 +54,12 @@ namespace Stormpath.Owin.Middleware
 
             new JwtSecurityTokenHandler().ValidateToken(token, param, out SecurityToken securityToken);
 
-            var decodedToken = securityToken as JwtSecurityToken;
+            return securityToken as JwtSecurityToken;
+        }
+
+        public async Task<TokenIntrospectionResult> ValidateAsync(string token, CancellationToken cancellationToken)
+        {
+            var decodedToken = await ValidateSecurityTokenAsync(token, cancellationToken);
             if (decodedToken == null) return TokenIntrospectionResult.Invalid;
 
             bool hasClientIdClaim = decodedToken.Payload.TryGetValue("cid", out var rawCid);

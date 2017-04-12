@@ -111,6 +111,12 @@ namespace Stormpath.Owin.Middleware.Okta
             }
         }
 
+        private static void AddClientCredentials(HttpRequestMessage request, string clientId, string clientSecret)
+        {
+            var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
+            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+        }
+
         private Task SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken,
@@ -128,7 +134,7 @@ namespace Stormpath.Owin.Middleware.Okta
 
             using (var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
             {
-                _logger.LogTrace($"{response.StatusCode} {request.RequestUri.PathAndQuery}");
+                _logger.LogTrace($"{(int)response.StatusCode} {request.RequestUri.PathAndQuery}");
 
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
@@ -306,6 +312,29 @@ namespace Stormpath.Owin.Middleware.Okta
                 // todo why can't I remove this await?
                 return await SendAsync<TokenIntrospectionResult>(request, cancellationToken);
             }
+        }
+
+        public Task RevokeTokenAsync(
+            string authorizationServerId,
+            string clientId,
+            string clientSecret,
+            string token,
+            string tokenType,
+            CancellationToken cancellationToken)
+        {
+            var url = $"oauth2/{authorizationServerId}/v1/revoke";
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddClientCredentials(request, clientId, clientSecret);
+
+            var parameters = new Dictionary<string, string>()
+            {
+                ["token"] = token,
+                ["token_type_hint"] = tokenType
+            };
+            request.Content = new FormUrlEncodedContent(parameters);
+
+            return SendAsync(request, cancellationToken);
         }
 
         public Task SendPasswordResetEmailAsync(string login, CancellationToken cancellationToken)
