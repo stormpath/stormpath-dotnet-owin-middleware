@@ -74,18 +74,6 @@ namespace Stormpath.Owin.Middleware.Okta
             return client;
         }
 
-        private async Task<T> GetResource<T>(string path, CancellationToken cancellationToken)
-        {
-            // orgUrl already is guaranteed to have a trailing slash
-            var sanitizedResourcePath = path.TrimStart('/');
-
-            using (var request = new HttpRequestMessage(HttpMethod.Get, sanitizedResourcePath))
-            {
-                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
-                return await SendAsync<T>(request, cancellationToken);
-            }
-        }
-
         private const string DefaultErrorMessage = "HTTP request failure";
 
         private Exception DefaultExceptionFormatter(int statusCode, string body)
@@ -111,10 +99,25 @@ namespace Stormpath.Owin.Middleware.Okta
             }
         }
 
-        private static void AddClientCredentials(HttpRequestMessage request, string clientId, string clientSecret)
+        private static void AddClientCredentialsAuth(HttpRequestMessage request, string clientId, string clientSecret)
         {
             var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+        }
+
+        private void AddSswsAuth(HttpRequestMessage request)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+        }
+
+        private Task<T> GetResource<T>(string path, CancellationToken cancellationToken)
+        {
+            // orgUrl already is guaranteed to have a trailing slash
+            var sanitizedResourcePath = path.TrimStart('/');
+
+            var request = new HttpRequestMessage(HttpMethod.Get, sanitizedResourcePath);
+            AddSswsAuth(request);
+            return SendAsync<T>(request, cancellationToken);
         }
 
         private Task SendAsync(
@@ -153,7 +156,7 @@ namespace Stormpath.Owin.Middleware.Okta
         public Task<User> GetUserAsync(string userId, CancellationToken cancellationToken)
             => GetResource<User>($"{ApiPrefix}/users/{userId}", cancellationToken);
 
-        public async Task<User> CreateUserAsync(
+        public Task<User> CreateUserAsync(
             dynamic profile,
             string password,
             string recoveryQuestion,
@@ -162,52 +165,47 @@ namespace Stormpath.Owin.Middleware.Okta
         {
             var url = $"{ApiPrefix}/users?activate=true";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddSswsAuth(request);
+
+            var payload = new
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
-
-                var payload = new
+                profile,
+                credentials = new
                 {
-                    profile,
-                    credentials = new
-                    {
-                        password = new { value = password },
-                        recovery_question = new { question = recoveryQuestion, answer = recoveryAnswer }
-                    }
-                };
+                    password = new { value = password },
+                    recovery_question = new { question = recoveryQuestion, answer = recoveryAnswer }
+                }
+            };
 
-                request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
-                
-                return await SendAsync<User>(request, cancellationToken);
-            }
+            request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+
+            return SendAsync<User>(request, cancellationToken);
         }
 
-        public async Task AddUserToAppAsync(string appId, string userId, string email, CancellationToken cancellationToken)
+        public Task AddUserToAppAsync(string appId, string userId, string email, CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/apps/{appId}/users";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddSswsAuth(request);
+
+            var payload = new
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
-
-                var payload = new
+                id = userId,
+                scope = "USER",
+                credentials = new
                 {
-                    id = userId,
-                    scope = "USER",
-                    credentials = new
-                    {
-                        userName = email
-                    }
-                };
+                    userName = email
+                }
+            };
 
-                request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
 
-                await SendAsync(request, cancellationToken);
-                return;
-            }
+            return SendAsync(request, cancellationToken);
         }
 
-        public async Task<GrantResult> PostPasswordGrantAsync(
+        public Task<GrantResult> PostPasswordGrantAsync(
             string authorizationServerId,
             string clientId,
             string clientSecret,
@@ -217,39 +215,36 @@ namespace Stormpath.Owin.Middleware.Okta
         {
             var url = $"oauth2/{authorizationServerId}/v1/token";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddClientCredentialsAuth(request, clientId, clientSecret);
+
+            var parameters = new Dictionary<string, string>()
             {
-                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+                ["grant_type"] = "password",
+                ["scope"] = DefaultPasswordGrantScopes,
+                ["username"] = username,
+                ["password"] = password
+            };
+            request.Content = new FormUrlEncodedContent(parameters);
 
-                var parameters = new Dictionary<string, string>()
-                {
-                    ["grant_type"] = "password",
-                    ["scope"] = DefaultPasswordGrantScopes,
-                    ["username"] = username,
-                    ["password"] = password
-                };
-                request.Content = new FormUrlEncodedContent(parameters);
+            _logger.LogTrace($"Executing password grant flow for subject {username}");
 
-                _logger.LogTrace($"Executing password grant flow for subject {username}");
-
-                var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
-                {
+            var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
+            {
                     // TODO this always says "Invalid grant" for bad username/password
                     var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-                    if (!data.TryGetValue("error_description", out string message))
-                    {
-                        message = "Invalid request";
-                    }
+                if (!data.TryGetValue("error_description", out string message))
+                {
+                    message = "Invalid request";
+                }
 
-                    return new Exception(message);
-                });
+                return new Exception(message);
+            });
 
-                return await SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
-            }
+            return SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
         }
 
-        public async Task<GrantResult> PostRefreshGrantAsync(
+        public Task<GrantResult> PostRefreshGrantAsync(
             string authorizationServerId,
             string clientId,
             string clientSecret,
@@ -258,33 +253,30 @@ namespace Stormpath.Owin.Middleware.Okta
         {
             var url = $"oauth2/{authorizationServerId}/v1/token";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddClientCredentialsAuth(request, clientId, clientSecret);
+
+            var parameters = new Dictionary<string, string>()
             {
-                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+                ["grant_type"] = "refresh_token",
+                ["refresh_token"] = refreshToken
+            };
+            request.Content = new FormUrlEncodedContent(parameters);
 
-                var parameters = new Dictionary<string, string>()
+            _logger.LogTrace($"Executing refresh grant flow with token {refreshToken}");
+
+            var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
+            {
+                var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+                if (!data.TryGetValue("error_description", out string message))
                 {
-                    ["grant_type"] = "refresh_token",
-                    ["refresh_token"] = refreshToken
-                };
-                request.Content = new FormUrlEncodedContent(parameters);
+                    message = "Invalid request";
+                }
 
-                _logger.LogTrace($"Executing refresh grant flow with token {refreshToken}");
+                return new Exception(message);
+            });
 
-                var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
-                {
-                    var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-                    if (!data.TryGetValue("error_description", out string message))
-                    {
-                        message = "Invalid request";
-                    }
-
-                    return new Exception(message);
-                });
-
-                return await SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
-            }
+            return SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
         }
 
         public async Task<TokenIntrospectionResult> IntrospectTokenAsync(
@@ -292,26 +284,23 @@ namespace Stormpath.Owin.Middleware.Okta
             string clientId,
             string clientSecret,
             string token,
-            string tokenType, 
+            string tokenType,
             CancellationToken cancellationToken)
         {
             var url = $"oauth2/{authorizationServerId}/v1/introspect";
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddClientCredentialsAuth(request, clientId, clientSecret);
+
+            var parameters = new Dictionary<string, string>()
             {
-                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}"));
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+                ["token"] = token,
+                ["token_type_hint"] = tokenType
+            };
+            request.Content = new FormUrlEncodedContent(parameters);
 
-                var parameters = new Dictionary<string, string>()
-                {
-                    ["token"] = token,
-                    ["token_type_hint"] = tokenType
-                };
-                request.Content = new FormUrlEncodedContent(parameters);
-
-                // todo why can't I remove this await?
-                return await SendAsync<TokenIntrospectionResult>(request, cancellationToken);
-            }
+            // todo why can't I remove this await?
+            return await SendAsync<TokenIntrospectionResult>(request, cancellationToken);
         }
 
         public Task RevokeTokenAsync(
@@ -325,7 +314,7 @@ namespace Stormpath.Owin.Middleware.Okta
             var url = $"oauth2/{authorizationServerId}/v1/revoke";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
-            AddClientCredentials(request, clientId, clientSecret);
+            AddClientCredentialsAuth(request, clientId, clientSecret);
 
             var parameters = new Dictionary<string, string>()
             {
@@ -357,7 +346,7 @@ namespace Stormpath.Owin.Middleware.Okta
             var url = $"{ApiPrefix}/authn/recovery/token";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+            AddSswsAuth(request);
 
             var body = new
             {
@@ -373,7 +362,7 @@ namespace Stormpath.Owin.Middleware.Okta
             var url = $"{ApiPrefix}/authn/recovery/answer";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+            AddSswsAuth(request);
 
             var body = new { stateToken, answer };
             request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
@@ -386,7 +375,7 @@ namespace Stormpath.Owin.Middleware.Okta
             var url = $"{ApiPrefix}/authn/credentials/reset_password";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
+            AddSswsAuth(request);
 
             var body = new { stateToken, newPassword };
             request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
