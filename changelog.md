@@ -2,6 +2,8 @@
 
 Migration information TODO.
 
+Please read the following breaking changes carefully. Some applications will work as-is, and some will require refactoring. If you have questions or need help, please reach out to us at support@stormpath.com!
+
 ## Breaking changes
 
 * The Stormpath SDK has been removed. If you weren't accessing the SDK directly, this shouldn't impact you. If you were, you will need to refactor the relevant code to use the Okta .NET SDK or REST API.
@@ -16,3 +18,4 @@ Migration information TODO.
 * The custom profile field `stormpathMigrationRecoveryAnswer` (string) must be defined in your Okta Universal Directory. This package uses it internally for self-service password reset.
 * The `StateTokenBuilder` and `StateTokenParser` classes were moved from `Stormpath.Owin.Abstractions` to `Stormpath.Owin.Middleware`.
 * The `*FormViewModelBuilder` classes was moved from `Stormpath.Owin.Abstractions` to `Stormpath.Owin.Middleware`.
+* Okta uses an API Token to authenticate calls to the Okta API, similar to Stormpath's API Key ID/Secret.  However, unlike Stormpath API credentials, Okta API Tokens will expire in 30 days if they are not used. This means you will get an API error if your application has not been started in 30 days. If this happens, you can generate a new API Token in the Okta Admin dashboard.
