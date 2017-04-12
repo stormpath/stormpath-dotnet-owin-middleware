@@ -29,6 +29,8 @@ namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class ChangePasswordRoute : AbstractRoute
     {
+        public const string SelfServiceResetKey = "stormpathMigrationRecoveryAnswer";
+
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
             => configuration.Web.ChangePassword.Enabled == true;
 
@@ -36,23 +38,25 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var recoveryTransaction = await _oktaClient.VerifyRecoveryTokenAsync(spToken, cancellationToken);
 
-            // We're using the workaround of storing a generated code in the "stormpath_migration_recovery_answer" profile field
-            bool hasSelfServiceCode = recoveryTransaction?.Embedded?.User?.Profile?.ContainsKey("stormpath_migration_recovery_answer") ?? false;
+            var fullUser = await _oktaClient.GetUserAsync(recoveryTransaction.Embedded.User.Id, cancellationToken);
+
+            // We're using the workaround of storing a generated code in the "stormpathMigrationRecoveryAnswer" profile field
+            bool hasSelfServiceCode = fullUser.Profile?.ContainsKey(SelfServiceResetKey) ?? false;
             if (!hasSelfServiceCode)
             {
-                _logger.LogWarning($"User ID '{recoveryTransaction?.Embedded?.User?.Id}' does not contain profile.stormpath_migration_recovery_answer");
+                _logger.LogWarning($"User ID '{recoveryTransaction?.Embedded?.User?.Id}' does not contain profile.{SelfServiceResetKey}");
                 throw new InvalidOperationException("An unexpected error occurred");
             }
 
-            var preChangePasswordContext = new PreChangePasswordContext(context, recoveryTransaction.Embedded.User);
+            var preChangePasswordContext = new PreChangePasswordContext(context, fullUser);
             await _handlers.PreChangePasswordHandler(preChangePasswordContext, cancellationToken);
 
             // Exchange the self-service code for a blessed state token
-            var selfServiceCode = recoveryTransaction.Embedded.User.Profile["stormpath_migration_recovery_answer"]?.ToString();
+            var selfServiceCode = fullUser.Profile[SelfServiceResetKey]?.ToString();
             await _oktaClient.AnswerRecoveryQuestionAsync(recoveryTransaction.StateToken, selfServiceCode, cancellationToken);
-            recoveryTransaction = await _oktaClient.ResetPasswordAsync(recoveryTransaction.StateToken, model.Password, cancellationToken);
+            await _oktaClient.ResetPasswordAsync(recoveryTransaction.StateToken, model.Password, cancellationToken);
 
-            var postChangePasswordContext = new PostChangePasswordContext(context, recoveryTransaction.Embedded.User);
+            var postChangePasswordContext = new PostChangePasswordContext(context, fullUser);
             await _handlers.PostChangePasswordHandler(postChangePasswordContext, cancellationToken);
         }
 

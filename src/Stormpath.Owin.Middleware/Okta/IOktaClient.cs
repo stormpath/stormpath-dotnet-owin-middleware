@@ -35,6 +35,8 @@ namespace Stormpath.Owin.Middleware.Okta
         Task<User> CreateUserAsync(
             dynamic profile,
             string password,
+            string recoveryQuestion,
+            string recoveryAnswer,
             CancellationToken cancellationToken);
 
         Task<TokenIntrospectionResult> IntrospectTokenAsync(

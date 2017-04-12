@@ -4,12 +4,12 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed class PreChangePasswordContext : HandlerContext
     {
-        public PreChangePasswordContext(IOwinEnvironment environment, dynamic account)
+        public PreChangePasswordContext(IOwinEnvironment environment, Okta.User user)
             : base(environment)
         {
-            Account = account;
+            User = user;
         }
 
-        public dynamic Account { get; }
+        public Okta.User User { get; }
     }
 }

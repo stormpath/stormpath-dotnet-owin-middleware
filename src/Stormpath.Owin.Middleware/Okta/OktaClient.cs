@@ -150,6 +150,8 @@ namespace Stormpath.Owin.Middleware.Okta
         public async Task<User> CreateUserAsync(
             dynamic profile,
             string password,
+            string recoveryQuestion,
+            string recoveryAnswer,
             CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/users?activate=true";
@@ -163,7 +165,8 @@ namespace Stormpath.Owin.Middleware.Okta
                     profile,
                     credentials = new
                     {
-                        password = new { value = password }
+                        password = new { value = password },
+                        recovery_question = new { question = recoveryQuestion, answer = recoveryAnswer }
                     }
                 };
 
