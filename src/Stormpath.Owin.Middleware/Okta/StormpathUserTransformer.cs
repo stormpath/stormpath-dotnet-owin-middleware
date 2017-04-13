@@ -25,18 +25,6 @@ namespace Stormpath.Owin.Middleware.Okta
             ["SUSPENDED"] = AccountDisabled
         };
 
-        private static IReadOnlyDictionary<string, string> EmailVerificationStatusMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["ACTIVE"] = "VERIFIED",
-            ["DEPROVISIONED"] = "UNKNOWN",
-            ["LOCKED_OUT"] = "VERIFIED",
-            ["PASSWORD_EXPIRED"] = "VERIFIED",
-            ["PROVISIONED"] = "UNVERIFIED",
-            ["RECOVERY"] = "VERIFIED",
-            ["STAGED"] = "UNVERIFIED",
-            ["SUSPENDED"] = "VERIFIED"
-        };
-
         private static IReadOnlyDictionary<string, string> OktaProfileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["login"] = "Username",
@@ -44,7 +32,8 @@ namespace Stormpath.Owin.Middleware.Okta
             ["firstName"] = "GivenName",
             ["middleName"] = "MiddleName",
             ["lastName"] = "Surname",
-            ["emailVerificationStatus"] = "EmailVerificationStatus"
+            ["emailVerificationStatus"] = "EmailVerificationStatus",
+            ["emailVerificationToken"] = "EmailVerificationToken"
         };
 
         private readonly ILogger _logger;
@@ -77,6 +66,7 @@ namespace Stormpath.Owin.Middleware.Okta
             stormpathAccount.Surname = null;
             stormpathAccount.Username = null;
             stormpathAccount.Email = null;
+            stormpathAccount.EmailVerificationStatus = null;
             stormpathAccount.EmailVerificationToken = null;
 
             try

@@ -77,10 +77,18 @@ namespace Stormpath.Owin.NowinHarness
                 {
                     var customData = await ctx.Account.GetCustomDataAsync(ct);
                 },
+                SendVerificationEmailHandler = (ctx, ct) =>
+                {
+                    return Task.FromResult(true);
+                },
                 Configuration = new StormpathConfiguration
                 {
                     Web = new WebConfiguration
                     {
+                        Register = new WebRegisterRouteConfiguration
+                        {
+                            EmailVerificationRequired = false,
+                        },
                         ForgotPassword = new WebForgotPasswordRouteConfiguration
                         {
                             Enabled = true
@@ -88,6 +96,10 @@ namespace Stormpath.Owin.NowinHarness
                         ChangePassword = new WebChangePasswordRouteConfiguration
                         {
                             Enabled = true
+                        },
+                        VerifyEmail = new WebVerifyEmailRouteConfiguration()
+                        {
+                            Enabled = false
                         }
                     }
                 }

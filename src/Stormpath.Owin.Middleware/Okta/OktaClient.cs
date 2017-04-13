@@ -156,14 +156,50 @@ namespace Stormpath.Owin.Middleware.Okta
         public Task<User> GetUserAsync(string userId, CancellationToken cancellationToken)
             => GetResource<User>($"{ApiPrefix}/users/{userId}", cancellationToken);
 
+        public Task<List<User>> FindUsersByEmailAsync(string email, CancellationToken cancellationToken)
+        {
+            var filter = $"profile.email eq \"{email}\"";
+            return GetResource<List<User>>($"{ApiPrefix}/users?filter={filter}", cancellationToken);
+        }
+
+        public Task<List<User>> SearchUsersAsync(string searchExpression, CancellationToken cancellationToken)
+            => GetResource<List<User>>($"{ApiPrefix}/users?search={searchExpression}", cancellationToken);
+
+        public Task<User> UpdateUserAsync(string userId, object updatedProfileProperties, CancellationToken cancellationToken)
+        {
+            var url = $"{ApiPrefix}/users/{userId}";
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddSswsAuth(request);
+
+            var payload = new
+            {
+                profile = updatedProfileProperties
+            };
+            request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+
+            return SendAsync<User>(request, cancellationToken);
+        }
+
+        public Task ActivateUserAsync(string userId, CancellationToken cancellationToken)
+        {
+            var url = $"{ApiPrefix}/users/{userId}/lifecycle/activate?sendEmail=false";
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddSswsAuth(request);
+
+            return SendAsync<User>(request, cancellationToken);
+        }
+
         public Task<User> CreateUserAsync(
             dynamic profile,
             string password,
+            bool activate,
             string recoveryQuestion,
             string recoveryAnswer,
             CancellationToken cancellationToken)
         {
-            var url = $"{ApiPrefix}/users?activate=true";
+            var url = $"{ApiPrefix}/users?activate={activate.ToString().ToLower()}";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             AddSswsAuth(request);

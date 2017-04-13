@@ -9,9 +9,13 @@ namespace Stormpath.Owin.Middleware.Internal
         {
             using (var rng = RandomNumberGenerator.Create())
             {
-                var tokenData = new byte[20];
+                var tokenData = new byte[26];
                 rng.GetBytes(tokenData);
-                return Convert.ToBase64String(tokenData).Replace("=", string.Empty);
+
+                return Convert.ToBase64String(tokenData)
+                    .Replace("=", string.Empty)
+                    .Replace('+', '-')
+                    .Replace('/', '_');
             }
         }
     }

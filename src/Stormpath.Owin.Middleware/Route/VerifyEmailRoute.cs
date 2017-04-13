@@ -20,7 +20,11 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-
+using Stormpath.Owin.Middleware.ViewModelBuilder;
+using Stormpath.Owin.Middleware.Model.Error;
+using Stormpath.Owin.Middleware.Model;
+using System.Linq;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -28,159 +32,185 @@ namespace Stormpath.Owin.Middleware.Route
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
             => configuration.Web.VerifyEmail.Enabled == true;
-            //|| (configuration.Web.VerifyEmail.Enabled == null && configuration.Tenant.EmailVerificationWorkflowEnabled);
-            // TODO - any reason this needs to be dynamic now?
 
-        private Task<bool> ResendVerification(
+        private async Task<bool> ResendVerification(
             string email,
             IOwinEnvironment environment,
             Func<string, CancellationToken, Task<bool>> errorHandler,
             Func<CancellationToken, Task<bool>> successHandler,
             CancellationToken cancellationToken)
         {
-            // todo how will email verification work?
-            throw new Exception("TODO");
+            var preVerifyEmailContext = new PreVerifyEmailContext(environment)
+            {
+                Email = email
+            };
+            await _handlers.PreVerifyEmailHandler(preVerifyEmailContext, cancellationToken);
 
-            //var preVerifyEmailContext = new PreVerifyEmailContext(environment)
-            //{
-            //    Email = email
-            //};
-            //await _handlers.PreVerifyEmailHandler(preVerifyEmailContext, cancellationToken);
+            try
+            {
+                var foundUsers = await _oktaClient.FindUsersByEmailAsync(email, cancellationToken);
+                if (!foundUsers.Any())
+                {
+                    return await successHandler(cancellationToken);
+                }
 
-            //try
-            //{
-            //    await application.SendVerificationEmailAsync(email, cancellationToken);
-            //}
-            //catch (ResourceException rex) when (rex.Code == 2016)
-            //{
-            //    // Code 2016 means that an account does not exist for the given email
-            //    // address.  We don't want to leak information about the account
-            //    // list, so allow this continue without error.
-            //    _logger.LogInformation($"A user tried to resend their account verification email, but failed: {rex.DeveloperMessage}");
-            //    return await successHandler(cancellationToken);
-            //}
-            //catch (ResourceException rex) when (errorHandler != null)
-            //{
-            //    return await errorHandler(rex.Message, cancellationToken);
-            //}
+                var oktaUser = foundUsers.Single();
 
-            //return await successHandler(cancellationToken);
+                // Generate a new code
+                var updatedProperties = new
+                {
+                    emailVerificationToken = CodeGenerator.GetCode()
+                };
+
+                oktaUser = await _oktaClient.UpdateUserAsync(oktaUser.Id, updatedProperties, cancellationToken);
+
+                var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(oktaUser);
+
+                var sendVerificationEmailContext = new SendVerificationEmailContext(environment, stormpathCompatibleUser);
+                await _handlers.SendVerificationEmailHandler(sendVerificationEmailContext, cancellationToken);
+            }
+            catch (Exception ex) when (errorHandler != null)
+            {
+                return await errorHandler(ex.Message, cancellationToken);
+            }
+
+            return await successHandler(cancellationToken);
         }
 
-        protected override Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
+        private async Task<dynamic> VerifyAccountEmailAsync(string spToken, CancellationToken cancellationToken)
         {
-            // todo how will email verification work?
-            throw new Exception("TODO");
+            var expression = $"profile.emailVerificationToken eq \"{spToken}\"";
+            var foundUsers = await _oktaClient.SearchUsersAsync(expression, cancellationToken);
 
-            //var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            //var spToken = queryString.GetString("sptoken");
+            if (foundUsers.Count > 1)
+            {
+                throw new InvalidOperationException("An unknown error occured");
+            }
 
-            //if (string.IsNullOrEmpty(spToken))
-            //{
-            //    var viewModelBuilder = new VerifyEmailFormViewModelBuilder(_configuration);
-            //    var verifyViewModel = viewModelBuilder.Build();
+            var user = foundUsers.FirstOrDefault();
 
-            //    await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
-            //    return true;
-            //}
+            object rawToken = null;
+            bool tokenExists = user?.Profile.TryGetValue("emailVerificationToken", out rawToken) ?? false;
+            bool tokenMatches = rawToken?.ToString().Equals(spToken, StringComparison.Ordinal) ?? false;
 
-            //try
-            //{
-            //    var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+            if (!tokenExists || !tokenMatches)
+            {
+                throw new InvalidOperationException("Token is invalid");
+            }
 
-            //    var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
-            //    await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
+            var updatedProperties = new
+            {
+                emailVerificationToken = (string)null,
+                emailVerificationStatus = "VERIFIED"
+            };
 
-            //    return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}");
-            //}
-            //catch (ResourceException)
-            //{
-            //    var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
-            //    var verifyViewModel = viewModelBuilder.Build();
-            //    verifyViewModel.InvalidSpToken = true;
+            await _oktaClient.ActivateUserAsync(user.Id, cancellationToken);
+            user = await _oktaClient.UpdateUserAsync(user.Id, updatedProperties, cancellationToken);
 
-            //    await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
-            //    return true;
-            //}
+            var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(user);
+            return stormpathCompatibleUser;
         }
 
-        protected override Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            // todo how will email verification work?
-            throw new Exception("TODO");
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            var spToken = queryString.GetString("sptoken");
 
-            //var htmlErrorHandler = new Func<string, CancellationToken, Task<bool>>(async (error, ct) =>
-            //{
-            //    var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
-            //    var verifyEmailViewModel = viewModelBuilder.Build();
-            //    verifyEmailViewModel.Errors.Add(error);
+            if (string.IsNullOrEmpty(spToken))
+            {
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(_configuration);
+                var verifyViewModel = viewModelBuilder.Build();
 
-            //    await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyEmailViewModel, cancellationToken);
-            //    return true;
-            //});
+                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
+                return true;
+            }
 
-            //var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
-            //var model = PostBodyParser.ToModel<VerifyEmailPostModel>(body, bodyContentType, _logger);
+            try
+            {
+                var account = await VerifyAccountEmailAsync(spToken, cancellationToken);
 
-            //var formData = FormContentParser.Parse(body, _logger);
-            //var stateToken = formData.GetString(StringConstants.StateTokenName);
-            //var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
-            //if (!parsedStateToken.Valid)
-            //{
-            //    await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
-            //    return true;
-            //}
+                var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
+                await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
 
-            //var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(
-            //    ct => HttpResponse.Redirect(context, $"{_configuration.Web.Login.Uri}?status=unverified"));
+                return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}");
+            }
+            catch (Exception)
+            {
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(_configuration);
+                var verifyViewModel = viewModelBuilder.Build();
+                verifyViewModel.InvalidSpToken = true;
 
-            //return await ResendVerification(
-            //    model.Email,
-            //    client,
-            //    context,
-            //    htmlErrorHandler,
-            //    htmlSuccessHandler,
-            //    cancellationToken);
+                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
+                return true;
+            }
         }
 
-        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            // todo how will email verification work?
-            throw new Exception("TODO");
+            var htmlErrorHandler = new Func<string, CancellationToken, Task<bool>>(async (error, ct) =>
+            {
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(_configuration);
+                var verifyEmailViewModel = viewModelBuilder.Build();
+                verifyEmailViewModel.Errors.Add(error);
 
-            //var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            //var spToken = queryString.GetString("sptoken");
+                await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyEmailViewModel, cancellationToken);
+                return true;
+            });
 
-            //if (string.IsNullOrEmpty(spToken))
-            //{
-            //    return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
-            //}
+            var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
+            var model = PostBodyParser.ToModel<VerifyEmailPostModel>(body, bodyContentType, _logger);
 
-            //var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
-            //// Errors are caught in AbstractRouteMiddleware
+            var formData = FormContentParser.Parse(body, _logger);
+            var stateToken = formData.GetString(StringConstants.StateTokenName);
+            var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
+            if (!parsedStateToken.Valid)
+            {
+                await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
+                return true;
+            }
 
-            //var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
-            //await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
+            var htmlSuccessHandler = new Func<CancellationToken, Task<bool>>(
+                ct => HttpResponse.Redirect(context, $"{_configuration.Web.Login.Uri}?status=unverified"));
 
-            //return await JsonResponse.Ok(context);
+            return await ResendVerification(
+                model.Email,
+                context,
+                htmlErrorHandler,
+                htmlSuccessHandler,
+                cancellationToken);
         }
 
-        protected override Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            // todo how will email verification work?
-            throw new Exception("TODO");
+            var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
+            var spToken = queryString.GetString("sptoken");
 
-            //var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
+            if (string.IsNullOrEmpty(spToken))
+            {
+                return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
+            }
 
-            //var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct => JsonResponse.Ok(context));
+            var account = await VerifyAccountEmailAsync(spToken, cancellationToken);
+            // Errors are caught in AbstractRouteMiddleware
 
-            //return await ResendVerification(
-            //    email: model.Email,
-            //    client: client,
-            //    environment: context,
-            //    errorHandler: null, // Errors are caught in AbstractRouteMiddleware
-            //    successHandler: jsonSuccessHandler,
-            //    cancellationToken: cancellationToken);
+            var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
+            await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
+
+            return await JsonResponse.Ok(context);
+        }
+
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
+        {
+            var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
+
+            var jsonSuccessHandler = new Func<CancellationToken, Task<bool>>(ct => JsonResponse.Ok(context));
+
+            return await ResendVerification(
+                email: model.Email,
+                environment: context,
+                errorHandler: null, // Errors are caught in AbstractRouteMiddleware
+                successHandler: jsonSuccessHandler,
+                cancellationToken: cancellationToken);
         }
     }
 }

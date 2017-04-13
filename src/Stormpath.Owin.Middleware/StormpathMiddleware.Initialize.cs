@@ -48,6 +48,7 @@ namespace Stormpath.Owin.Middleware
 
             var baseConfiguration = ConfigurationLoader.Initialize().Load(options.Configuration);
             ThrowIfOktaConfigurationMissing(baseConfiguration);
+            ThrowIfConfigurationInconsistent(baseConfiguration);
             var oktaClient = new OktaClient(baseConfiguration.Org, baseConfiguration.ApiToken, options.Logger);
 
             var integrationConfiguration = GetAdditionalConfigFromServer(baseConfiguration, oktaClient, options.Logger);
@@ -67,7 +68,8 @@ namespace Stormpath.Owin.Middleware
                 options.PreRegistrationHandler ?? DefaultHandlers.PreRegistrationHandler,
                 options.PostRegistrationHandler ?? DefaultHandlers.PostRegistrationHandler,
                 options.PreVerifyEmailHandler ?? DefaultHandlers.PreVerifyEmailHandler,
-                options.PostVerifyEmailHandler ?? DefaultHandlers.PostVerifyEmailHandler);
+                options.PostVerifyEmailHandler ?? DefaultHandlers.PostVerifyEmailHandler,
+                options.SendVerificationEmailHandler ?? DefaultHandlers.SendVerificationEmailHandler);
 
             return new StormpathMiddleware(
                 oktaClient,
@@ -84,17 +86,25 @@ namespace Stormpath.Owin.Middleware
             // TODO update after changing configuration model
             if (string.IsNullOrEmpty(config?.ApiToken))
             {
-                throw new ArgumentNullException("stormpath.okta.apiToken");
+                throw new ArgumentNullException("okta.apiToken");
             }
 
             if (string.IsNullOrEmpty(config?.Org))
             {
-                throw new ArgumentNullException("stormpath.okta.org");
+                throw new ArgumentNullException("okta.okta.org");
             }
 
             if (string.IsNullOrEmpty(config?.Application?.Id))
             {
-                throw new ArgumentNullException("stormpath.okta.application.id");
+                throw new ArgumentNullException("okta.application.id");
+            }
+        }
+
+        private static void ThrowIfConfigurationInconsistent(StormpathConfiguration config)
+        {
+            if (config.Web.Register.AutoLogin && config.Web.Register.EmailVerificationRequired)
+            {
+                throw new InvalidOperationException("AutoLogin and EmailVerificationRequired cannot both be true for the Register route.");
             }
         }
 

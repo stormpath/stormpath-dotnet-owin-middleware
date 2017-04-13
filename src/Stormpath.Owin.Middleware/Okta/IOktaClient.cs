@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Middleware.Okta
@@ -32,11 +33,29 @@ namespace Stormpath.Owin.Middleware.Okta
             string userId,
             CancellationToken cancellationToken);
 
+        Task<List<User>> FindUsersByEmailAsync(
+            string email,
+            CancellationToken cancellationToken);
+
+        Task<List<User>> SearchUsersAsync(
+            string searchExpression,
+            CancellationToken cancellationToken);
+
         Task<User> CreateUserAsync(
             dynamic profile,
             string password,
+            bool activate,
             string recoveryQuestion,
             string recoveryAnswer,
+            CancellationToken cancellationToken);
+
+        Task<User> UpdateUserAsync(
+            string userId,
+            object updatedProfileProperties,
+            CancellationToken cancellationToken);
+
+        Task ActivateUserAsync(
+            string userId,
             CancellationToken cancellationToken);
 
         Task<TokenIntrospectionResult> IntrospectTokenAsync(
