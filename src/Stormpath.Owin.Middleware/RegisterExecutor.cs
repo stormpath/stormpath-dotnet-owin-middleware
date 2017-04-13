@@ -77,7 +77,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             // Assign user to application
-            await _oktaClient.AddUserToAppAsync(_configuration.Okta.Application.Id, createdUser.Id, newProfile.email, cancellationToken);
+            await _oktaClient.AddUserToAppAsync(_configuration.Application.Id, createdUser.Id, newProfile.email, cancellationToken);
 
             var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(createdUser);
             return stormpathCompatibleUser;
@@ -156,7 +156,7 @@ namespace Stormpath.Owin.Middleware
             await loginExecutor.HandlePostLoginAsync(environment, loginResult, cancellationToken);
 
             var parsedStateToken = new StateTokenParser(
-                _configuration.Okta.Application.Id,
+                _configuration.Application.Id,
                 _configuration.OktaEnvironment.ClientSecret,
                 stateToken,
                 _logger);

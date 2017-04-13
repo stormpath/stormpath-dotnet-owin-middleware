@@ -76,7 +76,7 @@ namespace Stormpath.Owin.Middleware.Route
             });
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(_configuration.Okta.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
+            var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
                 await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);

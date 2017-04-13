@@ -23,7 +23,7 @@ namespace Stormpath.Owin.Abstractions.Configuration
     public sealed class IntegrationConfiguration : StormpathConfiguration
     {
         public IntegrationConfiguration(StormpathConfiguration existing, OktaEnvironmentConfiguration oktaEnvironmentConfiguration, IEnumerable<KeyValuePair<string, ProviderConfiguration>> providers)
-            : base(existing)
+            : base(existing?.ApiToken, existing?.Org, existing?.Application, existing?.Web)
         {
             this.OktaEnvironment = oktaEnvironmentConfiguration;
             this.Providers = providers.ToArray();

@@ -41,7 +41,7 @@ namespace Stormpath.Owin.Middleware
                 var localValidator = new LocalAccessTokenValidator(
                     _oktaClient,
                     _keyProvider,
-                    _configuration.Okta.Org,
+                    _configuration.Org,
                     _configuration.OktaEnvironment.AuthorizationServerId,
                     _configuration.OktaEnvironment.ClientId,
                     _configuration.OktaEnvironment.ClientSecret);

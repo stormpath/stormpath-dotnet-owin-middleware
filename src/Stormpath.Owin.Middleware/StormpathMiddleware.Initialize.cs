@@ -48,11 +48,11 @@ namespace Stormpath.Owin.Middleware
 
             var baseConfiguration = ConfigurationLoader.Initialize().Load(options.Configuration);
             ThrowIfOktaConfigurationMissing(baseConfiguration);
-            var oktaClient = new OktaClient(baseConfiguration.Okta.Org, baseConfiguration.Okta.ApiToken, options.Logger);
+            var oktaClient = new OktaClient(baseConfiguration.Org, baseConfiguration.ApiToken, options.Logger);
 
             var integrationConfiguration = GetAdditionalConfigFromServer(baseConfiguration, oktaClient, options.Logger);
 
-            var oidcConfigurationEndpoint = $"{integrationConfiguration.Okta.Org}/oauth2/{integrationConfiguration.OktaEnvironment.AuthorizationServerId}/.well-known/openid-configuration?client_id={integrationConfiguration.OktaEnvironment.ClientId}";
+            var oidcConfigurationEndpoint = $"{integrationConfiguration.Org}/oauth2/{integrationConfiguration.OktaEnvironment.AuthorizationServerId}/.well-known/openid-configuration?client_id={integrationConfiguration.OktaEnvironment.ClientId}";
             var jwksKeyProvider = new CachingJwksKeyProvider(oidcConfigurationEndpoint, options.Logger);
 
             options.Logger.LogTrace("Stormpath middleware ready!", nameof(StormpathMiddleware));
@@ -82,17 +82,17 @@ namespace Stormpath.Owin.Middleware
         private static void ThrowIfOktaConfigurationMissing(StormpathConfiguration config)
         {
             // TODO update after changing configuration model
-            if (string.IsNullOrEmpty(config?.Okta?.ApiToken))
+            if (string.IsNullOrEmpty(config?.ApiToken))
             {
                 throw new ArgumentNullException("stormpath.okta.apiToken");
             }
 
-            if (string.IsNullOrEmpty(config?.Okta?.Org))
+            if (string.IsNullOrEmpty(config?.Org))
             {
                 throw new ArgumentNullException("stormpath.okta.org");
             }
 
-            if (string.IsNullOrEmpty(config?.Okta?.Application?.Id))
+            if (string.IsNullOrEmpty(config?.Application?.Id))
             {
                 throw new ArgumentNullException("stormpath.okta.application.id");
             }
@@ -105,8 +105,8 @@ namespace Stormpath.Owin.Middleware
         {
             try
             {
-                var appDetails = client.GetApplicationAsync(existingConfig.Okta.Application.Id, CancellationToken.None).Result;
-                var credentials = client.GetClientCredentialsAsync(existingConfig.Okta.Application.Id, CancellationToken.None).Result;
+                var appDetails = client.GetApplicationAsync(existingConfig.Application.Id, CancellationToken.None).Result;
+                var credentials = client.GetClientCredentialsAsync(existingConfig.Application.Id, CancellationToken.None).Result;
 
                 if (string.IsNullOrEmpty(appDetails?.Settings?.Notifications?.Vpn?.Message))
                 {

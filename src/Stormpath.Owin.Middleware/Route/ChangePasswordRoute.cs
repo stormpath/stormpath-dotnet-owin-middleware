@@ -96,7 +96,7 @@ namespace Stormpath.Owin.Middleware.Route
             var formData = FormContentParser.Parse(body, _logger);
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(_configuration.Okta.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
+            var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
                 var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);

@@ -8,12 +8,11 @@ namespace Stormpath.Owin.UnitTest
     {
         public static IntegrationConfiguration CreateFakeConfiguration(StormpathConfiguration config)
         {
-            config.Okta = config.Okta ?? new OktaConfiguration();
-            config.Okta.ApiToken = config.Okta.ApiToken ?? "fooApiToken";
-            config.Okta.Org = config.Okta.Org ?? "https://dev-12345.oktapreview.foo";
+            config.ApiToken = config.ApiToken ?? "fooApiToken";
+            config.Org = config.Org ?? "https://dev-12345.oktapreview.foo";
 
-            config.Okta.Application = config.Okta.Application ?? new OktaApplicationConfiguration();
-            config.Okta.Application.Id = config.Okta.Application.Id ?? "abcd1234xyz";
+            config.Application = config.Application ?? new OktaApplicationConfiguration();
+            config.Application.Id = config.Application.Id ?? "abcd1234xyz";
 
             var compiledConfig = Configuration.ConfigurationLoader.Initialize().Load(config);
 
