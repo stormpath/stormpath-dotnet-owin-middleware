@@ -31,7 +31,7 @@ namespace Stormpath.Owin.Middleware
 
         public async Task HandleLogoutAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            dynamic account = context.Request[OwinKeys.StormpathUser];
+            var account = context.Request[OwinKeys.StormpathUser] as ICompatibleOktaAccount;
             context.Request[OwinKeys.StormpathUser] = null;
 
             string[] rawCookies;

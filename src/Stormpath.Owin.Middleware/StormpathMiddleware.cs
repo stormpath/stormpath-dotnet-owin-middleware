@@ -147,7 +147,7 @@ namespace Stormpath.Owin.Middleware
         private static void AddStormpathVariablesToEnvironment(
             IDictionary<string, object> environment,
             StormpathConfiguration configuration,
-            dynamic currentUser)
+            ICompatibleOktaAccount currentUser)
         {
             environment[OwinKeys.StormpathConfiguration] = configuration;
 

@@ -14,7 +14,7 @@ namespace Stormpath.Owin.Middleware.Okta
         public DateTimeOffset? LastLogin { get; set; }
         public DateTimeOffset? LastUpdated { get; set; }
         public DateTimeOffset? PasswordChanged { get; set; }
-        public IDictionary<string, object> Profile { get; set; }
+        public IDictionary<string, object> Profile { get; set; } = new Dictionary<string, object>();
 
         [JsonProperty("_links")]
         public UserLinks Links { get; set; }

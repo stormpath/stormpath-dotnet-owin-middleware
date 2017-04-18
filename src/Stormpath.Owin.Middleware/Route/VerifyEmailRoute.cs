@@ -62,9 +62,9 @@ namespace Stormpath.Owin.Middleware.Route
                     emailVerificationToken = CodeGenerator.GetCode()
                 };
 
-                oktaUser = await _oktaClient.UpdateUserAsync(oktaUser.Id, updatedProperties, cancellationToken);
+                oktaUser = await _oktaClient.UpdateUserProfileAsync(oktaUser.Id, updatedProperties, cancellationToken);
 
-                var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(oktaUser);
+                var stormpathCompatibleUser = new CompatibleOktaAccount(oktaUser);
 
                 var sendVerificationEmailContext = new SendVerificationEmailContext(environment, stormpathCompatibleUser);
                 await _handlers.SendVerificationEmailHandler(sendVerificationEmailContext, cancellationToken);
@@ -77,7 +77,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await successHandler(cancellationToken);
         }
 
-        private async Task<dynamic> VerifyAccountEmailAsync(string spToken, CancellationToken cancellationToken)
+        private async Task<ICompatibleOktaAccount> VerifyAccountEmailAsync(string spToken, CancellationToken cancellationToken)
         {
             var expression = $"profile.emailVerificationToken eq \"{spToken}\"";
             var foundUsers = await _oktaClient.SearchUsersAsync(expression, cancellationToken);
@@ -105,10 +105,9 @@ namespace Stormpath.Owin.Middleware.Route
             };
 
             await _oktaClient.ActivateUserAsync(user.Id, cancellationToken);
-            user = await _oktaClient.UpdateUserAsync(user.Id, updatedProperties, cancellationToken);
+            user = await _oktaClient.UpdateUserProfileAsync(user.Id, updatedProperties, cancellationToken);
 
-            var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(user);
-            return stormpathCompatibleUser;
+            return new CompatibleOktaAccount(user);
         }
 
         protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)

@@ -63,7 +63,7 @@ namespace Stormpath.Owin.Middleware.Route
 
         private Task<bool> HandleCallbackAsync(
             IOwinEnvironment context,
-            dynamic jwt,
+            string jwt, // or JwtSecurityToken?
             string nextPath,
             CancellationToken cancellationToken)
         {

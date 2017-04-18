@@ -21,6 +21,7 @@ using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -37,7 +38,7 @@ namespace Stormpath.Owin.Middleware
         {
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
             var configuration = environment.Get<StormpathConfiguration>(OwinKeys.StormpathConfiguration);
-            var authenticatedUser = environment.Get<dynamic>(OwinKeys.StormpathUser);
+            var authenticatedUser = environment.Get<ICompatibleOktaAccount>(OwinKeys.StormpathUser);
             var authenticationScheme = environment.Get<string>(OwinKeys.StormpathUserScheme);
 
             var deleteCookieAction = new Action<WebCookieConfiguration>(cookie => Cookies.DeleteTokenCookie(context, cookie, logger));

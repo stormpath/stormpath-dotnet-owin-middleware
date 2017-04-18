@@ -29,7 +29,7 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed partial class StormpathMiddleware
     {
-        private async Task<dynamic> GetUserAsync(IOwinEnvironment context, CancellationToken cancellationToken)
+        private async Task<ICompatibleOktaAccount> GetUserAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             // TODO: Reuse the same client across requests
             var oktaClient = new OktaClient(Configuration.Org, Configuration.ApiToken, userAgentBuilder, logger);
@@ -52,21 +52,21 @@ namespace Stormpath.Owin.Middleware
             return null;
         }
 
-        private Task<dynamic> TryBearerAuthenticationAsync(IOwinEnvironment context, IOktaClient oktaClient)
+        private Task<ICompatibleOktaAccount> TryBearerAuthenticationAsync(IOwinEnvironment context, IOktaClient oktaClient)
         {
             var bearerHeaderParser = new BearerAuthenticationParser(
                 context.Request.Headers.GetString("Authorization"),
                 logger);
             if (!bearerHeaderParser.IsValid)
             {
-                return Task.FromResult<dynamic>(null);
+                return Task.FromResult<ICompatibleOktaAccount>(null);
             }
 
             logger.LogInformation("Using Bearer header to authenticate request", nameof(TryBearerAuthenticationAsync));
             return ValidateAccessTokenAsync(context, oktaClient, bearerHeaderParser.Token);
         }
 
-        private async Task<dynamic> TryCookieAuthenticationAsync(IOwinEnvironment context, IOktaClient oktaClient)
+        private async Task<ICompatibleOktaAccount> TryCookieAuthenticationAsync(IOwinEnvironment context, IOktaClient oktaClient)
         {
             string[] rawCookies = null;
 
@@ -137,7 +137,7 @@ namespace Stormpath.Owin.Middleware
             return null;
         }
 
-        private async Task<dynamic> ValidateAccessTokenAsync(IOwinEnvironment context, IOktaClient oktaClient, string accessTokenJwt)
+        private async Task<ICompatibleOktaAccount> ValidateAccessTokenAsync(IOwinEnvironment context, IOktaClient oktaClient, string accessTokenJwt)
         {
             var accessTokenValidator = new AccessTokenValidator(oktaClient, keyProvider, Configuration);
 
@@ -148,7 +148,7 @@ namespace Stormpath.Owin.Middleware
                 return null;
             }
 
-            dynamic account = null;
+            ICompatibleOktaAccount account = null;
             try
             {
                 account = await UserHelper.GetUserFromAccessTokenAsync(oktaClient, accessTokenJwt, logger, context.CancellationToken);
@@ -161,7 +161,7 @@ namespace Stormpath.Owin.Middleware
             return account;
         }
 
-        private async Task<dynamic> RefreshAccessTokenAsync(IOwinEnvironment context, IOktaClient oktaClient, string refreshTokenJwt)
+        private async Task<ICompatibleOktaAccount> RefreshAccessTokenAsync(IOwinEnvironment context, IOktaClient oktaClient, string refreshTokenJwt)
         {
             GrantResult grantResult = null;
             try
@@ -180,7 +180,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             // Get the account details
-            dynamic account = null;
+            ICompatibleOktaAccount account = null;
             try
             {
                 account = await UserHelper.GetUserFromAccessTokenAsync(oktaClient, grantResult.AccessToken, logger, context.CancellationToken);

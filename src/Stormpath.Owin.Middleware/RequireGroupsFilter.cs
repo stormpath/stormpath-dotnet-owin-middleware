@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -21,7 +22,7 @@ namespace Stormpath.Owin.Middleware
             }
         }
 
-        public bool IsAuthorized(dynamic account)
+        public bool IsAuthorized(ICompatibleOktaAccount account)
         {
             if (account == null)
             {
@@ -47,7 +48,7 @@ namespace Stormpath.Owin.Middleware
             //return matchedGroup;
         }
 
-        public Task<bool> IsAuthorizedAsync(dynamic account, CancellationToken cancellationToken)
+        public Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken)
         {
             // todo rewrite group authz logic
             throw new Exception("TODO");

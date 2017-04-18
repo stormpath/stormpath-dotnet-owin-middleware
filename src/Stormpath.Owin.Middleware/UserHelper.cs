@@ -9,7 +9,7 @@ namespace Stormpath.Owin.Middleware
 {
     internal static class UserHelper
     {
-        public static async Task<dynamic> GetUserFromAccessTokenAsync(
+        public static async Task<ICompatibleOktaAccount> GetUserFromAccessTokenAsync(
             IOktaClient oktaClient,
             string accessToken,
             ILogger logger,
@@ -22,8 +22,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             var oktaUser = await oktaClient.GetUserAsync(rawUid.ToString(), cancellationToken);
-            var stormpathCompatibleUser = new StormpathUserTransformer(logger).OktaToStormpathUser(oktaUser);
-            return stormpathCompatibleUser;
+            return new CompatibleOktaAccount(oktaUser);
         }
     }
 }

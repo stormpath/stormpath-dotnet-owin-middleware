@@ -176,7 +176,7 @@ namespace Stormpath.Owin.Middleware.Okta
         public Task<List<User>> SearchUsersAsync(string searchExpression, CancellationToken cancellationToken)
             => GetResource<List<User>>($"{ApiPrefix}/users?search={searchExpression}", cancellationToken);
 
-        public Task<User> UpdateUserAsync(string userId, object updatedProfileProperties, CancellationToken cancellationToken)
+        public Task<User> UpdateUserProfileAsync(string userId, object updatedProfileProperties, CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/users/{userId}";
 

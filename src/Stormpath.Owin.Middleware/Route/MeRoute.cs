@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -34,7 +35,7 @@ namespace Stormpath.Owin.Middleware.Route
         {
             Caching.AddDoNotCacheHeaders(context);
 
-            var stormpathAccount = context.Request[OwinKeys.StormpathUser] as dynamic;
+            var stormpathAccount = context.Request[OwinKeys.StormpathUser] as ICompatibleOktaAccount;
 
             var responseModel = new
             {
@@ -45,7 +46,7 @@ namespace Stormpath.Owin.Middleware.Route
         }
 
         private static Task<MeResponseModel> SanitizeExpandedAccount(
-            dynamic account,
+            ICompatibleOktaAccount account,
             CancellationToken cancellationToken)
         {
             // todo how does me work with an idToken?

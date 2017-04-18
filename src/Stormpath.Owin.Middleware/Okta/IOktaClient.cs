@@ -49,7 +49,7 @@ namespace Stormpath.Owin.Middleware.Okta
             string recoveryAnswer,
             CancellationToken cancellationToken);
 
-        Task<User> UpdateUserAsync(
+        Task<User> UpdateUserProfileAsync(
             string userId,
             object updatedProfileProperties,
             CancellationToken cancellationToken);

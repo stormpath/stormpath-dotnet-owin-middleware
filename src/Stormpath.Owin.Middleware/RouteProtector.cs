@@ -18,7 +18,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Middleware.Internal;
-
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -72,7 +72,7 @@ namespace Stormpath.Owin.Middleware
         /// <param name="requiredAuthenticationScheme">The authentication scheme that must be used for this route, or <see cref="AnyScheme"/>.</param>
         /// <param name="account">The Stormpath Account, if any.</param>
         /// <returns><see langword="true"/> if the request is authenticated; <see langword="false"/> otherwise.</returns>
-        public bool IsAuthenticated(string authenticationScheme, string requiredAuthenticationScheme, dynamic account)
+        public bool IsAuthenticated(string authenticationScheme, string requiredAuthenticationScheme, ICompatibleOktaAccount account)
         {
             if (account == null)
             {

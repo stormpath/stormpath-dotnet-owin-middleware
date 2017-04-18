@@ -24,6 +24,7 @@ using Owin;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
+using Stormpath.Owin.Middleware.Okta;
 using Stormpath.Owin.Views.Precompiled;
 
 namespace Stormpath.Owin.NowinHarness
@@ -126,7 +127,7 @@ namespace Stormpath.Owin.NowinHarness
                     }
                     else
                     {
-                        var user = env[OwinKeys.StormpathUser] as dynamic;
+                        var user = env[OwinKeys.StormpathUser] as ICompatibleOktaAccount;
 
                         await writer.WriteAsync($"<p>Logged in as {user?.FullName} ({user?.Email})</p>");
 

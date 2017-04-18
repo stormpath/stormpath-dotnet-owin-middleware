@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     internal sealed class AccountResponseSanitizer
     {
-        public object Sanitize(dynamic account)
+        public object Sanitize(ICompatibleOktaAccount account)
         {
             return new
             {

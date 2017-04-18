@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -23,20 +25,24 @@ namespace Stormpath.Owin.Middleware
             _comparer = comparer ?? new DefaultSmartComparer();
         }
 
-        public bool IsAuthorized(dynamic account)
+        public bool IsAuthorized(ICompatibleOktaAccount account)
         {
-            var customData = account?.GetCustomData();
+            // todo rewrite CustomData authz
+            throw new NotImplementedException();
+            //var customData = account?.GetCustomData();
 
-            return _comparer.Equals(customData?[_key], _value);
+            //return _comparer.Equals(customData?[_key], _value);
         }
 
-        public async Task<bool> IsAuthorizedAsync(dynamic account, CancellationToken cancellationToken)
+        public Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken)
         {
-            var customData = account == null
-                ? null
-                : await account.GetCustomDataAsync(cancellationToken).ConfigureAwait(false);
+            // todo rewrite Custom Data authz
+            throw new NotImplementedException();
+            //var customData = account == null
+            //    ? null
+            //    : await account.GetCustomDataAsync(cancellationToken).ConfigureAwait(false);
 
-            return _comparer.Equals(customData?[_key], _value);
+            //return _comparer.Equals(customData?[_key], _value);
         }
     }
 }

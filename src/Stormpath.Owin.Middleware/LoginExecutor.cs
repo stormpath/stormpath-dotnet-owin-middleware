@@ -102,19 +102,19 @@ namespace Stormpath.Owin.Middleware
         // TODO restore
         //public async Task<LoginResult> TokenExchangeGrantAsync(
         //    IOwinEnvironment environment,
-        //    dynamic account,
+        //    ICompatibleOktaAccount account,
         //    CancellationToken cancellationToken)
         //{
         //    var tokenExchanger = new StormpathTokenExchanger(_client, application, _configuration, _logger);
         //    return await tokenExchanger.ExchangeAsync(account, cancellationToken);
         //}
 
-        public async Task<dynamic> HandlePostLoginAsync(
+        public async Task<ICompatibleOktaAccount> HandlePostLoginAsync(
             IOwinEnvironment context,
             GrantResult grantResult,
             CancellationToken cancellationToken)
         {
-            dynamic stormpathCompatibleUser = await UserHelper.GetUserFromAccessTokenAsync(_oktaClient, grantResult.AccessToken, _logger, cancellationToken);
+            var stormpathCompatibleUser = await UserHelper.GetUserFromAccessTokenAsync(_oktaClient, grantResult.AccessToken, _logger, cancellationToken);
 
             var postLoginHandlerContext = new PostLoginContext(context, stormpathCompatibleUser);
             await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);

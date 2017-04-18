@@ -31,7 +31,7 @@ namespace Stormpath.Owin.Middleware
             _logger = logger;
         }
 
-        public async Task<dynamic> HandleRegistrationAsync(
+        public async Task<ICompatibleOktaAccount> HandleRegistrationAsync(
             IOwinEnvironment environment,
             IDictionary<string, string> formData,
             dynamic newProfile,
@@ -92,7 +92,7 @@ namespace Stormpath.Owin.Middleware
             // Assign user to application
             await _oktaClient.AddUserToAppAsync(_configuration.Application.Id, createdUser.Id, newProfile.email, cancellationToken);
 
-            var stormpathCompatibleUser = new StormpathUserTransformer(_logger).OktaToStormpathUser(createdUser);
+            var stormpathCompatibleUser = new CompatibleOktaAccount(createdUser);
 
             if (_configuration.Web.Register.EmailVerificationRequired)
             {
@@ -111,7 +111,7 @@ namespace Stormpath.Owin.Middleware
 
         public async Task HandlePostRegistrationAsync(
             IOwinEnvironment environment, 
-            dynamic createdAccount,
+            ICompatibleOktaAccount createdAccount,
             CancellationToken cancellationToken)
         {
             var postRegistrationContext = new PostRegistrationContext(environment, createdAccount);
@@ -120,24 +120,24 @@ namespace Stormpath.Owin.Middleware
 
         public Task<bool> HandleRedirectAsync(
             IOwinEnvironment environment,
-            dynamic createdAccount,
+            ICompatibleOktaAccount createdAccount,
             RegisterPostModel postModel,
             Func<string, CancellationToken, Task> errorHandler,
             string stateToken,
             CancellationToken cancellationToken)
         {
             if (_configuration.Web.Register.AutoLogin
-                && createdAccount.Status != StormpathUserTransformer.AccountUnverified)
+                && createdAccount.Status != CompatibleOktaAccount.AccountUnverified)
             {
                 return HandleAutologinAsync(environment, errorHandler, postModel, stateToken, cancellationToken);
             }
 
             string nextUri;
-            if (createdAccount.Status == StormpathUserTransformer.AccountEnabled)
+            if (createdAccount.Status == CompatibleOktaAccount.AccountEnabled)
             {
                 nextUri = $"{_configuration.Web.Login.Uri}?status=created";
             }
-            else if (createdAccount.Status == StormpathUserTransformer.AccountUnverified)
+            else if (createdAccount.Status == CompatibleOktaAccount.AccountUnverified)
             {
                 nextUri = $"{_configuration.Web.Login.Uri}?status=unverified";
             }
