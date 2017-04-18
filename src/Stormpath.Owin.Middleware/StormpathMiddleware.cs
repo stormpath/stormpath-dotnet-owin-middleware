@@ -32,7 +32,6 @@ namespace Stormpath.Owin.Middleware
 
     public sealed partial class StormpathMiddleware
     {
-        private readonly IOktaClient oktaClient;
         private readonly IKeyProvider keyProvider;
         private readonly IViewRenderer viewRenderer;
         private readonly ILogger logger;
@@ -41,7 +40,6 @@ namespace Stormpath.Owin.Middleware
         private AppFunc _next;
 
         private StormpathMiddleware(
-            IOktaClient oktaClient,
             IKeyProvider keyProvider,
             IViewRenderer viewRenderer,
             ILogger logger,
@@ -49,7 +47,6 @@ namespace Stormpath.Owin.Middleware
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers)
         {
-            this.oktaClient = oktaClient;
             this.keyProvider = keyProvider;
             this.viewRenderer = viewRenderer;
             this.logger = logger;

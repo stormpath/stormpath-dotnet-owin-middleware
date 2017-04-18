@@ -49,7 +49,7 @@ namespace Stormpath.Owin.Middleware
             var baseConfiguration = ConfigurationLoader.Initialize().Load(options.Configuration);
             ThrowIfOktaConfigurationMissing(baseConfiguration);
             ThrowIfConfigurationInconsistent(baseConfiguration);
-            var oktaClient = new OktaClient(baseConfiguration.Org, baseConfiguration.ApiToken, options.Logger);
+            var oktaClient = new OktaClient(baseConfiguration.Org, baseConfiguration.ApiToken, userAgentBuilder, options.Logger);
 
             var integrationConfiguration = GetAdditionalConfigFromServer(baseConfiguration, oktaClient, options.Logger);
 
@@ -72,7 +72,6 @@ namespace Stormpath.Owin.Middleware
                 options.SendVerificationEmailHandler ?? DefaultHandlers.SendVerificationEmailHandler);
 
             return new StormpathMiddleware(
-                oktaClient,
                 jwksKeyProvider,
                 options.ViewRenderer,
                 options.Logger,
@@ -150,6 +149,9 @@ namespace Stormpath.Owin.Middleware
         {
             var route = new T();
             options = options ?? new RouteOptionsBase();
+
+            // TODO: Reuse the same client across requests
+            var oktaClient = new OktaClient(Configuration.Org, Configuration.ApiToken, userAgentBuilder, logger);
             route.Initialize(Configuration, Handlers, viewRenderer, logger, options, oktaClient);
 
             return route;

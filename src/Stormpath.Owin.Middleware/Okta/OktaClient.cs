@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Stormpath.Owin.Middleware.Internal;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
     public sealed class OktaClient : IOktaClient
     {
+        private const string OktaClientUserAgent = "stormpath-oktagration";
         private const string ApiPrefix = "api/v1";
         private const string DefaultPasswordGrantScopes = "openid offline_access";
 
@@ -20,8 +23,9 @@ namespace Stormpath.Owin.Middleware.Okta
         private readonly ILogger _logger;
 
         private readonly HttpClient _httpClient;
+        private readonly string _userAgent;
 
-        public OktaClient(string orgUrl, string apiToken, ILogger logger)
+        public OktaClient(string orgUrl, string apiToken, IFrameworkUserAgentBuilder userAgentBuilder, ILogger logger)
         {
             if (string.IsNullOrEmpty(orgUrl))
             {
@@ -37,9 +41,14 @@ namespace Stormpath.Owin.Middleware.Okta
             _logger = logger;
             _orgUrl = EnsureCorrectOrgUrl(orgUrl);
 
-            _httpClient = CreateClient(_orgUrl);
+            _userAgent = CreateUserAgent(userAgentBuilder);
+
+            _httpClient = CreateClient(_orgUrl, _userAgent);
             _logger.LogTrace($"Client configured to connect to {_orgUrl}");
         }
+
+        private static string CreateUserAgent(IFrameworkUserAgentBuilder userAgentBuilder)
+            => $"{OktaClientUserAgent} {userAgentBuilder.GetUserAgent()}";
 
         private static string EnsureCorrectOrgUrl(string orgUrl)
         {
@@ -56,7 +65,7 @@ namespace Stormpath.Owin.Middleware.Okta
             return orgUrl;
         }
 
-        private static HttpClient CreateClient(string orgBaseUrl)
+        private static HttpClient CreateClient(string orgBaseUrl, string userAgent)
         {
             var handler = new HttpClientHandler
             {
@@ -70,6 +79,8 @@ namespace Stormpath.Owin.Middleware.Okta
 
             // Workaround for https://github.com/dotnet/corefx/issues/11224
             client.DefaultRequestHeaders.Add("Connection", "close");
+
+            client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
             return client;
         }
