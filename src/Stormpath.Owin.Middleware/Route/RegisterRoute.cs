@@ -41,7 +41,7 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        private async Task<dynamic> InstantiateLocalAccount(
+        private async Task<LocalAccount> InstantiateLocalAccount(
             IOwinEnvironment environment,
             RegisterPostModel postData,
             IEnumerable<string> fieldNames,
@@ -95,29 +95,29 @@ namespace Stormpath.Owin.Middleware.Route
                 return null;
             }
 
-            dynamic newAccount = new ExpandoObject();
-            newAccount.email = postData.Email;
-            newAccount.firstName = postData.GivenName;
-            newAccount.lastName = postData.Surname;
+            var newAccount = new LocalAccount()
+            {
+                Email = postData.Email,
+                FirstName = postData.GivenName,
+                LastName = postData.Surname
+            };
 
             if (!string.IsNullOrEmpty(postData.Username))
             {
-                newAccount.login = postData.Username;
+                newAccount.Login = postData.Username;
             } else
             {
-                newAccount.login = postData.Email;
+                newAccount.Login = postData.Email;
             }
 
             if (!string.IsNullOrEmpty(postData.MiddleName))
             {
-                newAccount.middleName = postData.MiddleName;
+                newAccount.MiddleName = postData.MiddleName;
             }
-
-            newAccount.CustomData = new Dictionary<string, object>();
 
             foreach (var item in customFields)
             {
-                newAccount.CustomData.Put(item.Key, item.Value);
+                newAccount.CustomData.Add(item.Key, item.Value);
             }
 
             return newAccount;

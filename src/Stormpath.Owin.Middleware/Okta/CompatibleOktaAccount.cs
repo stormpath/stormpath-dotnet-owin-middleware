@@ -26,15 +26,16 @@ namespace Stormpath.Owin.Middleware.Okta
             ["SUSPENDED"] = AccountDisabled
         };
 
-        private static IReadOnlyDictionary<string, string> OktaProfileMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        private static string[] DefaultOktaProfileKeys = new[]
         {
-            ["login"] = "Username",
-            ["email"] = "Email",
-            ["firstName"] = "GivenName",
-            ["middleName"] = "MiddleName",
-            ["lastName"] = "Surname",
-            ["emailVerificationStatus"] = "EmailVerificationStatus",
-            ["emailVerificationToken"] = "EmailVerificationToken"
+            "login",
+            "email",
+            "firstName",
+            "middleName",
+            "lastName",
+            "emailVerificationStatus",
+            "emailVerificationToken",
+            "stormpathMigrationRecoveryAnswer"
         };
 
         public CompatibleOktaAccount(User oktaUser)
@@ -96,8 +97,8 @@ namespace Stormpath.Owin.Middleware.Okta
 
         public string EmailVerificationToken => GetStringOrDefault("emailVerificationToken");
 
-        // TODO: filter
-        public IDictionary<string, object> CustomData => _oktaUser.Profile;
+        public IDictionary<string, object> CustomData
+            => new FilteredDictionary<string, object>(_oktaUser.Profile, DefaultOktaProfileKeys);
 
         public IDictionary<string, object> GetCustomData() => CustomData;
 

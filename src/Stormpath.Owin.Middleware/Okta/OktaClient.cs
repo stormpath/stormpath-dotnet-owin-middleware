@@ -176,7 +176,7 @@ namespace Stormpath.Owin.Middleware.Okta
         public Task<List<User>> SearchUsersAsync(string searchExpression, CancellationToken cancellationToken)
             => GetResource<List<User>>($"{ApiPrefix}/users?search={searchExpression}", cancellationToken);
 
-        public Task<User> UpdateUserProfileAsync(string userId, object updatedProfileProperties, CancellationToken cancellationToken)
+        public Task<User> UpdateUserProfileAsync(string userId, IDictionary<string, object> updatedProfileProperties, CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/users/{userId}";
 
@@ -203,7 +203,7 @@ namespace Stormpath.Owin.Middleware.Okta
         }
 
         public Task<User> CreateUserAsync(
-            dynamic profile,
+            IDictionary<string, object> profile,
             string password,
             bool activate,
             string recoveryQuestion,

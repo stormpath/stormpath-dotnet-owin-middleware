@@ -42,7 +42,7 @@ namespace Stormpath.Owin.Middleware.Okta
             CancellationToken cancellationToken);
 
         Task<User> CreateUserAsync(
-            dynamic profile,
+            IDictionary<string, object> profile,
             string password,
             bool activate,
             string recoveryQuestion,
@@ -51,7 +51,7 @@ namespace Stormpath.Owin.Middleware.Okta
 
         Task<User> UpdateUserProfileAsync(
             string userId,
-            object updatedProfileProperties,
+            IDictionary<string, object> updatedProfileProperties,
             CancellationToken cancellationToken);
 
         Task ActivateUserAsync(

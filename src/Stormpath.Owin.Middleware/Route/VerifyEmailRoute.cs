@@ -25,6 +25,7 @@ using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Model;
 using System.Linq;
 using Stormpath.Owin.Middleware.Okta;
+using System.Collections.Generic;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -57,9 +58,9 @@ namespace Stormpath.Owin.Middleware.Route
                 var oktaUser = foundUsers.Single();
 
                 // Generate a new code
-                var updatedProperties = new
+                var updatedProperties = new Dictionary<string, object>()
                 {
-                    emailVerificationToken = CodeGenerator.GetCode()
+                    ["emailVerificationToken"] = CodeGenerator.GetCode()
                 };
 
                 oktaUser = await _oktaClient.UpdateUserProfileAsync(oktaUser.Id, updatedProperties, cancellationToken);
@@ -98,10 +99,10 @@ namespace Stormpath.Owin.Middleware.Route
                 throw new InvalidOperationException("Token is invalid");
             }
 
-            var updatedProperties = new
+            var updatedProperties = new Dictionary<string, object>()
             {
-                emailVerificationToken = (string)null,
-                emailVerificationStatus = "VERIFIED"
+                ["emailVerificationToken"] = null,
+                ["emailVerificationStatus"] = "VERIFIED"
             };
 
             await _oktaClient.ActivateUserAsync(user.Id, cancellationToken);
