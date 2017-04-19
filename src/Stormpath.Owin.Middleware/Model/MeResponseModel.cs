@@ -20,9 +20,9 @@ namespace Stormpath.Owin.Middleware.Model
 
         public string FullName { get; set; }
 
-        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? CreatedAt { get; set; }
 
-        public DateTimeOffset ModifiedAt { get; set; }
+        public DateTimeOffset? ModifiedAt { get; set; }
 
         public DateTimeOffset? PasswordModifiedAt { get; set; }
 
@@ -37,21 +37,12 @@ namespace Stormpath.Owin.Middleware.Model
         public object ApiKeys { get; set; } = null;
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public IReadOnlyDictionary<string, object> CustomData { get; set; } = null;
-
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public object Directory { get; set; } = null;
-
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public object GroupMemberships { get; set; } = null;
+        public IDictionary<string, object> CustomData { get; set; } = null;
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public object Groups { get; set; } = null;
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public object ProviderData { get; set; } = null;
-
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public object Tenant { get; set; } = null;
     }
 }

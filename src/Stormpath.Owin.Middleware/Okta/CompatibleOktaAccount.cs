@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -61,7 +62,8 @@ namespace Stormpath.Owin.Middleware.Okta
 
         public DateTimeOffset? PasswordModifiedAt => _oktaUser.PasswordChanged;
 
-        public string FullName => string.Join(" ", GivenName, MiddleName, Surname);
+        public string FullName => string.Join(" ",
+            new[] { GivenName, MiddleName, Surname }.Where(s => !string.IsNullOrEmpty(s)));
 
         public string GivenName
         {

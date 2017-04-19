@@ -15,6 +15,8 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
@@ -39,18 +41,46 @@ namespace Stormpath.Owin.Middleware.Route
 
             var responseModel = new
             {
-                account = await SanitizeExpandedAccount(stormpathAccount, cancellationToken)
+                account = await ExpandAccount(stormpathAccount, _configuration.Web.Me.Expand, cancellationToken)
             };
 
             return await JsonResponse.Ok(context, responseModel);
         }
 
-        private static Task<MeResponseModel> SanitizeExpandedAccount(
+        private static Task<MeResponseModel> ExpandAccount(
             ICompatibleOktaAccount account,
+            IReadOnlyDictionary<string, bool> expansionOptions,
             CancellationToken cancellationToken)
         {
-            // todo how does me work with an idToken?
-            throw new Exception("TODO");
+            var sanitizedModel = new MeResponseModel
+            {
+                Href = account.Href,
+                Email = account.Email,
+                Username = account.Username,
+                GivenName = account.GivenName,
+                MiddleName = account.MiddleName,
+                Surname = account.Surname,
+                FullName = account.FullName,
+                CreatedAt = account.CreatedAt,
+                ModifiedAt = account.ModifiedAt,
+                Status = account.Status.ToString(),
+                PasswordModifiedAt = account.PasswordModifiedAt,
+                EmailVerificationToken = account.EmailVerificationToken
+            };
+
+            if (!expansionOptions.Any(e => e.Value))
+            {
+                return Task.FromResult(sanitizedModel);
+            }
+
+            if (expansionOptions.Any(e => e.Key.Equals("customData", StringComparison.OrdinalIgnoreCase) && e.Value))
+            {
+                sanitizedModel.CustomData = account.CustomData;
+            }
+
+            // TODO other expansion patches
+
+            return Task.FromResult(sanitizedModel);
         }
     }
 }
