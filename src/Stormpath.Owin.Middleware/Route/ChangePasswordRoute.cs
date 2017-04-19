@@ -23,6 +23,7 @@ using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
+using Stormpath.Owin.Middleware.Okta;
 using Stormpath.Owin.Middleware.ViewModelBuilder;
 
 namespace Stormpath.Owin.Middleware.Route
@@ -37,8 +38,14 @@ namespace Stormpath.Owin.Middleware.Route
         private async Task ChangePasswordAsync(IOwinEnvironment context, ChangePasswordPostModel model, string spToken, CancellationToken cancellationToken)
         {
             var recoveryTransaction = await _oktaClient.VerifyRecoveryTokenAsync(spToken, cancellationToken);
+            var userId = recoveryTransaction?.Embedded?.User?.Id;
+            if (string.IsNullOrEmpty(userId))
+            {
+                _logger.LogWarning($"Recovery transaction did not contain user ID");
+                throw new InvalidOperationException("An unexpected error occurred");
+            }
 
-            var fullUser = await _oktaClient.GetUserAsync(recoveryTransaction.Embedded.User.Id, cancellationToken);
+            var fullUser = await _oktaClient.GetUserAsync(userId, cancellationToken);
 
             // We're using the workaround of storing a generated code in the "stormpathMigrationRecoveryAnswer" profile field
             bool hasSelfServiceCode = fullUser.Profile?.ContainsKey(SelfServiceResetKey) ?? false;
@@ -48,7 +55,8 @@ namespace Stormpath.Owin.Middleware.Route
                 throw new InvalidOperationException("An unexpected error occurred");
             }
 
-            var preChangePasswordContext = new PreChangePasswordContext(context, fullUser);
+            var stormpathCompatibleAccount = new CompatibleOktaAccount(fullUser);
+            var preChangePasswordContext = new PreChangePasswordContext(context, stormpathCompatibleAccount);
             await _handlers.PreChangePasswordHandler(preChangePasswordContext, cancellationToken);
 
             // Exchange the self-service code for a blessed state token
@@ -56,7 +64,10 @@ namespace Stormpath.Owin.Middleware.Route
             await _oktaClient.AnswerRecoveryQuestionAsync(recoveryTransaction.StateToken, selfServiceCode, cancellationToken);
             await _oktaClient.ResetPasswordAsync(recoveryTransaction.StateToken, model.Password, cancellationToken);
 
-            var postChangePasswordContext = new PostChangePasswordContext(context, fullUser);
+            fullUser = await _oktaClient.GetUserAsync(userId, cancellationToken);
+            stormpathCompatibleAccount = new CompatibleOktaAccount(fullUser);
+
+            var postChangePasswordContext = new PostChangePasswordContext(context, stormpathCompatibleAccount);
             await _handlers.PostChangePasswordHandler(postChangePasswordContext, cancellationToken);
         }
 

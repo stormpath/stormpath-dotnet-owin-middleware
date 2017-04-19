@@ -1,15 +1,16 @@
 ﻿using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed class PostChangePasswordContext : HandlerContext
     {
-        public PostChangePasswordContext(IOwinEnvironment environment, Okta.User user)
+        public PostChangePasswordContext(IOwinEnvironment environment, ICompatibleOktaAccount account)
             : base(environment)
         {
-            User = user;
+            Account = account;
         }
 
-        public Okta.User User { get; }
+        public ICompatibleOktaAccount Account { get; }
     }
 }

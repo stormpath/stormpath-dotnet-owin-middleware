@@ -40,8 +40,6 @@ These features don't work yet, but are coming in a future RC.
 * The custom profile fields `emailVerificationStatus` (string) must be defined in your Okta Universal Directory.
 * If `web.register.emailVerificationRequired == true`, the custom profile field `emailVerificationToken` (string) must be defined in your Okta Universal Directory.
 
-*? The shape of the user data passed to the `PreChangePasswordHandler` and `PostChangePasswordHandler` has changed. It is now an Okta profile map, as seen in this example: [Verify a Recovery Token](http://developer.okta.com/docs/api/resources/authn.html#verify-recovery-token)
-
 #### Potentially-breaking changes
 
 * Okta uses an API Token to authenticate calls to the Okta API, similar to Stormpath's API Key ID/Secret.  However, unlike Stormpath API credentials, Okta API Tokens will expire in 30 days if they are not used. This means you will get an API error if your application has not been started in 30 days. If this happens, you can generate a new API Token in the Okta Admin dashboard.
