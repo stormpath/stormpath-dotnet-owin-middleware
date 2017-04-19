@@ -32,6 +32,8 @@ namespace Stormpath.Owin.Middleware
 
         public TokenRevoker AddToken(string token, string tokenType)
         {
+            if (string.IsNullOrEmpty(token)) return this;
+
             if (tokenType == TokenType.Refresh)
             {
                 _refreshTokensToDelete.Add(token);

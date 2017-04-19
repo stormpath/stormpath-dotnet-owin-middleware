@@ -17,6 +17,8 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
+using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Okta;
 
@@ -29,7 +31,7 @@ namespace Stormpath.Owin.Middleware
     {
         public const string AnyScheme = "*";
 
-        private readonly StormpathConfiguration _configuration;
+        private readonly IntegrationConfiguration _configuration;
         private readonly ILogger _logger;
 
         private readonly Action<WebCookieConfiguration> _deleteCookie;
@@ -47,7 +49,7 @@ namespace Stormpath.Owin.Middleware
         /// <param name="redirectAction">Delegate to set the response Location header.</param>
         /// <param name="logger">The <see cref="ILogger"/> to use.</param>
         public RouteProtector(
-            StormpathConfiguration stormpathConfiguration,
+            IntegrationConfiguration stormpathConfiguration,
             Action<WebCookieConfiguration> deleteCookieAction,
             Action<int> setStatusCodeAction,
             Action<string, string> setHeaderAction,
@@ -107,26 +109,20 @@ namespace Stormpath.Owin.Middleware
             bool isHtmlRequest = contentNegotiationResult.Success && contentNegotiationResult.ContentType == ContentType.Html;
             if (isHtmlRequest)
             {
-                // TODO - use Okta Client Secret
-                throw new Exception("TODO");
+                var redirectTokenBuilder = new StateTokenBuilder(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret)
+                {
+                    Path = requestPath
+                };
 
+                var loginUri = $"{_configuration.Web.Login.Uri}?{StringConstants.StateTokenName}={redirectTokenBuilder}";
 
-                //var redirectTokenBuilder = new StateTokenBuilder(oktaClientSecret)
-                //{
-                //    Path = requestPath
-                //};
-
-                //var loginUri = $"{_configuration.Web.Login.Uri}?{StringConstants.StateTokenName}={redirectTokenBuilder}";
-
-                //_setStatusCode(302);
-                //_redirect(loginUri);
+                _setStatusCode(302);
+                _redirect(loginUri);
             }
             else
             {
                 _setStatusCode(401);
-                // TODO - use Okta application ID
-                throw new Exception("TODO");
-                //_setHeader("WWW-Authenticate", $"Bearer realm=\"{_configuration.Application.Name}\"");
+                _setHeader("WWW-Authenticate", "Bearer");
             }
         }
     }

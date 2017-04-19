@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Okta;
 
@@ -37,7 +38,7 @@ namespace Stormpath.Owin.Middleware
         public Task<bool> InvokeAsync(IDictionary<string, object> environment)
         {
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
-            var configuration = environment.Get<StormpathConfiguration>(OwinKeys.StormpathConfiguration);
+            var configuration = environment.Get<IntegrationConfiguration>(OwinKeys.StormpathConfiguration);
             var authenticatedUser = environment.Get<ICompatibleOktaAccount>(OwinKeys.StormpathUser);
             var authenticationScheme = environment.Get<string>(OwinKeys.StormpathUserScheme);
 

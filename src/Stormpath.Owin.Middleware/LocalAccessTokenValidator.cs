@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -52,9 +53,17 @@ namespace Stormpath.Owin.Middleware
                 ValidateAudience = false
             };
 
-            new JwtSecurityTokenHandler().ValidateToken(token, param, out SecurityToken securityToken);
+            try
+            {
+                new JwtSecurityTokenHandler().ValidateToken(token, param, out SecurityToken securityToken);
 
-            return securityToken as JwtSecurityToken;
+                return securityToken as JwtSecurityToken;
+            }
+            catch (Exception)
+            {
+                // Token is invalid
+                return null;
+            }
         }
 
         public async Task<TokenIntrospectionResult> ValidateAsync(string token, CancellationToken cancellationToken)
