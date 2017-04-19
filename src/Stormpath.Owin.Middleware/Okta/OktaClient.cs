@@ -278,8 +278,8 @@ namespace Stormpath.Owin.Middleware.Okta
 
             var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
             {
-                    // TODO this always says "Invalid grant" for bad username/password
-                    var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+                // TODO this always says "Invalid grant" for bad username/password
+                var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 if (!data.TryGetValue("error_description", out string message))
                 {
                     message = "Invalid request";
@@ -326,7 +326,7 @@ namespace Stormpath.Owin.Middleware.Okta
             return SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
         }
 
-        public async Task<TokenIntrospectionResult> IntrospectTokenAsync(
+        public Task<TokenIntrospectionResult> IntrospectTokenAsync(
             string authorizationServerId,
             string clientId,
             string clientSecret,
@@ -347,7 +347,7 @@ namespace Stormpath.Owin.Middleware.Okta
             request.Content = new FormUrlEncodedContent(parameters);
 
             // todo why can't I remove this await?
-            return await SendAsync<TokenIntrospectionResult>(request, cancellationToken);
+            return SendAsync<TokenIntrospectionResult>(request, cancellationToken);
         }
 
         public Task RevokeTokenAsync(
