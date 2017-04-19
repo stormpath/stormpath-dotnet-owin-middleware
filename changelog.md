@@ -2,11 +2,15 @@
 
 ## Version 4.0.0-RC1
 
-The 4.0 release of Stormpath.Owin supports applications migrating [from Stormpath to Okta](https://stormpath.com/blog/stormpaths-new-path). This will be the last major release of this project; future support for Okta-powered applications will live in a different project.
+The 4.0 release of Stormpath.Owin will help you migrate an application [from Stormpath to Okta](https://stormpath.com/oktaplusstormpath). This will be the last major release of this project; future support for Okta-powered applications will live in a different project.
 
-We've tried to make it as easy as possible to move a .NET application backed by Stormpath to Okta, but not everything works the same way. Some applications will work as-is, and some will require refactoring. **The breaking and potentially-breaking changes are listed below.**
+We've tried to make it as easy as possible to move a .NET application backed by Stormpath to Okta, but not everything works the same way. Some applications will work as-is, and some will require refactoring. Refer to the [migration guide](migration.md) for more information.
 
 If you have questions or need help, please reach out to us at support@stormpath.com.
+
+### Migration guide
+
+Follow the handy [migration guide](migrating.md) to understand how to migrate an application step-by-step.
 
 ### Coming soon
 
@@ -17,13 +21,18 @@ These features don't work yet, but are coming in a future RC.
 * Client Credentials (API key/secret) authentication
 * Updating user profile or custom fields (reading works, no way to save currently)
 
+### Stormpath features that will not migrate
+
+See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormpath.com/oktaplusstormpath) for a complete list of features that are not being migrated. The relevant points for this library are:
+
+* Organizations and multitenancy is handled differently in Okta. If your application utilizes the Organization resource, please contact support@stormpath.com so we can help you find a solution.
+* ID Site will not work with Okta. If you are using ID Site, reach out to support@stormpath.com for help.
+* Custom Data (custom profile fields) will only be available on account resources.
+* The Verification Email (see below), Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
+
 ### Breaking changes
 
-* You must provide these new configuration properties:
-	* `org` (your Okta org URL, like `https://dev-123456.oktapreview.com`),
-	* `apiToken` (an Okta [API token](http://developer.okta.com/docs/api/getting_started/getting_a_token.html)),
-	* `application.id` (the Okta application ID, which can be found in the URL of the Admin UI when editing the Application: `/admin/app/oidc_client/instance/<appid>`)
-* If you were using `STORMPATH_*` environment variables to set any configuration properties, you'll need to update them to `OKTA_*`.
+* Instead of providing the Stormpath API key ID and secret via configuration, you'll need to provide an Okta org URL, API token, and application ID. See the [migration guide](migration.md) for more information.
 * The Stormpath SDK has been removed. If you weren't accessing the SDK directly, this shouldn't impact you. If you were, you will need to refactor the relevant code to use the Okta .NET SDK or REST API calls.
 * The SDK `IAccount` interface is no longer used to represent a Stormpath account profile. The `ICompatibleOktaAccount` interface is used instead. This interface has the same top-level profile properties as the Stormpath `IAccount` object (mapped to the appropriate Okta profile properties), and includes an `OktaUser` property that can be used to directly access the Okta user properties.
 * Custom Data is no longer a linked resource. It's now treated as a simple dictionary on the `ICompatibleOktaUser` object (or the Okta user object). 
@@ -34,8 +43,9 @@ These features don't work yet, but are coming in a future RC.
 
 #### Password reset
 
-* You will need to re-create the email template for the password reset email.  You can copy the current template from the Stormpath Admin Console, then in the Okta console you can paste it into the template found at Settings > Email & SMS > Forgot Password.  You'll want to use the ``${recoveryToken}`` variable to create a link that points the user to the change password endpoint on your application, for example: ``http://localhost:3000/change?sptoken=${recoveryToken}``.
+* You will need to re-create the email template for the password reset email.
 * The custom profile field `stormpathMigrationRecoveryAnswer` (string) must be defined in your Okta Universal Directory. This package uses it internally for the forgot password flow. (If you used the Stormpath import tool, this should be done for you automatically.)
+* Password reset tokens expire after 59 minutes in Okta. This is different than the customizable expiration in Stormpath.
 
 #### Email verification
 

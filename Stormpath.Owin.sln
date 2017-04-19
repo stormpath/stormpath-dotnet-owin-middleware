@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.10
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{213BB7A9-5C1C-4917-BC65-0C20F0627CF2}"
 EndProject
@@ -24,6 +24,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B285CD10-76C0-4C83-BC79-F60A41A35C5C}"
 	ProjectSection(SolutionItems) = preProject
 		changelog.md = changelog.md
+		migrating.md = migrating.md
 		nuget.config = nuget.config
 	EndProjectSection
 EndProject
