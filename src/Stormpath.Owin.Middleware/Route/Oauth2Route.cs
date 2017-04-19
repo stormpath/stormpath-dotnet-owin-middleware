@@ -86,45 +86,37 @@ namespace Stormpath.Owin.Middleware.Route
             return await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);
         }
 
-        private Task<bool> ExecutePasswordFlow(IOwinEnvironment context, string username, string password, CancellationToken cancellationToken)
+        private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, string username, string password, CancellationToken cancellationToken)
         {
             var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
 
-            // todo proxy OAuth flows
-            throw new Exception("TODO");
-            //var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
+                => Error.Create(context, new BadRequest(message), ct));
 
-            //var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
-            //    => Error.Create(context, new BadRequest(message), ct));
+            var grantResult = await executor.PasswordGrantAsync(
+                context,
+                jsonErrorHandler,
+                username,
+                password,
+                cancellationToken);
 
-            //var grantResult = await executor.PasswordGrantAsync(
-            //    context, 
-            //    application,
-            //    jsonErrorHandler,
-            //    username,
-            //    password,
-            //    cancellationToken);
+            await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
-            //await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
-
-            //var sanitizer = new GrantResultResponseSanitizer();
-            //return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(grantResult)).ConfigureAwait(false);
+            var sanitizer = new GrantResultResponseSanitizer();
+            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(grantResult)).ConfigureAwait(false);
         }
 
-        private Task<bool> ExecuteRefreshFlow(IOwinEnvironment context, string refreshToken, CancellationToken cancellationToken)
+        private async Task<bool> ExecuteRefreshFlow(IOwinEnvironment context, string refreshToken, CancellationToken cancellationToken)
         {
-            // todo proxy OAuth flows
-            throw new Exception("TODO");
+            var grantResult = await _oktaClient.PostRefreshGrantAsync(
+                _configuration.OktaEnvironment.AuthorizationServerId,
+                _configuration.OktaEnvironment.ClientId,
+                _configuration.OktaEnvironment.ClientSecret,
+                refreshToken,
+                context.CancellationToken);
 
-            //var refreshGrantRequest = OauthRequests.NewRefreshGrantRequest()
-            //    .SetRefreshToken(refreshToken)
-            //    .Build();
-
-            //var tokenResult = await application.NewRefreshGrantAuthenticator()
-            //    .AuthenticateAsync(refreshGrantRequest, cancellationToken);
-
-            //var sanitizer = new GrantResultResponseSanitizer();
-            //return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(tokenResult)).ConfigureAwait(false);
+            var sanitizer = new GrantResultResponseSanitizer();
+            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(grantResult)).ConfigureAwait(false);
         }
     }
 }
