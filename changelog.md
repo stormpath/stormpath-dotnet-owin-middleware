@@ -30,15 +30,19 @@ These features don't work yet, but are coming in a future RC.
 * Okta handles custom profile fields differently than Stormpath. Any custom profile field you want to use must be defined in advance in the Universal Directory Profile. Otherwise, you will get API errors when creating a user with a custom profile field.
 * The only expansion option that currently works for the `/me` route is `customData`.
 
-#### Email verification & password reset
-
 * The `/forgot` and `/change` routes are now **disabled** by default. The routes can be enabled or disabled by changing the `web.forgotPassword.enabled` or `web.changePassword.enabled` settings.
-* Additionally, the email verification requirement for new accounts must now be explicitly enabled using the new `web.register.emailVerificationRequired` setting.
+
+#### Password reset
+
 * You will need to re-create the email template for the password reset email.  You can copy the current template from the Stormpath Admin Console, then in the Okta console you can paste it into the template found at Settings > Email & SMS > Forgot Password.  You'll want to use the ``${recoveryToken}`` variable to create a link that points the user to the change password endpoint on your application, for example: ``http://localhost:3000/change?sptoken=${recoveryToken}``.
-* Okta cannot yet send an email for the email verification flow automatically. Your application will need to send this email by providing an implementation for `SendEmailVerificationHandler`. (TODO example)
 * The custom profile field `stormpathMigrationRecoveryAnswer` (string) must be defined in your Okta Universal Directory. This package uses it internally for the forgot password flow. (If you used the Stormpath import tool, this should be done for you automatically.)
-* The custom profile fields `emailVerificationStatus` (string) must be defined in your Okta Universal Directory.
+
+#### Email verification
+
+* Okta cannot yet send an email for the email verification flow automatically. Your application will need to send this email by providing an implementation for `SendEmailVerificationHandler`. (TODO example)
+* The email verification requirement for new accounts must now be explicitly enabled using the new `web.register.emailVerificationRequired` setting.
 * If `web.register.emailVerificationRequired == true`, the custom profile field `emailVerificationToken` (string) must be defined in your Okta Universal Directory.
+* The custom profile fields `emailVerificationStatus` (string) must be defined in your Okta Universal Directory.
 
 #### Potentially-breaking changes
 
