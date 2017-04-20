@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -77,10 +78,22 @@ namespace Stormpath.Owin.Middleware.Route
                     return true;
                 }
             }
+            // Special handling of API errors for the OAuth route
+            catch (OktaException oex)
+            {
+                string message = oex.Message;
+                oex.Body.TryGetValue("error_description", out var rawMessage);
+                if (!string.IsNullOrEmpty(rawMessage.ToString())) message = rawMessage.ToString();
+
+                string error = "invalid_grant";
+                oex.Body.TryGetValue("error", out var rawError);
+                if (!string.IsNullOrEmpty(rawError.ToString())) error = rawError.ToString();
+
+                return await Error.Create(context, new OauthError(message, error), cancellationToken);
+            }
             catch (Exception ex)
             {
-                // Special handling of API errors for the OAuth route
-                return await Error.Create(context, new OauthError(ex.Message, "invalid_request"), cancellationToken);
+                return await Error.Create(context, new OauthError(ex.Message, "invalid_grant"), cancellationToken);
             }
 
             return await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);

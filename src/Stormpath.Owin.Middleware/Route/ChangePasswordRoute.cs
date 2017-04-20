@@ -136,12 +136,8 @@ namespace Stormpath.Owin.Middleware.Route
             }
             catch (Exception ex)
             {
-                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
-                var changePasswordViewModel = viewModelBuilder.Build();
-                changePasswordViewModel.Errors.Add(ex.Message);
-
-                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
-                return true;
+                _logger.LogWarning(1007, ex, "Error resetting password");
+                return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
             }
 
             // TODO autologin
@@ -159,8 +155,17 @@ namespace Stormpath.Owin.Middleware.Route
                 return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
             }
 
-            await _oktaClient.VerifyRecoveryTokenAsync(spToken, cancellationToken);
-            // Errors are caught in AbstractRouteMiddleware
+            // Patch the error behavior: Stormpath used to return 404 for an invalid/expired token.
+            // Okta returns a 401, which is thrown as an exception by the OktaClient class.
+            try
+            {
+                await _oktaClient.VerifyRecoveryTokenAsync(spToken, cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                return await Error.Create(context, 404, "The requested resource was not found", cancellationToken);
+            }
+            // Other errors are caught in AbstractRouteMiddleware
 
             return await JsonResponse.Ok(context);
         }
@@ -169,8 +174,17 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var model = await PostBodyParser.ToModel<ChangePasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
 
-            await ChangePasswordAsync(context, model, model.SpToken, cancellationToken);
-            // Errors are caught in AbstractRouteMiddleware
+            // Patch the error behavior: Stormpath used to return 404 for an invalid/expired token.
+            // Okta returns a 401, which is thrown as an exception by the OktaClient class.
+            try
+            {
+                await ChangePasswordAsync(context, model, model.SpToken, cancellationToken);
+            }
+            catch (InvalidOperationException)
+            {
+                return await Error.Create(context, 404, "The requested resource was not found", cancellationToken);
+            }
+            // Other errors are caught in AbstractRouteMiddleware
 
             // TODO autologin
 
