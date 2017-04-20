@@ -4,7 +4,7 @@
 
 The 4.0 release of Stormpath.Owin will help you migrate an application [from Stormpath to Okta](https://stormpath.com/oktaplusstormpath). This will be the last major release of this project; future support for Okta-powered applications will live in a different project.
 
-We've tried to make it as easy as possible to move a .NET application backed by Stormpath to Okta, but not everything works the same way. Some applications will work as-is, and some will require refactoring. Refer to the [migration guide](migration.md) for more information.
+We've tried to make it as easy as possible to move a .NET application backed by Stormpath to Okta, but not everything works the same way. Some applications will work as-is, and some will require refactoring. Refer to the [migration guide](migrating.md) for more information.
 
 If you have questions or need help, please reach out to us at support@stormpath.com.
 
@@ -27,13 +27,13 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 
 * Organizations and multitenancy is handled differently in Okta. If your application utilizes the Organization resource, please contact support@stormpath.com so we can help you find a solution.
 * ID Site will not work with Okta. If you are using ID Site, reach out to support@stormpath.com for help.
-* Custom Data (custom profile fields) will only be available on account resources.
-* The Verification Email (see below), Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
+* Custom Data is only be available on account resources.
+* The Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
 
 ### Breaking changes
 
-* Instead of providing the Stormpath API key ID and secret via configuration, you'll need to provide an Okta org URL, API token, and application ID. See the [migration guide](migration.md) for more information.
-* The Stormpath SDK has been removed. If you weren't accessing the SDK directly, this shouldn't impact you. If you were, you will need to refactor the relevant code to use the Okta .NET SDK or REST API calls.
+* Instead of providing the Stormpath API key ID and secret via configuration, you'll need to provide an Okta org URL, API token, and application ID. See the [migration guide](migrating.md) for more information.
+* The Stormpath SDK has been removed. If you weren't using the SDK directly, this shouldn't impact you. If you were, you'll need to refactor the relevant code to use the Okta .NET SDK or REST API calls.
 * The SDK `IAccount` interface is no longer used to represent a Stormpath account profile. The `ICompatibleOktaAccount` interface is used instead. This interface has the same top-level profile properties as the Stormpath `IAccount` object (mapped to the appropriate Okta profile properties), and includes an `OktaUser` property that can be used to directly access the Okta user properties.
 * Custom Data is no longer a linked resource. It's now treated as a simple dictionary on the `ICompatibleOktaUser` object (or the Okta user object). 
 * Okta handles custom profile fields differently than Stormpath. Any custom profile field you want to use must be defined in advance in the Universal Directory Profile. Otherwise, you will get API errors when creating a user with a custom profile field.
@@ -43,16 +43,16 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 
 #### Password reset
 
-* You will need to re-create the email template for the password reset email.
+* You will need to re-create the email template for the password reset email. See the [migration guide](migrating.md) for detailed steps.
 * The custom profile field `stormpathMigrationRecoveryAnswer` (string) must be defined in your Okta Universal Directory. This package uses it internally for the forgot password flow. (If you used the Stormpath import tool, this should be done for you automatically.)
-* Password reset tokens expire after 59 minutes in Okta. This is different than the customizable expiration in Stormpath.
+* Okta password reset tokens expire after 59 minutes by default. This can be changed in the Admin UI (Security - Policies - Account Recovery).
 
 #### Email verification
 
 * Okta cannot yet send an email for the email verification flow automatically. Your application will need to send this email by providing an implementation for `SendEmailVerificationHandler`. (TODO example)
 * The email verification requirement for new accounts must now be explicitly enabled using the new `web.register.emailVerificationRequired` setting.
+* The custom profile field `emailVerificationStatus` (string) must be defined in your Okta Universal Directory.
 * If `web.register.emailVerificationRequired == true`, the custom profile field `emailVerificationToken` (string) must be defined in your Okta Universal Directory.
-* The custom profile fields `emailVerificationStatus` (string) must be defined in your Okta Universal Directory.
 
 #### Potentially-breaking changes
 
