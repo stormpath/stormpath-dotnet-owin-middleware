@@ -8,6 +8,15 @@ The Stormpath API will sunset on **2017-08-17 19:00 UTC** (August 17, 2017 at no
 
 * Read the [changelog](changelog.md) for information on breaking changes.
 
+* The data import tool (step 4) is currently being polished and will be released soon. Until then, you can create some test data in your Okta organization using the [Test Data](https://github.com/stormpath/express-stormpath/blob/4.0.0/util/okta-test-data.js) script from the express-stormpath project:
+
+```
+git clone https://github.com/stormpath/express-stormpath.git --branch 4.0.0
+cd express-stormpath
+npm install
+node util/okta-test-data.js --apiToken=TOKEN --org=https://dev-YOUR_ORG.oktapreview.com/
+```
+
 ## Migration steps
 
 1. Create a test user in your existing system with a known password.
