@@ -4,6 +4,10 @@ This document is intended to give you a high-level understanding of the steps re
 
 The Stormpath API will sunset on **2017-08-17 19:00 UTC** (August 17, 2017 at noon PDT). At the very least, make sure you export your data before then!
 
+## Before you begin
+
+* Read the [changelog](changelog.md) for information on breaking changes.
+
 ## Migration steps
 
 1. Create a test user in your existing system with a known password.
