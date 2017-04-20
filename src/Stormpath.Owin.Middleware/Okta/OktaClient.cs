@@ -90,7 +90,28 @@ namespace Stormpath.Owin.Middleware.Okta
         private Exception DefaultExceptionFormatter(int statusCode, string body)
         {
             _logger.LogWarning($"{statusCode} {body}");
-            return new InvalidOperationException(DefaultErrorMessage);
+
+            IDictionary<string, object> bodyDictionary = null;
+
+            if (!string.IsNullOrEmpty(body))
+            {
+                try
+                {
+                    bodyDictionary = JsonConvert.DeserializeObject<IDictionary<string, object>>(body);
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            var ex = new OktaException(DefaultErrorMessage);
+
+            if (bodyDictionary != null)
+            {
+                ex.Body = bodyDictionary;
+            }
+
+            return ex;
         }
 
         private Exception SummaryFormatter(int statusCode, string body)
@@ -275,20 +296,7 @@ namespace Stormpath.Owin.Middleware.Okta
             request.Content = new FormUrlEncodedContent(parameters);
 
             _logger.LogTrace($"Executing password grant flow for subject {username}");
-
-            var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
-            {
-                // TODO this always says "Invalid grant" for bad username/password
-                var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-                if (!data.TryGetValue("error_description", out string message))
-                {
-                    message = "Invalid request";
-                }
-
-                return new Exception(message);
-            });
-
-            return SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
+            return SendAsync<GrantResult>(request, cancellationToken);
         }
 
         public Task<GrantResult> PostRefreshGrantAsync(
@@ -311,19 +319,7 @@ namespace Stormpath.Owin.Middleware.Okta
             request.Content = new FormUrlEncodedContent(parameters);
 
             _logger.LogTrace($"Executing refresh grant flow with token {refreshToken}");
-
-            var exceptionFormatter = new Func<int, string, Exception>((_, json) =>
-            {
-                var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-                if (!data.TryGetValue("error_description", out string message))
-                {
-                    message = "Invalid request";
-                }
-
-                return new Exception(message);
-            });
-
-            return SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
+            return SendAsync<GrantResult>(request, cancellationToken);
         }
 
         public Task<TokenIntrospectionResult> IntrospectTokenAsync(
