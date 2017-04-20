@@ -26,6 +26,20 @@ The Stormpath API will sunset on **2017-08-17 19:00 UTC** (August 17, 2017 at no
 	* If you were using `STORMPATH_*` environment variables to set any configuration properties, you'll need to update them to `OKTA_*`.
 
 	* Most of the remaining configuration can be left untouched. See the [configuration breaking changes](todo) (TODO).
+	
+	* A minimal example configuration looks like:
+	
+	```csharp
+	Configuration = new StormpathConfiguration
+	{
+	    Org = "https://dev-12345.oktapreview.com/",
+	    ApiToken = "my-api-token",
+	    Application = new OktaApplicationConfiguration()
+	    {
+		Id = "abcdef-123"
+	    }
+	}
+	```
 
 1. **If** you used the Password Reset workflow in Stormpath, update the Okta Password Reset email template. You can copy the current template from the Stormpath Admin Console, and paste it into the Okta template found at Settings > Email & SMS > Forgot Password.  You'll want to use the ``${recoveryToken}`` variable to create a link that points the user to the change password endpoint on your application, for example: ``http://localhost:3000/change?sptoken=${recoveryToken}``. If the validator complains about `${resetPasswordLink}` being missing, place it in an HTML comment: `<!-- ${resetPasswordLink} -->`
 
