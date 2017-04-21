@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Common components for the Stormpath.Owin library</Description>
+    <VersionPrefix>2.0.0-beta1</VersionPrefix>
+    <Authors>Nate Barbettini</Authors>
+    <TargetFrameworks>net45;netstandard1.1</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>Stormpath.Owin.Abstractions</AssemblyName>
+    <PackageId>Stormpath.Owin.Abstractions</PackageId>
+    <PackageIconUrl>https://raw.githubusercontent.com/stormpath/stormpath-sdk-dotnet/develop/icon.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Stormpath.Configuration.Abstractions" Version="7.0.0-beta3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

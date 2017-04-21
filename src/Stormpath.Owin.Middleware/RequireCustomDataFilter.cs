@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Sync;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -25,20 +25,11 @@ namespace Stormpath.Owin.Middleware
             _comparer = comparer ?? new DefaultSmartComparer();
         }
 
-        public bool IsAuthorized(IAccount account)
-        {
-            var customData = account?.GetCustomData();
+        public bool IsAuthorized(ICompatibleOktaAccount account)
+            => _comparer.Equals(account?.CustomData[_key], _value);
 
-            return _comparer.Equals(customData?[_key], _value);
-        }
-
-        public async Task<bool> IsAuthorizedAsync(IAccount account, CancellationToken cancellationToken)
-        {
-            var customData = account == null
-                ? null
-                : await account.GetCustomDataAsync(cancellationToken).ConfigureAwait(false);
-
-            return _comparer.Equals(customData?[_key], _value);
-        }
+        [Obsolete("Use the synchronous IsAuthorized")]
+        public Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken)
+            => Task.FromResult(IsAuthorized(account));
     }
 }

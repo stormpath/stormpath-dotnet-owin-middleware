@@ -1,17 +1,17 @@
-﻿using Stormpath.SDK.Account;
+﻿using Stormpath.Owin.Abstractions;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
     internal sealed class AccountResponseSanitizer
     {
-        public object Sanitize(IAccount account)
+        public object Sanitize(ICompatibleOktaAccount account)
         {
             return new
             {
                 account.Href,
                 account.Username,
                 account.ModifiedAt,
-                Status = account.Status.ToString(),
+                Status = account.Status?.ToString(),
                 account.CreatedAt,
                 account.Email,
                 account.MiddleName,

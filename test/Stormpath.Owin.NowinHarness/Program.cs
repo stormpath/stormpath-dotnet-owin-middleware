@@ -18,18 +18,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Hosting;
 using Owin;
+using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.Owin.Views.Precompiled;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.NowinHarness
 {
-    using Configuration.Abstractions;
-    using SDK.Logging;
     using AppFunc = Func<IDictionary<string, object>, Task>;
 
     public static class Program
@@ -78,6 +76,32 @@ namespace Stormpath.Owin.NowinHarness
                 PostLoginHandler = async (ctx, ct) =>
                 {
                     var customData = await ctx.Account.GetCustomDataAsync(ct);
+                },
+                SendVerificationEmailHandler = (ctx, ct) =>
+                {
+                    return Task.FromResult(true);
+                },
+                Configuration = new StormpathConfiguration
+                {
+                    Web = new WebConfiguration
+                    {
+                        Register = new WebRegisterRouteConfiguration
+                        {
+                            EmailVerificationRequired = false,
+                        },
+                        ForgotPassword = new WebForgotPasswordRouteConfiguration
+                        {
+                            Enabled = true
+                        },
+                        ChangePassword = new WebChangePasswordRouteConfiguration
+                        {
+                            Enabled = true
+                        },
+                        VerifyEmail = new WebVerifyEmailRouteConfiguration()
+                        {
+                            Enabled = false
+                        }
+                    }
                 }
             });
 
@@ -102,7 +126,7 @@ namespace Stormpath.Owin.NowinHarness
                     }
                     else
                     {
-                        var user = env[OwinKeys.StormpathUser] as IAccount;
+                        var user = env[OwinKeys.StormpathUser] as ICompatibleOktaAccount;
 
                         await writer.WriteAsync($"<p>Logged in as {user?.FullName} ({user?.Email})</p>");
 
@@ -140,7 +164,6 @@ namespace Stormpath.Owin.NowinHarness
                         setHeaderAction("Location", location);
                     });
                     var routeProtector = new RouteProtector(
-                        stormpath.GetClient(),
                         stormpath.Configuration,
                         deleteCookieAction,
                         setStatusCodeAction,
@@ -170,21 +193,17 @@ namespace Stormpath.Owin.NowinHarness
             this.level = level;
         }
 
-        public void Log(LogEntry entry)
+        public IDisposable BeginScope<TState>(TState state)
         {
-            if (entry.Severity < this.level)
-            {
-                return;
-            }
+            throw new NotImplementedException();
+        }
 
-            var message = $"{entry.Severity}: {entry.Source} ";
+        public bool IsEnabled(LogLevel logLevel)
+            => logLevel >= level;
 
-            if (entry.Exception != null)
-            {
-                message += $"Exception: {entry.Exception.Message} at {entry.Exception.Source}, ";
-            }
-
-            message += $"{entry.Message}";
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            var message = $"{logLevel}: {formatter(state, exception)}";
 
             Console.WriteLine(message);
         }

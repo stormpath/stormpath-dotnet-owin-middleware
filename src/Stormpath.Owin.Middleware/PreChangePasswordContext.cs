@@ -1,16 +1,16 @@
 ﻿using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Account;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed class PreChangePasswordContext : HandlerContext
     {
-        public PreChangePasswordContext(IOwinEnvironment environment, IAccount account)
+        public PreChangePasswordContext(IOwinEnvironment environment, ICompatibleOktaAccount account)
             : base(environment)
         {
             Account = account;
         }
 
-        public IAccount Account { get; }
+        public ICompatibleOktaAccount Account { get; }
     }
 }

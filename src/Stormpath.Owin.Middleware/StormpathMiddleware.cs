@@ -16,16 +16,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Route;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
+
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.SDK.Account;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -33,25 +32,25 @@ namespace Stormpath.Owin.Middleware
 
     public sealed partial class StormpathMiddleware
     {
+        private readonly IKeyProvider keyProvider;
         private readonly IViewRenderer viewRenderer;
         private readonly ILogger logger;
         private readonly IFrameworkUserAgentBuilder userAgentBuilder;
-        private readonly IScopedClientFactory clientFactory;
         private readonly IReadOnlyDictionary<string, RouteHandler> routingTable;
         private AppFunc _next;
 
         private StormpathMiddleware(
+            IKeyProvider keyProvider,
             IViewRenderer viewRenderer,
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
-            IScopedClientFactory clientFactory,
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers)
         {
+            this.keyProvider = keyProvider;
             this.viewRenderer = viewRenderer;
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;
-            this.clientFactory = clientFactory;
             this.Configuration = configuration;
             this.Handlers = handlers;
 
@@ -75,25 +74,24 @@ namespace Stormpath.Owin.Middleware
             }
 
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
-            logger.Trace($"Incoming request {context.Request.Path}", "StormpathMiddleware.Invoke");
+            logger.LogTrace($"Incoming request {context.Request.Path}", "StormpathMiddleware.Invoke");
 
-            using (var scopedClient = CreateScopedClient(context))
-            {
-                var currentUser = await GetUserAsync(context, scopedClient, context.CancellationToken).ConfigureAwait(false);
+            //using (var scopedClient = CreateScopedClient(context))
+            //{
+                var currentUser = await GetUserAsync(context, context.CancellationToken).ConfigureAwait(false);
 
                 if (currentUser == null)
                 {
-                    logger.Trace("Request is anonymous", "StormpathMiddleware.Invoke");
+                    logger.LogTrace("Request is anonymous", "StormpathMiddleware.Invoke");
                 }
                 else
                 {
-                    logger.Trace($"Request for Account '{currentUser.Href}' via scheme {environment[OwinKeys.StormpathUserScheme]}", "StormpathMiddleware.Invoke");
+                    logger.LogTrace($"Request for Account '{currentUser.Href}' via scheme {environment[OwinKeys.StormpathUserScheme]}", "StormpathMiddleware.Invoke");
                 }
 
                 AddStormpathVariablesToEnvironment(
                     environment,
                     Configuration,
-                    scopedClient,
                     currentUser);
 
                 var requestPath = GetRequestPathOrThrow(context);
@@ -105,7 +103,7 @@ namespace Stormpath.Owin.Middleware
                     return;
                 }
 
-                logger.Trace($"Handling request '{requestPath}'", "StormpathMiddleware.Invoke");
+                logger.LogTrace($"Handling request '{requestPath}'", "StormpathMiddleware.Invoke");
 
                 if (routeHandler.AuthenticationRequired)
                 {
@@ -117,17 +115,15 @@ namespace Stormpath.Owin.Middleware
                     }
                 }
 
-                var handled = await routeHandler.Handler(scopedClient)(context);
+                var handled = await routeHandler.Handler()(context);
 
                 if (!handled)
                 {
-                    logger.Trace("Handler skipped request.", "StormpathMiddleware.Invoke");
+                    logger.LogTrace("Handler skipped request.", "StormpathMiddleware.Invoke");
                     await this._next.Invoke(environment);
                 }
-            }
+            //}
         }
-
-        public IClient GetClient() => CreateScopedClient(null);
 
         private static string GetRequestPathOrThrow(IOwinEnvironment context)
         {
@@ -151,28 +147,14 @@ namespace Stormpath.Owin.Middleware
         private static void AddStormpathVariablesToEnvironment(
             IDictionary<string, object> environment,
             StormpathConfiguration configuration,
-            IClient client,
-            IAccount currentUser)
+            ICompatibleOktaAccount currentUser)
         {
             environment[OwinKeys.StormpathConfiguration] = configuration;
-            environment[OwinKeys.StormpathClient] = client;
 
             if (currentUser != null)
             {
                 environment[OwinKeys.StormpathUser] = currentUser;
             }
-        }
-
-        private IClient CreateScopedClient(IOwinEnvironment context)
-        {
-            var fullUserAgent = CreateFullUserAgent(context);
-
-            var scopedClientOptions = new ScopedClientOptions()
-            {
-                UserAgent = fullUserAgent
-            };
-
-            return clientFactory.Create(scopedClientOptions);
         }
 
         private string CreateFullUserAgent(IOwinEnvironment context)

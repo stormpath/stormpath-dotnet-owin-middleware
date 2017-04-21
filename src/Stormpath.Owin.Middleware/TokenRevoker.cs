@@ -1,142 +1,80 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Stormpath.Owin.Abstractions.Configuration;
+using Stormpath.Owin.Middleware.Okta;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Jwt;
-using Stormpath.SDK.Logging;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed class TokenRevoker
     {
-        private readonly IClient _client;
+        private readonly IOktaClient _oktaClient;
+        private readonly IntegrationConfiguration _configuration;
         private readonly ILogger _logger;
-        private readonly List<string> _accessTokenIdsToDelete;
-        private readonly List<string> _refreshTokenIdsToDelete;
+        private readonly List<string> _accessTokensToDelete;
+        private readonly List<string> _refreshTokensToDelete;
 
-        public TokenRevoker(IClient client, ILogger logger)
+        public TokenRevoker(
+            IOktaClient oktaClient,
+            IntegrationConfiguration configuration,
+            ILogger logger)
         {
-            _client = client;
+            _oktaClient = oktaClient;
+            _configuration = configuration;
             _logger = logger;
-            _accessTokenIdsToDelete = new List<string>();
-            _refreshTokenIdsToDelete = new List<string>();
+
+            _accessTokensToDelete = new List<string>();
+            _refreshTokensToDelete = new List<string>();
         }
 
-        private bool IsValidJwt(string jwt, out IJwt parsedJwt)
+        public TokenRevoker AddToken(string token, string tokenType)
         {
-            parsedJwt = null;
+            if (string.IsNullOrEmpty(token)) return this;
 
-            if (string.IsNullOrEmpty(jwt))
+            if (tokenType == TokenType.Refresh)
             {
-                return false;
+                _refreshTokensToDelete.Add(token);
             }
-
-            try
+            else
             {
-                parsedJwt = _client.NewJwtParser()
-                    .SetSigningKey(_client.Configuration.Client.ApiKey.Secret, Encoding.UTF8)
-                    .Parse(jwt);
-                return true;
-            }
-            catch (InvalidJwtException)
-            {
-                return false;
-            }
-        }
-
-        private static void AddByClaim(List<string> target, IJwt jwt, string claimName)
-        {
-            if (!jwt.Body.ContainsClaim(claimName))
-            {
-                return;
-            }
-
-            var value = jwt.Body.GetClaim(claimName).ToString();
-            if (!string.IsNullOrEmpty(value))
-            {
-                target.Add(value);
-            }
-        }
-
-        public TokenRevoker AddToken(string jwt)
-        {
-            IJwt parsedJwt = null;
-
-            if (!IsValidJwt(jwt, out parsedJwt))
-            {
-                return this;
-            }
-
-            object rawTokenType = null;
-            parsedJwt.Header.TryGetValue("stt", out rawTokenType);
-            var tokenType = rawTokenType?.ToString();
-
-            if (string.IsNullOrEmpty(tokenType))
-            {
-                // Assume it's an access token
-                AddByClaim(_accessTokenIdsToDelete, parsedJwt, "jti");
-                return this;
-            }
-
-            if (tokenType.Equals("access", StringComparison.Ordinal))
-            {
-                AddByClaim(_accessTokenIdsToDelete, parsedJwt, "jti");
-
-                // Add the accompanying refresh token, if it exists
-                AddByClaim(_refreshTokenIdsToDelete, parsedJwt, "rti");
-            }
-
-            if (tokenType.Equals("refresh", StringComparison.Ordinal))
-            {
-                AddByClaim(_refreshTokenIdsToDelete, parsedJwt, "jti");
+                _accessTokensToDelete.Add(token);
             }
 
             return this;
         }
 
-        public Task Revoke(CancellationToken cancellationToken)
+        public Task RevokeAsync(CancellationToken cancellationToken)
         {
-            var deleteTasks = 
-                _accessTokenIdsToDelete
+            var deleteTasks =
+                _accessTokensToDelete
                     .Distinct(StringComparer.Ordinal)
-                    .Select(id => DeleteAccessToken(id, cancellationToken))
+                    .Select(token => CallRevokeAsync(token, TokenType.Access, cancellationToken))
             .Concat(
-                _refreshTokenIdsToDelete
+                _refreshTokensToDelete
                     .Distinct(StringComparer.Ordinal)
-                    .Select(id => DeleteRefreshToken(id, cancellationToken)));
+                    .Select(token => CallRevokeAsync(token, TokenType.Refresh, cancellationToken)));
 
             return Task.WhenAll(deleteTasks);
         }
 
-        private async Task<bool> DeleteAccessToken(string jti, CancellationToken cancellationToken)
+        private Task CallRevokeAsync(string token, string tokenType, CancellationToken cancellationToken)
         {
             try
             {
-                var accessTokenResource = await _client.GetAccessTokenAsync($"/accessTokens/{jti}", cancellationToken);
-                return await accessTokenResource.DeleteAsync(cancellationToken);
+                return _oktaClient.RevokeTokenAsync(
+                    _configuration.OktaEnvironment.AuthorizationServerId,
+                    _configuration.OktaEnvironment.ClientId,
+                    _configuration.OktaEnvironment.ClientSecret,
+                    token, tokenType,
+                    cancellationToken);
             }
-            catch (ResourceException rex)
+            catch (Exception ex)
             {
-                _logger.Info(rex.DeveloperMessage, source: nameof(DeleteAccessToken));
-                return false;
-            }
-        }
-
-        private async Task<bool> DeleteRefreshToken(string jti, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var refreshTokenResource = await _client.GetAccessTokenAsync($"/refreshTokens/{jti}", cancellationToken);
-                return await refreshTokenResource.DeleteAsync(cancellationToken);
-            }
-            catch (ResourceException rex)
-            {
-                _logger.Info(rex.DeveloperMessage, source: nameof(DeleteRefreshToken));
-                return false;
+                _logger.LogInformation(1007, ex, "Error while revoking a token");
+                return Task.FromResult(false);
             }
         }
     }

@@ -17,37 +17,33 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
-using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
+using Stormpath.Owin.Middleware.ViewModelBuilder;
 
 namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class ForgotPasswordRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
-            => configuration.Web.ForgotPassword.Enabled == true
-                || (configuration.Web.ForgotPassword.Enabled == null && configuration.Tenant.PasswordResetWorkflowEnabled);
+            => configuration.Web.ForgotPassword.Enabled == true;
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            var viewModelBuilder = new ForgotPasswordFormViewModelBuilder(client, _configuration, queryString);
+            var viewModelBuilder = new ForgotPasswordFormViewModelBuilder(_configuration, queryString);
             var forgotViewModel = viewModelBuilder.Build();
 
             await RenderViewAsync(context, _configuration.Web.ForgotPassword.View, forgotViewModel, cancellationToken);
             return true;
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
             try
             {
                 var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
@@ -55,11 +51,11 @@ namespace Stormpath.Owin.Middleware.Route
                 var formData = FormContentParser.Parse(body, _logger);
 
                 var stateToken = formData.GetString(StringConstants.StateTokenName);
-                var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+                var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
                 if (!parsedStateToken.Valid)
                 {
                     var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-                    var viewModelBuilder = new ForgotPasswordFormViewModelBuilder(client, _configuration, queryString);
+                    var viewModelBuilder = new ForgotPasswordFormViewModelBuilder(_configuration, queryString);
                     var viewModel = viewModelBuilder.Build();
                     viewModel.Errors.Add("An error occurred. Please try again.");
 
@@ -67,29 +63,27 @@ namespace Stormpath.Owin.Middleware.Route
                     return true;
                 }
 
-                await application.SendPasswordResetEmailAsync(model.Email, cancellationToken);
+                await _oktaClient.SendPasswordResetEmailAsync(model.Email, cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, source: "ForgotRoute.PostHtml");
+                _logger.LogError(1002, ex, "ForgotRoute.PostHtml");
             }
 
             return await HttpResponse.Redirect(context, _configuration.Web.ForgotPassword.NextUri);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
             try
             {
                 var model = await PostBodyParser.ToModel<ForgotPasswordPostModel>(context, bodyContentType, _logger, cancellationToken);
 
-                await application.SendPasswordResetEmailAsync(model.Email, cancellationToken);
+                await _oktaClient.SendPasswordResetEmailAsync(model.Email, cancellationToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.Error(ex, source: "ForgotRoute.PostJson");
+                _logger.LogError(1003, ex, "ForgotRoute.PostJson");
             }
 
             return await JsonResponse.Ok(context);

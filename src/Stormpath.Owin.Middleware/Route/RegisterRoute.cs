@@ -24,10 +24,8 @@ using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Directory;
-using Stormpath.SDK.Error;
+using Stormpath.Owin.Middleware.ViewModelBuilder;
+using System.Dynamic;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -43,12 +41,11 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        private async Task<IAccount> InstantiateLocalAccount(
+        private async Task<LocalAccount> InstantiateLocalAccount(
             IOwinEnvironment environment,
             RegisterPostModel postData,
             IEnumerable<string> fieldNames,
             Dictionary<string, string> customFields,
-            IClient client,
             Func<string, CancellationToken, Task> errorHandler,
             CancellationToken cancellationToken)
         {
@@ -98,41 +95,45 @@ namespace Stormpath.Owin.Middleware.Route
                 return null;
             }
 
-            var newAccount = client.Instantiate<IAccount>()
-                .SetEmail(postData.Email)
-                .SetPassword(postData.Password)
-                .SetGivenName(postData.GivenName)
-                .SetSurname(postData.Surname);
+            var newAccount = new LocalAccount()
+            {
+                Email = postData.Email,
+                FirstName = postData.GivenName,
+                LastName = postData.Surname
+            };
 
             if (!string.IsNullOrEmpty(postData.Username))
             {
-                newAccount.SetUsername(postData.Username);
+                newAccount.Login = postData.Username;
+            } else
+            {
+                newAccount.Login = postData.Email;
             }
 
             if (!string.IsNullOrEmpty(postData.MiddleName))
             {
-                newAccount.SetMiddleName(postData.MiddleName);
+                newAccount.MiddleName = postData.MiddleName;
             }
 
             foreach (var item in customFields)
             {
-                newAccount.CustomData.Put(item.Key, item.Value);
+                newAccount.CustomData.Add(item.Key, item.Value);
             }
 
             return newAccount;
         }
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-            var viewModelBuilder = new RegisterFormViewModelBuilder(client, _configuration, queryString, null, _logger);
+            var viewModelBuilder = new RegisterFormViewModelBuilder(_configuration, queryString, null, _logger);
             var registerViewModel = viewModelBuilder.Build();
 
             await RenderViewAsync(context, _configuration.Web.Register.View, registerViewModel, cancellationToken);
             return true;
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType, _logger);
@@ -141,7 +142,7 @@ namespace Stormpath.Owin.Middleware.Route
             var htmlErrorHandler = new Func<string, CancellationToken, Task>((message, ct) =>
             {
                 var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
-                var viewModelBuilder = new RegisterFormViewModelBuilder(client, _configuration, queryString, formData, _logger);
+                var viewModelBuilder = new RegisterFormViewModelBuilder(_configuration, queryString, formData, _logger);
                 var registerViewModel = viewModelBuilder.Build();
                 registerViewModel.Errors.Add(message);
 
@@ -149,7 +150,13 @@ namespace Stormpath.Owin.Middleware.Route
             });
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+
+            var parsedStateToken = new StateTokenParser(
+                _configuration.Application.Id,
+                _configuration.OktaEnvironment.ClientSecret,
+                stateToken,
+                _logger);
+
             if (!parsedStateToken.Valid)
             {
                 await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
@@ -159,18 +166,17 @@ namespace Stormpath.Owin.Middleware.Route
             var allNonEmptyFieldNames = formData
                 .Where(f => !string.IsNullOrEmpty(string.Join(",", f.Value)))
                 .Select(f => f.Key)
-                .Except(new []{ StringConstants.StateTokenName })
+                .Except(new[] { StringConstants.StateTokenName })
                 .ToList();
 
             var providedCustomFields = new Dictionary<string, string>();
-            var nonCustomFields = DefaultFields.Concat(new[] {StringConstants.StateTokenName}).ToArray();
+            var nonCustomFields = DefaultFields.Concat(new[] { StringConstants.StateTokenName }).ToArray();
             foreach (var item in formData.Where(f => !nonCustomFields.Contains(f.Key)))
             {
                 providedCustomFields.Add(item.Key, string.Join(",", item.Value));
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
+            var executor = new RegisterExecutor(_configuration, _handlers, _oktaClient, _logger);
 
             try
             {
@@ -179,7 +185,6 @@ namespace Stormpath.Owin.Middleware.Route
                     model,
                     allNonEmptyFieldNames,
                     providedCustomFields,
-                    client,
                     htmlErrorHandler,
                     cancellationToken);
                 if (newAccount == null)
@@ -192,9 +197,9 @@ namespace Stormpath.Owin.Middleware.Route
 
                 var createdAccount = await executor.HandleRegistrationAsync(
                     context,
-                    application,
                     formDataForHandler,
                     newAccount,
+                    model.Password,
                     htmlErrorHandler,
                     cancellationToken);
                 if (createdAccount == null)
@@ -206,21 +211,20 @@ namespace Stormpath.Owin.Middleware.Route
 
                 return await executor.HandleRedirectAsync(
                     context,
-                    application,
                     createdAccount,
                     model,
                     htmlErrorHandler,
                     stateToken,
                     cancellationToken);
             }
-            catch (ResourceException rex)
+            catch (Exception ex)
             {
-                await htmlErrorHandler(rex.Message, cancellationToken);
+                await htmlErrorHandler(ex.Message, cancellationToken);
                 return true;
             }
         }
 
-        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new RegisterViewModelBuilder(_configuration.Web.Register);
             var registerViewModel = viewModelBuilder.Build();
@@ -228,7 +232,7 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, registerViewModel);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var model = PostBodyParser.ToModel<RegisterPostModel>(body, bodyContentType, _logger);
@@ -277,7 +281,6 @@ namespace Stormpath.Owin.Middleware.Route
                 model,
                 allNonEmptyFieldNames,
                 customFields,
-                client,
                 jsonErrorHandler,
                 cancellationToken);
             if (newAccount == null)
@@ -285,17 +288,16 @@ namespace Stormpath.Owin.Middleware.Route
                 return true; // Some error occurred and the handler was invoked
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var executor = new RegisterExecutor(client, _configuration, _handlers, _logger);
+            var executor = new RegisterExecutor(_configuration, _handlers, _oktaClient, _logger);
 
             var formDataForHandler = sanitizedFormData
                 .ToDictionary(kv => kv.Key, kv => kv.Value?.ToString());
 
             var createdAccount = await executor.HandleRegistrationAsync(
                 context,
-                application,
                 formDataForHandler,
                 newAccount,
+                model.Password,
                 jsonErrorHandler,
                 cancellationToken);
             if (createdAccount == null)

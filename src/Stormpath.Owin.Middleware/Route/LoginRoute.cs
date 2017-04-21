@@ -23,25 +23,20 @@ using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
-using Stormpath.SDK.Provider;
+using Stormpath.Owin.Middleware.ViewModelBuilder;
 
 namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class LoginRoute : AbstractRoute
     {
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
 
-            return await RenderLoginViewAsync(client, context, cancellationToken, queryString, null);
+            return await RenderLoginViewAsync(context, cancellationToken, queryString, null);
         }
 
         private async Task<bool> RenderLoginViewAsync(
-            IClient client,
             IOwinEnvironment context,
             CancellationToken cancellationToken,
             IDictionary<string, string[]> queryString,
@@ -49,7 +44,6 @@ namespace Stormpath.Owin.Middleware.Route
             string[] errors = null)
         {
             var viewModelBuilder = new LoginFormViewModelBuilder(
-                client,
                 _configuration,
                 ChangePasswordRoute.ShouldBeEnabled(_configuration),
                 VerifyEmailRoute.ShouldBeEnabled(_configuration),
@@ -63,7 +57,7 @@ namespace Stormpath.Owin.Middleware.Route
             return true;
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var body = await context.Request.GetBodyAsStringAsync(cancellationToken);
             var model = PostBodyParser.ToModel<LoginPostModel>(body, bodyContentType, _logger);
@@ -73,7 +67,6 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
                 return RenderLoginViewAsync(
-                    client,
                     context,
                     cancellationToken,
                     queryString,
@@ -83,7 +76,7 @@ namespace Stormpath.Owin.Middleware.Route
             });
 
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
                 await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
@@ -97,17 +90,15 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
 
             try
             {
                 var grantResult = await executor.PasswordGrantAsync(
-                    context, 
-                    application, 
+                    context,
                     htmlErrorHandler,
                     model.Login,
-                    model.Password, 
+                    model.Password,
                     cancellationToken);
 
                 if (grantResult == null)
@@ -117,9 +108,9 @@ namespace Stormpath.Owin.Middleware.Route
 
                 await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
             }
-            catch (ResourceException rex)
+            catch (Exception ex)
             {
-                await htmlErrorHandler(rex.Message, cancellationToken);
+                await htmlErrorHandler(ex.Message, cancellationToken);
                 return true;
             }
 
@@ -128,7 +119,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await executor.HandleRedirectAsync(context, nextUri);
         }
 
-        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var viewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login, _configuration.Providers);
             var loginViewModel = viewModelBuilder.Build();
@@ -136,13 +127,13 @@ namespace Stormpath.Owin.Middleware.Route
             return JsonResponse.Ok(context, loginViewModel);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var model = await PostBodyParser.ToModel<LoginPostModel>(context, bodyContentType, _logger, cancellationToken);
 
             if (model.ProviderData != null)
             {
-                return await HandleSocialLogin(context, client, model, cancellationToken);
+                return await HandleSocialLogin(context, model, cancellationToken);
             }
 
             var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
@@ -155,12 +146,10 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
 
             var grantResult = await executor.PasswordGrantAsync(
                 context,
-                application,
                 jsonErrorHandler,
                 model.Login,
                 model.Password,
@@ -171,10 +160,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true; // The error handler was invoked
             }
 
-            await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
-
-            var token = await grantResult.GetAccessTokenAsync(cancellationToken);
-            var account = await token.GetAccountAsync(cancellationToken);
+            var account = await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
 
             var sanitizer = new AccountResponseSanitizer();
             var responseModel = new
@@ -185,99 +171,102 @@ namespace Stormpath.Owin.Middleware.Route
             return await JsonResponse.Ok(context, responseModel);
         }
 
-        private async Task<bool> HandleSocialLogin(IOwinEnvironment context, IClient client, LoginPostModel model,
+        private Task<bool> HandleSocialLogin(IOwinEnvironment context, LoginPostModel model,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(model.ProviderData.ProviderId))
-            {
-                return await Error.Create(context, new BadRequest("No provider specified"), cancellationToken);
-            }
+            // todo how does social login work?
+            throw new Exception("TODO");
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
+            //if (string.IsNullOrEmpty(model.ProviderData.ProviderId))
+            //{
+            //    return await Error.Create(context, new BadRequest("No provider specified"), cancellationToken);
+            //}
 
-            try
-            {
-                IProviderAccountRequest providerRequest;
+            //var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            //var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
 
-                switch (model.ProviderData.ProviderId)
-                {
-                    case "facebook":
-                    {
-                        providerRequest = client.Providers()
-                            .Facebook()
-                            .Account()
-                            .SetAccessToken(model.ProviderData.AccessToken)
-                            .Build();
-                        break;
-                    }
-                    case "google":
-                    {
-                        providerRequest = client.Providers()
-                            .Google()
-                            .Account()
-                            .SetCode(model.ProviderData.Code)
-                            .Build();
-                        break;
-                    }
-                    case "github":
-                    {
-                        providerRequest = client.Providers()
-                            .Github()
-                            .Account()
-                            .SetAccessToken(model.ProviderData.AccessToken)
-                            .Build();
-                        break;
-                    }
-                    case "linkedin":
-                    {
-                        providerRequest = client.Providers()
-                            .LinkedIn()
-                            .Account()
-                            .SetAccessToken(model.ProviderData.AccessToken)
-                            .Build();
-                        break;
-                    }
-                    default:
-                        providerRequest = null;
-                        break;
-                }
+            //try
+            //{
+            //    IProviderAccountRequest providerRequest;
 
-                if (providerRequest == null)
-                {
-                    return await Error.Create(context,
-                        new BadRequest($"Unknown provider '{model.ProviderData.ProviderId}'"), cancellationToken);
-                }
+            //    switch (model.ProviderData.ProviderId)
+            //    {
+            //        case "facebook":
+            //        {
+            //            providerRequest = client.Providers()
+            //                .Facebook()
+            //                .Account()
+            //                .SetAccessToken(model.ProviderData.AccessToken)
+            //                .Build();
+            //            break;
+            //        }
+            //        case "google":
+            //        {
+            //            providerRequest = client.Providers()
+            //                .Google()
+            //                .Account()
+            //                .SetCode(model.ProviderData.Code)
+            //                .Build();
+            //            break;
+            //        }
+            //        case "github":
+            //        {
+            //            providerRequest = client.Providers()
+            //                .Github()
+            //                .Account()
+            //                .SetAccessToken(model.ProviderData.AccessToken)
+            //                .Build();
+            //            break;
+            //        }
+            //        case "linkedin":
+            //        {
+            //            providerRequest = client.Providers()
+            //                .LinkedIn()
+            //                .Account()
+            //                .SetAccessToken(model.ProviderData.AccessToken)
+            //                .Build();
+            //            break;
+            //        }
+            //        default:
+            //            providerRequest = null;
+            //            break;
+            //    }
 
-                var loginResult =
-                    await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
+            //    if (providerRequest == null)
+            //    {
+            //        return await Error.Create(context,
+            //            new BadRequest($"Unknown provider '{model.ProviderData.ProviderId}'"), cancellationToken);
+            //    }
 
-                await socialExecutor.HandleLoginResultAsync(
-                    context,
-                    application,
-                    loginResult,
-                    cancellationToken);
+            //    var loginResult =
+            //        await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
 
-                var sanitizer = new AccountResponseSanitizer();
-                var responseModel = new
-                {
-                    account = sanitizer.Sanitize(loginResult.Account)
-                };
+            //    await socialExecutor.HandleLoginResultAsync(
+            //        context,
+            //        application,
+            //        loginResult,
+            //        cancellationToken);
 
-                return await JsonResponse.Ok(context, responseModel);
+            //    var sanitizer = new AccountResponseSanitizer();
+            //    var responseModel = new
+            //    {
+            //        account = sanitizer.Sanitize(loginResult.Account)
+            //    };
 
-            }
-            catch (ResourceException rex)
-            {
-                // TODO improve error logging (include request id, etc)
-                _logger.Error(rex.DeveloperMessage, source: nameof(HandleSocialLogin));
-                return await Error.Create(context, new BadRequest("An error occurred while processing the login"), cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, source: nameof(HandleSocialLogin));
-                return await Error.Create(context, new BadRequest("An error occurred while processing the login"), cancellationToken);
-            }
+            //    return await JsonResponse.Ok(context, responseModel);
+
+            //}
+            //catch (ResourceException rex)
+            //{
+            //    // TODO improve error logging (include request id, etc)
+            //    _logger.LogError(rex.DeveloperMessage, source: nameof(HandleSocialLogin));
+            //    return await Error.Create(context, new BadRequest("An error occurred while processing the login"), cancellationToken);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex, source: nameof(HandleSocialLogin));
+            //    return await Error.Create(context, new BadRequest("An error occurred while processing the login"), cancellationToken);
+            //}
         }
     }
 }

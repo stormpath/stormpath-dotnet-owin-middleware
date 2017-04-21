@@ -16,7 +16,8 @@ namespace Stormpath.Owin.Middleware
             Func<PreRegistrationContext, CancellationToken, Task> preRegistrationHandler,
             Func<PostRegistrationContext, CancellationToken, Task> postRegistrationHandler,
             Func<PreVerifyEmailContext, CancellationToken, Task> preVerifyEmailHandler,
-            Func<PostVerifyEmailContext, CancellationToken, Task> postVerifyEmailHandler)
+            Func<PostVerifyEmailContext, CancellationToken, Task> postVerifyEmailHandler,
+            Func<SendVerificationEmailContext, CancellationToken, Task> sendVerificationEmailHandler)
         {
             if (preChangePasswordHandler == null) throw new ArgumentNullException(nameof(preChangePasswordHandler));
             if (postChangePasswordHandler == null) throw new ArgumentNullException(nameof(postChangePasswordHandler));
@@ -47,6 +48,8 @@ namespace Stormpath.Owin.Middleware
 
             PreVerifyEmailHandler = preVerifyEmailHandler;
             PostVerifyEmailHandler = postVerifyEmailHandler;
+
+            SendVerificationEmailHandler = sendVerificationEmailHandler ?? throw new ArgumentNullException(nameof(sendVerificationEmailHandler));
         }
 
         public Func<PreChangePasswordContext, CancellationToken, Task> PreChangePasswordHandler { get; }
@@ -68,6 +71,8 @@ namespace Stormpath.Owin.Middleware
         public Func<PreVerifyEmailContext, CancellationToken, Task> PreVerifyEmailHandler { get; }
 
         public Func<PostVerifyEmailContext, CancellationToken, Task> PostVerifyEmailHandler { get; }
+
+        public Func<SendVerificationEmailContext, CancellationToken, Task> SendVerificationEmailHandler { get; }
     }
 }
 

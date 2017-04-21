@@ -17,12 +17,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware.Route
 {
@@ -33,43 +32,23 @@ namespace Stormpath.Owin.Middleware.Route
         protected HandlerConfiguration _handlers;
         private IViewRenderer _viewRenderer;
         protected ILogger _logger;
-        private IClient _client;
         protected RouteOptionsBase _options;
+        protected IOktaClient _oktaClient;
 
         public void Initialize(
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
             IViewRenderer viewRenderer,
             ILogger logger,
-            IClient client,
-            RouteOptionsBase options)
+            RouteOptionsBase options,
+            IOktaClient oktaClient)
         {
-            if (configuration == null)
-            {
-                throw new ArgumentNullException(nameof(configuration));
-            }
-
-            if (viewRenderer == null)
-            {
-                throw new ArgumentNullException(nameof(viewRenderer));
-            }
-
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
-            if (handlers == null)
-            {
-                throw new ArgumentNullException(nameof(handlers));
-            }
-
-            _configuration = configuration;
-            _viewRenderer = viewRenderer;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
+            _handlers = handlers ?? throw new ArgumentNullException(nameof(handlers));
             _logger = logger;
-            _client = client;
-            _handlers = handlers;
             _options = options;
+            _oktaClient = oktaClient ?? throw new ArgumentNullException(nameof(oktaClient));
 
             _initialized = true;
         }
@@ -86,28 +65,13 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (!contentNegotiationResult.Success)
             {
-                _logger.Trace($"Content negotiation failed for request {owinContext.Request.Path}. Skipping", nameof(InvokeAsync));
+                _logger.LogTrace($"Content negotiation failed for request {owinContext.Request.Path}. Skipping", nameof(InvokeAsync));
                 return false;
             }
 
             try
             {
-                return await HandleRequestAsync(owinContext, _client, contentNegotiationResult, owinContext.CancellationToken);
-            }
-            catch (ResourceException rex)
-            {
-                if (contentNegotiationResult.ContentType == ContentType.Json)
-                {
-                    // Sanitize Stormpath API errors
-                    await Error.CreateFromApiError(owinContext, rex, owinContext.CancellationToken);
-                    return true;
-                }
-                else
-                {
-                    // todo handle framework errors
-                    _logger.Error(rex, source: nameof(InvokeAsync));
-                    throw;
-                }
+                return await HandleRequestAsync(owinContext, contentNegotiationResult, owinContext.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -120,28 +84,28 @@ namespace Stormpath.Owin.Middleware.Route
                 else
                 {
                     // todo handle framework errors
-                    _logger.Error(ex, source: nameof(InvokeAsync));
+                    _logger.LogError(1007, ex, nameof(InvokeAsync));
                     throw;
                 }
             }
         }
 
-        private Task<bool> HandleRequestAsync(IOwinEnvironment context, IClient scopedClient, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        private Task<bool> HandleRequestAsync(IOwinEnvironment context, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             var method = context.Request.Method;
 
             if (method.Equals("GET", StringComparison.OrdinalIgnoreCase))
             {
-                return GetAsync(context, scopedClient, contentNegotiationResult, cancellationToken);
+                return GetAsync(context, contentNegotiationResult, cancellationToken);
             }
 
             if (method.Equals("POST", StringComparison.OrdinalIgnoreCase))
             {
-                return PostAsync(context, scopedClient, contentNegotiationResult, cancellationToken);
+                return PostAsync(context, contentNegotiationResult, cancellationToken);
             }
 
             // Do nothing and pass on to next middleware.
-            _logger.Trace("Request method was not GET or POST", nameof(HandleRequestAsync));
+            _logger.LogTrace("Request method was not GET or POST", nameof(HandleRequestAsync));
             return Task.FromResult(false);
         }
 
@@ -153,23 +117,23 @@ namespace Stormpath.Owin.Middleware.Route
             return _viewRenderer.RenderAsync(viewName, model, context, cancellationToken);
         }
 
-        protected virtual Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        protected virtual Task<bool> GetAsync(IOwinEnvironment context, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             if (contentNegotiationResult.ContentType == ContentType.Json)
             {
-                return GetJsonAsync(context, client, cancellationToken);
+                return GetJsonAsync(context, cancellationToken);
             }
 
             if (contentNegotiationResult.ContentType == ContentType.Html)
             {
-                return GetHtmlAsync(context, client, cancellationToken);
+                return GetHtmlAsync(context, cancellationToken);
             }
 
             // Do nothing and pass on to next middleware.
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostAsync(IOwinEnvironment context, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             var rawBodyContentType = context.Request.Headers.GetString("Content-Type");
             var bodyContentTypeDetectionResult = ContentNegotiation.DetectBodyType(rawBodyContentType);
@@ -181,37 +145,37 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (contentNegotiationResult.ContentType == ContentType.Json)
             {
-                return PostJsonAsync(context, client, bodyContentTypeDetectionResult.ContentType, cancellationToken);
+                return PostJsonAsync(context, bodyContentTypeDetectionResult.ContentType, cancellationToken);
             }
 
             if (contentNegotiationResult.ContentType == ContentType.Html)
             {
-                return PostHtmlAsync(context, client, bodyContentTypeDetectionResult.ContentType, cancellationToken);
+                return PostHtmlAsync(context, bodyContentTypeDetectionResult.ContentType, cancellationToken);
             }
 
             // Do nothing and pass on to next middleware.
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected virtual Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             // Do nothing and pass on to next middleware by default.
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected virtual Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             // Do nothing and pass on to next middleware by default.
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             // Do nothing and pass on to next middleware by default.
             return Task.FromResult(false);
         }
 
-        protected virtual Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected virtual Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             // Do nothing and pass on to next middleware by default.
             return Task.FromResult(false);

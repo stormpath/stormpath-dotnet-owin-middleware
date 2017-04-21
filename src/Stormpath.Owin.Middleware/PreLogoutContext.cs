@@ -1,16 +1,16 @@
 ﻿using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Account;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
     public sealed class PreLogoutContext : HandlerContext
     {
-        public PreLogoutContext(IOwinEnvironment environment, IAccount account)
+        public PreLogoutContext(IOwinEnvironment environment, ICompatibleOktaAccount account)
             : base(environment)
         {
             Account = account;
         }
 
-        public IAccount Account { get; }
+        public ICompatibleOktaAccount Account { get; }
     }
 }

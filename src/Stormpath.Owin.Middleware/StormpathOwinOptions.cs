@@ -17,9 +17,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.SDK.Logging;
+using Microsoft.Extensions.Logging;
+
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Cache;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -34,8 +34,6 @@ namespace Stormpath.Owin.Middleware
         public string LibraryUserAgent { get; set; }
 
         public IViewRenderer ViewRenderer { get; set; }
-
-        public ICacheProviderBuilder CacheProvider { get; set; }
 
         public Func<PreChangePasswordContext, CancellationToken, Task> PreChangePasswordHandler { get; set; }
 
@@ -56,5 +54,7 @@ namespace Stormpath.Owin.Middleware
         public Func<PreVerifyEmailContext, CancellationToken, Task> PreVerifyEmailHandler { get; set; }
 
         public Func<PostVerifyEmailContext, CancellationToken, Task> PostVerifyEmailHandler { get; set; }
+
+        public Func<SendVerificationEmailContext, CancellationToken, Task> SendVerificationEmailHandler { get; set; }
     }
 }

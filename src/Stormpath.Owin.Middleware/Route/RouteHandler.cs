@@ -17,13 +17,12 @@
 using System;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Client;
 
 namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class RouteHandler
     {
-        public RouteHandler(Func<IClient, Func<IOwinEnvironment, Task<bool>>> handler, bool authenticationRequired = false)
+        public RouteHandler(Func<Func<IOwinEnvironment, Task<bool>>> handler, bool authenticationRequired = false)
         {
             AuthenticationRequired = authenticationRequired;
             Handler = handler;
@@ -31,6 +30,6 @@ namespace Stormpath.Owin.Middleware.Route
 
         public bool AuthenticationRequired { get; private set; }
 
-        public Func<IClient, Func<IOwinEnvironment, Task<bool>>> Handler { get; private set; }
+        public Func<Func<IOwinEnvironment, Task<bool>>> Handler { get; private set; }
     }
 }

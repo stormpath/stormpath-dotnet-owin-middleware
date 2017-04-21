@@ -17,11 +17,10 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Logging;
-using Stormpath.SDK.Oauth;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Stormpath.Owin.Middleware.Internal
 {
@@ -33,24 +32,26 @@ namespace Stormpath.Owin.Middleware.Internal
         public static string FormatDate(DateTimeOffset dateTimeOffset)
             => $"{dateTimeOffset.UtcDateTime.ToString(DateFormat, CultureInfo.InvariantCulture)} GMT";
 
-        public static void AddTokenCookiesToResponse(IOwinEnvironment context, IClient client, IOauthGrantAuthenticationResult grantResult, StormpathConfiguration configuration, ILogger logger)
+        public static void AddTokenCookiesToResponse(IOwinEnvironment context, GrantResult grantResult, StormpathConfiguration configuration, ILogger logger)
         {
-            if (!string.IsNullOrEmpty(grantResult.AccessTokenString))
+            if (!string.IsNullOrEmpty(grantResult.AccessToken))
             {
-                var expirationDate = client.NewJwtParser().Parse(grantResult.AccessTokenString).Body.Expiration;
-                SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessTokenString, expirationDate, IsSecureRequest(context), logger);
+                var token = new JwtSecurityTokenHandler().ReadJwtToken(grantResult.AccessToken);
+                var expValue = token.Payload.Exp;
+                var expirationDate = expValue == null ? (DateTimeOffset?)null : Epoch.AddSeconds(expValue.Value);
+
+                SetTokenCookie(context, configuration.Web.AccessTokenCookie, grantResult.AccessToken, expirationDate, IsSecureRequest(context), logger);
             }
 
-            if (!string.IsNullOrEmpty(grantResult.RefreshTokenString))
+            if (!string.IsNullOrEmpty(grantResult.RefreshToken))
             {
-                var expirationDate = client.NewJwtParser().Parse(grantResult.RefreshTokenString).Body.Expiration;
-                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshTokenString, expirationDate, IsSecureRequest(context), logger);
+                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshToken, null, IsSecureRequest(context), logger);
             }
         }
 
         public static void DeleteTokenCookie(IOwinEnvironment context, WebCookieConfiguration cookieConfiguration, ILogger logger)
         {
-            logger.Trace($"Deleting cookie '{cookieConfiguration.Name}' on response");
+            logger.LogTrace($"Deleting cookie '{cookieConfiguration.Name}' on response");
 
             SetTokenCookie(context, cookieConfiguration, string.Empty, Epoch, IsSecureRequest(context), logger);
         }
@@ -112,7 +113,7 @@ namespace Stormpath.Owin.Middleware.Internal
                 cookieFormat += $"; {attributes}";
             }
 
-            logger.Trace($"Adding cookie to response: '{cookieFormat}'", nameof(SetCookie));
+            logger.LogTrace($"Adding cookie to response: '{cookieFormat}'", nameof(SetCookie));
 
             // If the cookie has already been set, make sure it's replaced
             string[] existingSetCookieHeaders;

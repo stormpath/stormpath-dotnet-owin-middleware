@@ -19,25 +19,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
-using Stormpath.Owin.Abstractions.ViewModel;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Model;
+using Stormpath.Owin.Middleware.ViewModelBuilder;
 using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Logging;
+using Stormpath.Owin.Middleware.Model;
+using System.Linq;
+using Stormpath.Owin.Middleware.Okta;
+using System.Collections.Generic;
 
 namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class VerifyEmailRoute : AbstractRoute
     {
         public static bool ShouldBeEnabled(IntegrationConfiguration configuration)
-            => configuration.Web.VerifyEmail.Enabled == true
-            || (configuration.Web.VerifyEmail.Enabled == null && configuration.Tenant.EmailVerificationWorkflowEnabled);
+            => configuration.Web.VerifyEmail.Enabled == true;
 
         private async Task<bool> ResendVerification(
             string email,
-            IClient client,
             IOwinEnvironment environment,
             Func<string, CancellationToken, Task<bool>> errorHandler,
             Func<CancellationToken, Task<bool>> successHandler,
@@ -49,36 +47,78 @@ namespace Stormpath.Owin.Middleware.Route
             };
             await _handlers.PreVerifyEmailHandler(preVerifyEmailContext, cancellationToken);
 
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
             try
             {
-                await application.SendVerificationEmailAsync(email, cancellationToken);
+                var foundUsers = await _oktaClient.FindUsersByEmailAsync(email, cancellationToken);
+                if (!foundUsers.Any())
+                {
+                    return await successHandler(cancellationToken);
+                }
+
+                var oktaUser = foundUsers.Single();
+
+                // Generate a new code
+                var updatedProperties = new Dictionary<string, object>()
+                {
+                    ["emailVerificationToken"] = CodeGenerator.GetCode()
+                };
+
+                oktaUser = await _oktaClient.UpdateUserProfileAsync(oktaUser.Id, updatedProperties, cancellationToken);
+
+                var stormpathCompatibleUser = new CompatibleOktaAccount(oktaUser);
+
+                var sendVerificationEmailContext = new SendVerificationEmailContext(environment, stormpathCompatibleUser);
+                await _handlers.SendVerificationEmailHandler(sendVerificationEmailContext, cancellationToken);
             }
-            catch (ResourceException rex) when (rex.Code == 2016)
+            catch (Exception ex) when (errorHandler != null)
             {
-                // Code 2016 means that an account does not exist for the given email
-                // address.  We don't want to leak information about the account
-                // list, so allow this continue without error.
-                _logger.Info($"A user tried to resend their account verification email, but failed: {rex.DeveloperMessage}");
-                return await successHandler(cancellationToken);
-            }
-            catch (ResourceException rex) when (errorHandler != null)
-            {
-                return await errorHandler(rex.Message, cancellationToken);
+                return await errorHandler(ex.Message, cancellationToken);
             }
 
             return await successHandler(cancellationToken);
         }
 
-        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        private async Task<ICompatibleOktaAccount> VerifyAccountEmailAsync(string spToken, CancellationToken cancellationToken)
+        {
+            var expression = $"profile.emailVerificationToken eq \"{spToken}\"";
+            var foundUsers = await _oktaClient.SearchUsersAsync(expression, cancellationToken);
+
+            if (foundUsers.Count > 1)
+            {
+                throw new InvalidOperationException("An unknown error occured");
+            }
+
+            var user = foundUsers.FirstOrDefault();
+
+            object rawToken = null;
+            bool tokenExists = user?.Profile.TryGetValue("emailVerificationToken", out rawToken) ?? false;
+            bool tokenMatches = rawToken?.ToString().Equals(spToken, StringComparison.Ordinal) ?? false;
+
+            if (!tokenExists || !tokenMatches)
+            {
+                throw new InvalidOperationException("Token is invalid");
+            }
+
+            var updatedProperties = new Dictionary<string, object>()
+            {
+                ["emailVerificationToken"] = null,
+                ["emailVerificationStatus"] = "VERIFIED"
+            };
+
+            await _oktaClient.ActivateUserAsync(user.Id, cancellationToken);
+            user = await _oktaClient.UpdateUserProfileAsync(user.Id, updatedProperties, cancellationToken);
+
+            return new CompatibleOktaAccount(user);
+        }
+
+        protected override async Task<bool> GetHtmlAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var spToken = queryString.GetString("sptoken");
 
             if (string.IsNullOrEmpty(spToken))
             {
-                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(_configuration);
                 var verifyViewModel = viewModelBuilder.Build();
 
                 await RenderViewAsync(context, _configuration.Web.VerifyEmail.View, verifyViewModel, cancellationToken);
@@ -87,16 +127,16 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+                var account = await VerifyAccountEmailAsync(spToken, cancellationToken);
 
                 var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
                 await _handlers.PostVerifyEmailHandler(postVerifyEmailContext, cancellationToken);
 
                 return await HttpResponse.Redirect(context, $"{_configuration.Web.VerifyEmail.NextUri}");
             }
-            catch (ResourceException)
+            catch (Exception)
             {
-                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(_configuration);
                 var verifyViewModel = viewModelBuilder.Build();
                 verifyViewModel.InvalidSpToken = true;
 
@@ -105,11 +145,11 @@ namespace Stormpath.Owin.Middleware.Route
             }
         }
 
-        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostHtmlAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var htmlErrorHandler = new Func<string, CancellationToken, Task<bool>>(async (error, ct) =>
             {
-                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(client, _configuration);
+                var viewModelBuilder = new VerifyEmailFormViewModelBuilder(_configuration);
                 var verifyEmailViewModel = viewModelBuilder.Build();
                 verifyEmailViewModel.Errors.Add(error);
 
@@ -122,7 +162,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var formData = FormContentParser.Parse(body, _logger);
             var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(client, _configuration.Client.ApiKey, stateToken, _logger);
+            var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
                 await htmlErrorHandler("An error occurred. Please try again.", cancellationToken);
@@ -134,14 +174,13 @@ namespace Stormpath.Owin.Middleware.Route
 
             return await ResendVerification(
                 model.Email,
-                client,
                 context,
                 htmlErrorHandler,
                 htmlSuccessHandler,
                 cancellationToken);
         }
 
-        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        protected override async Task<bool> GetJsonAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var queryString = QueryStringParser.Parse(context.Request.QueryString, _logger);
             var spToken = queryString.GetString("sptoken");
@@ -151,7 +190,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return await Error.Create(context, new BadRequest("sptoken parameter not provided."), cancellationToken);
             }
 
-            var account = await client.VerifyAccountEmailAsync(spToken, cancellationToken);
+            var account = await VerifyAccountEmailAsync(spToken, cancellationToken);
             // Errors are caught in AbstractRouteMiddleware
 
             var postVerifyEmailContext = new PostVerifyEmailContext(context, account);
@@ -160,7 +199,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await JsonResponse.Ok(context);
         }
 
-        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, IClient client, ContentType bodyContentType, CancellationToken cancellationToken)
+        protected override async Task<bool> PostJsonAsync(IOwinEnvironment context, ContentType bodyContentType, CancellationToken cancellationToken)
         {
             var model = await PostBodyParser.ToModel<VerifyEmailPostModel>(context, bodyContentType, _logger, cancellationToken);
 
@@ -168,7 +207,6 @@ namespace Stormpath.Owin.Middleware.Route
 
             return await ResendVerification(
                 email: model.Email,
-                client: client,
                 environment: context,
                 errorHandler: null, // Errors are caught in AbstractRouteMiddleware
                 successHandler: jsonSuccessHandler,

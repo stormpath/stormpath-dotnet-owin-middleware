@@ -16,6 +16,7 @@
 
 using System.Linq;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Xunit;
 
@@ -32,7 +33,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void Null_accept_header_serves_first_produces()
         {
-            var result = ContentNegotiation.NegotiateAcceptHeader(null, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(null, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(DefaultProduces.First());
@@ -41,7 +42,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void StarStar_header_serves_first_produces()
         {
-            var result = ContentNegotiation.NegotiateAcceptHeader(null, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(null, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(DefaultProduces.First());
@@ -50,7 +51,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void Html_preferred_and_in_produces()
         {
-            var result = ContentNegotiation.NegotiateAcceptHeader(TextHtml, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(TextHtml, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(TextHtml);
@@ -61,7 +62,7 @@ namespace Stormpath.Owin.UnitTest
         {
             var producesOnlyJson = new string[] { ApplicationJson };
 
-            var result = ContentNegotiation.NegotiateAcceptHeader("text/html", producesOnlyJson, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader("text/html", producesOnlyJson, logger: NullLogger.Instance);
 
             result.Success.Should().BeFalse();
         }
@@ -71,7 +72,7 @@ namespace Stormpath.Owin.UnitTest
         {
             var headerValue = "application/json; q=0.8, text/html";
 
-            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(TextHtml);
@@ -82,7 +83,7 @@ namespace Stormpath.Owin.UnitTest
         {
             var headerValue = "application/json; q=0.8, text/html;q=0.9";
 
-            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(TextHtml);
@@ -91,7 +92,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void Json_preferred_and_in_produces()
         {
-            var result = ContentNegotiation.NegotiateAcceptHeader(ApplicationJson, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(ApplicationJson, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(ApplicationJson);
@@ -102,7 +103,7 @@ namespace Stormpath.Owin.UnitTest
         {
             var producesOnlyHtml = new string[] { TextHtml };
 
-            var result = ContentNegotiation.NegotiateAcceptHeader(ApplicationJson, producesOnlyHtml, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(ApplicationJson, producesOnlyHtml, logger: NullLogger.Instance);
 
             result.Success.Should().BeFalse();
         }
@@ -112,7 +113,7 @@ namespace Stormpath.Owin.UnitTest
         {
             var headerValue = "text/html; q=0.8, application/json";
 
-            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(ApplicationJson);
@@ -123,7 +124,7 @@ namespace Stormpath.Owin.UnitTest
         {
             var headerValue = "text/html; q=0.8, application/json;q=0.9";
 
-            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(ApplicationJson);
@@ -132,7 +133,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void Unsupported_header_fails()
         {
-            var result = ContentNegotiation.NegotiateAcceptHeader("foo/bar", DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader("foo/bar", DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeFalse();
         }
@@ -178,7 +179,7 @@ namespace Stormpath.Owin.UnitTest
         public void Complex_scenario_1_is_html()
         {
             var headerValue = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
-            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: null);
+            var result = ContentNegotiation.NegotiateAcceptHeader(headerValue, DefaultProduces, logger: NullLogger.Instance);
 
             result.Success.Should().BeTrue();
             result.ContentType.ToString().Should().Be(TextHtml);

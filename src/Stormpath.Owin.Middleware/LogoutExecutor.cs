@@ -1,32 +1,29 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.SDK.Account;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Error;
-using Stormpath.SDK.Jwt;
-using Stormpath.SDK.Logging;
+using Stormpath.Owin.Middleware.Okta;
+using Stormpath.Owin.Abstractions.Configuration;
 
 namespace Stormpath.Owin.Middleware
 {
     internal sealed class LogoutExecutor
     {
-        private readonly IClient _client;
-        private readonly StormpathConfiguration _configuration;
+        private readonly IOktaClient _oktaClient;
+        private readonly IntegrationConfiguration _configuration;
         private readonly HandlerConfiguration _handlers;
         private readonly ILogger _logger;
 
         public LogoutExecutor(
-            IClient client,
-            StormpathConfiguration configuration,
+            IOktaClient oktaClient,
+            IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
             ILogger logger)
         {
-            _client = client;
+            _oktaClient = oktaClient;
             _configuration = configuration;
             _handlers = handlers;
             _logger = logger;
@@ -34,7 +31,7 @@ namespace Stormpath.Owin.Middleware
 
         public async Task HandleLogoutAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var account = context.Request[OwinKeys.StormpathUser] as IAccount;
+            var account = context.Request[OwinKeys.StormpathUser] as ICompatibleOktaAccount;
             context.Request[OwinKeys.StormpathUser] = null;
 
             string[] rawCookies;
@@ -47,8 +44,8 @@ namespace Stormpath.Owin.Middleware
                 await _handlers.PreLogoutHandler(preLogoutContext, cancellationToken);
 
                 // TODO delete tokens for other types of auth too
-                await RevokeCookieTokens(_client, cookieParser, cancellationToken);
-                await RevokeHeaderToken(context, _client, cancellationToken);
+                await RevokeCookieTokens(cookieParser, cancellationToken);
+                await RevokeHeaderToken(context, cancellationToken);
 
                 var postLogoutContext = new PostLogoutContext(context, account);
                 await _handlers.PostLogoutHandler(postLogoutContext, cancellationToken);
@@ -60,26 +57,26 @@ namespace Stormpath.Owin.Middleware
         public Task<bool> HandleRedirectAsync(IOwinEnvironment context)
             => HttpResponse.Redirect(context, _configuration.Web.Logout.NextUri);
 
-        private async Task RevokeCookieTokens(IClient client, CookieParser cookieParser, CancellationToken cancellationToken)
+        private async Task RevokeCookieTokens(CookieParser cookieParser, CancellationToken cancellationToken)
         {
             var accessToken = cookieParser.Get(_configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(_configuration.Web.RefreshTokenCookie.Name);
 
-            var revoker = new TokenRevoker(client, _logger)
-                .AddToken(accessToken)
-                .AddToken(refreshToken);
+            var revoker = new TokenRevoker(_oktaClient, _configuration, _logger)
+                .AddToken(accessToken, TokenType.Access)
+                .AddToken(refreshToken, TokenType.Refresh);
 
             try
             {
-                await revoker.Revoke(cancellationToken);
+                await revoker.RevokeAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.Info(ex.Message, source: nameof(RevokeCookieTokens));
+                _logger.LogInformation(ex.Message, nameof(RevokeCookieTokens));
             }
         }
 
-        private async Task RevokeHeaderToken(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        private async Task RevokeHeaderToken(IOwinEnvironment context, CancellationToken cancellationToken)
         {
             var bearerHeaderParser = new BearerAuthenticationParser(context.Request.Headers.GetString("Authorization"), _logger);
             if (!bearerHeaderParser.IsValid)
@@ -87,16 +84,16 @@ namespace Stormpath.Owin.Middleware
                 return;
             }
 
-            var revoker = new TokenRevoker(client, _logger)
-                .AddToken(bearerHeaderParser.Token);
+            var revoker = new TokenRevoker(_oktaClient, _configuration, _logger)
+                .AddToken(bearerHeaderParser.Token, TokenType.Access);
 
             try
             {
-                await revoker.Revoke(cancellationToken);
+                await revoker.RevokeAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.Info(ex.Message, source: nameof(RevokeCookieTokens));
+                _logger.LogInformation(ex.Message, nameof(RevokeCookieTokens));
             }
         }
 

@@ -1,37 +1,23 @@
 ﻿using FluentAssertions;
-using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Http;
-using Stormpath.SDK.Serialization;
+using Microsoft.Extensions.Logging.Abstractions;
+using Stormpath.Owin.Middleware;
 using Xunit;
 
 namespace Stormpath.Owin.UnitTest
 {
     public class StateTokenShould
     {
-        private ClientApiKeyConfiguration GetApiKey()
-            => new ClientApiKeyConfiguration(id: "fake", secret: "superduperfake123!");
-
-        private IClient CreateClient()
-        {
-            return Clients.Builder()
-                .SetApiKeyId(GetApiKey().Id)
-                .SetApiKeySecret(GetApiKey().Secret)
-                .SetHttpClient(HttpClients.Create().SystemNetHttpClient())
-                .SetSerializer(Serializers.Create().JsonNetSerializer())
-                .Build();
-        }
+        private const string TestAppId = "app://test";
+        private const string TestSecret = "superSecretKey_123!!";
 
         [Fact]
         public void RoundtripTokenWithPath()
         {
-            var client = CreateClient();
-            var builder = new StateTokenBuilder(client, GetApiKey());
+            var builder = new StateTokenBuilder(TestAppId, TestSecret);
             builder.Path = "/foo/bar/9";
 
             var result = builder.ToString();
-            var parser = new StateTokenParser(client, GetApiKey(), result, null);
+            var parser = new StateTokenParser(TestAppId, TestSecret, result, NullLogger.Instance);
 
             parser.Valid.Should().BeTrue();
             parser.Path.Should().Be("/foo/bar/9");
@@ -41,13 +27,12 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void RoundtripTokenWithPathAndState()
         {
-            var client = CreateClient();
-            var builder = new StateTokenBuilder(client, GetApiKey());
+            var builder = new StateTokenBuilder(TestAppId, TestSecret);
             builder.Path = "/foo/bar/9";
             builder.State = "asdf1234!?";
 
             var result = builder.ToString();
-            var parser = new StateTokenParser(client, GetApiKey(), result, null);
+            var parser = new StateTokenParser(TestAppId, TestSecret, result, NullLogger.Instance);
 
             parser.Valid.Should().BeTrue();
             parser.Path.Should().Be("/foo/bar/9");
@@ -57,12 +42,43 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void FailValidationForIncorrectSecret()
         {
-            var client = CreateClient();
-            var builder = new StateTokenBuilder(client, new ClientApiKeyConfiguration(id: "foo", secret: "notTheCorrectSecret987"));
+            var builder = new StateTokenBuilder(TestAppId, "notTheCorrectSecret987");
             builder.Path = "/hello";
 
             var result = builder.ToString();
-            var parser = new StateTokenParser(client, GetApiKey(), result, null);
+            var parser = new StateTokenParser(TestAppId, TestSecret, result, NullLogger.Instance);
+
+            parser.Valid.Should().BeFalse();
+            parser.Path.Should().BeNull();
+        }
+
+        [Fact]
+        public void FailValidationForIncorrectAppId()
+        {
+            var builder = new StateTokenBuilder("notTheCorrectApp", TestSecret);
+            builder.Path = "/hello";
+
+            var result = builder.ToString();
+            var parser = new StateTokenParser(TestAppId, TestSecret, result, NullLogger.Instance);
+
+            parser.Valid.Should().BeFalse();
+            parser.Path.Should().BeNull();
+        }
+
+        [Fact]
+        public void FailValidationForEmptyToken()
+        {
+            var parser = new StateTokenParser(TestAppId, TestSecret, string.Empty, NullLogger.Instance);
+
+            parser.Valid.Should().BeFalse();
+            parser.Path.Should().BeNull();
+        }
+
+        [Fact]
+        public void FailValidationForExpiredToken()
+        {
+            var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0OTA5MjE4NTUsInBhdGgiOiIvZm9vL2Jhci85Iiwic3RhdGUiOiI2OGE0OTRiOC0yYmE0LTRiMzctOGU0Zi1mZDRhYjM5YmYxYjEiLCJqdGkiOiIzMWQ1OTYxNC01OTg2LTQ3MjItOWM2Ny0xMzZkMzg2ZTRkMjMiLCJpYXQiOjE0OTA5MTgyNTV9.zgxYy-otE008W5b8AcFaOkCOE9QAZ5Hlxl94kObK_8Q";
+            var parser = new StateTokenParser(TestAppId, TestSecret, token, NullLogger.Instance);
 
             parser.Valid.Should().BeFalse();
             parser.Path.Should().BeNull();

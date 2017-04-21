@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Nowin test harness for Stormpath.Owin.Middleware</Description>
+    <Copyright>(c) 2016 Stormpath, Inc.</Copyright>
+    <VersionPrefix>4.0.0-beta1</VersionPrefix>
+    <Authors>Nate Barbettini</Authors>
+    <TargetFramework>net451</TargetFramework>
+    <AssemblyName>Stormpath.Owin.NowinHarness</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <PackageId>Stormpath.Owin.NowinHarness</PackageId>
+    <PackageProjectUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/stormpath/stormpath-dotnet-owin-middleware</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Stormpath.Owin.Middleware\Stormpath.Owin.Middleware.csproj" />
+    <ProjectReference Include="..\..\src\Stormpath.Owin.Views.Precompiled\Stormpath.Owin.Views.Precompiled.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Owin.Hosting" Version="3.0.1" />
+    <PackageReference Include="Nowin" Version="0.22.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

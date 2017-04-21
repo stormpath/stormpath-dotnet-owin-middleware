@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
-using NSubstitute;
+using Microsoft.Extensions.Logging.Abstractions;
 using Stormpath.Configuration.Abstractions;
-using Stormpath.Owin.Abstractions.ViewModel;
-using Stormpath.SDK.Client;
+using Stormpath.Owin.Middleware.ViewModelBuilder;
 using Xunit;
 
 namespace Stormpath.Owin.UnitTest
@@ -16,7 +15,6 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void NotThrowForMissingFieldTypeOnFormResubmission()
         {
-            var client = Substitute.For<IClient>();
             var config = new StormpathConfiguration()
             {
                 Web = new WebConfiguration
@@ -43,11 +41,10 @@ namespace Stormpath.Owin.UnitTest
             };
 
             var viewModelBuilder = new RegisterFormViewModelBuilder(
-                client,
                 ConfigurationHelper.CreateFakeConfiguration(config),
                 new Dictionary<string, string[]>(),
                 previousFormData,
-                logger: null);
+                logger: NullLogger.Instance);
 
             var result = viewModelBuilder.Build();
             result.Form.Fields.Should().Contain(x => x.Name == "CustomFieldsRock" && x.Required);

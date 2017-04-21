@@ -8,25 +8,17 @@ namespace Stormpath.Owin.UnitTest
     {
         public static IntegrationConfiguration CreateFakeConfiguration(StormpathConfiguration config)
         {
-            if (config.Client?.ApiKey == null)
-            {
-                if (config.Client == null)
-                {
-                    config.Client = new ClientConfiguration();
-                }
+            config.ApiToken = config.ApiToken ?? "fooApiToken";
+            config.Org = config.Org ?? "https://dev-12345.oktapreview.foo";
 
-                config.Client.ApiKey = new ClientApiKeyConfiguration()
-                {
-                    Id = "foo",
-                    Secret = "bar"
-                };
-            };
+            config.Application = config.Application ?? new OktaApplicationConfiguration();
+            config.Application.Id = config.Application.Id ?? "abcd1234xyz";
 
             var compiledConfig = Configuration.ConfigurationLoader.Initialize().Load(config);
 
             var integrationConfig = new IntegrationConfiguration(
                 compiledConfig, 
-                new TenantConfiguration("foo", false, false),
+                new OktaEnvironmentConfiguration("fooAuthServerId", "fooClientId", "fooClientSecret123456"),
                 new KeyValuePair<string, ProviderConfiguration>[0]);
 
             return integrationConfig;

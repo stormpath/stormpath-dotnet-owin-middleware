@@ -15,10 +15,16 @@ Task("Restore")
 Task("Build")
 .Does(() =>
 {
-    DotNetCoreBuild("./src/**/project.json", new DotNetCoreBuildSettings
+    var projects = GetFiles("./src/**/*.csproj");
+    Console.WriteLine("Building {0} projects", projects.Count());
+
+    foreach (var project in projects)
     {
-        Configuration = configuration
-    });
+        DotNetCoreBuild(project.FullPath, new DotNetCoreBuildSettings
+        {
+            Configuration = configuration
+        });
+    }
 });
 
 Task("Pack")
@@ -31,7 +37,7 @@ Task("Pack")
         "Stormpath.Owin.Views.Precompiled"
     }.ForEach(name =>
     {
-        DotNetCorePack("./src/" + name + "/project.json", new DotNetCorePackSettings
+        DotNetCorePack(string.Format("./src/{0}/{0}.csproj", name), new DotNetCorePackSettings
         {
             Configuration = configuration,
             OutputDirectory = "./artifacts/"
@@ -49,7 +55,7 @@ Task("Test")
         "Stormpath.Owin.UnitTest"
     }.ForEach(name =>
     {
-        DotNetCoreTest("./test/" + name + "/project.json");
+        DotNetCoreTest(string.Format("./test/{0}/{0}.csproj", name));
     });
 });
 

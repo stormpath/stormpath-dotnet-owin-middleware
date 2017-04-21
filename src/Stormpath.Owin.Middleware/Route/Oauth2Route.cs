@@ -20,22 +20,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model.Error;
-using Stormpath.SDK.Client;
-using Stormpath.SDK.Oauth;
 using Stormpath.Owin.Abstractions;
-using Stormpath.SDK.Error;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware.Route
 {
     public sealed class Oauth2Route : AbstractRoute
     {
-        protected override Task<bool> GetAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        protected override Task<bool> GetAsync(IOwinEnvironment context, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             context.Response.StatusCode = 405; // Method not allowed
             return TaskConstants.CompletedTask;
         }
 
-        protected override async Task<bool> PostAsync(IOwinEnvironment context, IClient client, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
+        protected override async Task<bool> PostAsync(IOwinEnvironment context, ContentNegotiationResult contentNegotiationResult, CancellationToken cancellationToken)
         {
             Caching.AddDoNotCacheHeaders(context);
 
@@ -63,19 +61,12 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                if (grantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase)
-                    && _configuration.Web.Oauth2.Client_Credentials.Enabled)
-                {
-                    await ExecuteClientCredentialsFlow(context, client, cancellationToken);
-                    return true;
-                }
-
                 if (grantType.Equals("password", StringComparison.OrdinalIgnoreCase)
                     && _configuration.Web.Oauth2.Password.Enabled)
                 {
                     var username = WebUtility.UrlDecode(formData.GetString("username"));
                     var password = WebUtility.UrlDecode(formData.GetString("password"));
-                    await ExecutePasswordFlow(context, client, username, password, cancellationToken);
+                    await ExecutePasswordFlow(context, username, password, cancellationToken);
                     return true;
                 }
 
@@ -83,65 +74,40 @@ namespace Stormpath.Owin.Middleware.Route
                     && _configuration.Web.Oauth2.Password.Enabled)
                 {
                     var refreshToken = WebUtility.UrlDecode(formData.GetString("refresh_token"));
-                    await ExecuteRefreshFlow(context, client, refreshToken, cancellationToken);
+                    await ExecuteRefreshFlow(context, refreshToken, cancellationToken);
                     return true;
                 }
             }
-            catch (ResourceException rex)
+            // Special handling of API errors for the OAuth route
+            catch (OktaException oex)
             {
-                // Special handling of API errors for the OAuth route
-                return await Error.Create(context, new OauthError(rex.Message, rex.GetProperty("error")), cancellationToken);
+                string message = oex.Message;
+                oex.Body.TryGetValue("error_description", out var rawMessage);
+                if (!string.IsNullOrEmpty(rawMessage.ToString())) message = rawMessage.ToString();
+
+                string error = "invalid_grant";
+                oex.Body.TryGetValue("error", out var rawError);
+                if (!string.IsNullOrEmpty(rawError.ToString())) error = rawError.ToString();
+
+                return await Error.Create(context, new OauthError(message, error), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                return await Error.Create(context, new OauthError(ex.Message, "invalid_grant"), cancellationToken);
             }
 
             return await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);
         }
 
-        private async Task<bool> ExecuteClientCredentialsFlow(IOwinEnvironment context, IClient client, CancellationToken cancellationToken)
+        private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, string username, string password, CancellationToken cancellationToken)
         {
-            var jsonErrorHandler = new Func<AbstractError, CancellationToken, Task>((err, ct)
-                => Error.Create(context, err, ct));
-
-            var basicHeaderParser = new BasicAuthenticationParser(context.Request.Headers.GetString("Authorization"), _logger);
-            if (!basicHeaderParser.IsValid)
-            {
-                await jsonErrorHandler(new OauthInvalidRequest(), cancellationToken);
-                return true;
-            }
-
-            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
-            var application = await client
-                .GetApplicationAsync(_configuration.Application.Href, cancellationToken)
-                .ConfigureAwait(false);
-
-            var tokenResult = await executor.ClientCredentialsGrantAsync(
-                context,
-                application,
-                jsonErrorHandler,
-                basicHeaderParser.Username, 
-                basicHeaderParser.Password,
-                cancellationToken);
-            if (tokenResult == null)
-            {
-                return true; // Some error occurred and the handler was invoked
-            }
-
-            await executor.HandlePostLoginAsync(context, tokenResult, cancellationToken);
-
-            var sanitizer = new GrantResultResponseSanitizer();
-            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithoutRefreshToken(tokenResult)).ConfigureAwait(false);
-        }
-
-        private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, IClient client, string username, string password, CancellationToken cancellationToken)
-        {
-            var executor = new LoginExecutor(client, _configuration, _handlers, _logger);
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
 
             var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
                 => Error.Create(context, new BadRequest(message), ct));
 
             var grantResult = await executor.PasswordGrantAsync(
-                context, 
-                application,
+                context,
                 jsonErrorHandler,
                 username,
                 password,
@@ -153,19 +119,17 @@ namespace Stormpath.Owin.Middleware.Route
             return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(grantResult)).ConfigureAwait(false);
         }
 
-        private async Task<bool> ExecuteRefreshFlow(IOwinEnvironment context, IClient client, string refreshToken, CancellationToken cancellationToken)
+        private async Task<bool> ExecuteRefreshFlow(IOwinEnvironment context, string refreshToken, CancellationToken cancellationToken)
         {
-            var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-
-            var refreshGrantRequest = OauthRequests.NewRefreshGrantRequest()
-                .SetRefreshToken(refreshToken)
-                .Build();
-
-            var tokenResult = await application.NewRefreshGrantAuthenticator()
-                .AuthenticateAsync(refreshGrantRequest, cancellationToken);
+            var grantResult = await _oktaClient.PostRefreshGrantAsync(
+                _configuration.OktaEnvironment.AuthorizationServerId,
+                _configuration.OktaEnvironment.ClientId,
+                _configuration.OktaEnvironment.ClientSecret,
+                refreshToken,
+                context.CancellationToken);
 
             var sanitizer = new GrantResultResponseSanitizer();
-            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(tokenResult)).ConfigureAwait(false);
+            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(grantResult)).ConfigureAwait(false);
         }
     }
 }

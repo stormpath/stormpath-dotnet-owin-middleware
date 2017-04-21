@@ -36,5 +36,8 @@ namespace Stormpath.Owin.Middleware
 
         public static Func<PostVerifyEmailContext, CancellationToken, Task> PostVerifyEmailHandler
             = (ctx, ct) => TaskConstants.CompletedTask;
+
+        public static Func<SendVerificationEmailContext, CancellationToken, Task> SendVerificationEmailHandler
+            = (ctx, ct) => TaskConstants.CompletedTask;
     }
 }
