@@ -20,9 +20,9 @@ node util/okta-test-data.js --apiToken=TOKEN --org=https://dev-YOUR_ORG.oktaprev
 ## Migration steps
 
 1. Create a test user in your existing system with a known password.
-1. Export your Stormpath data. (link TODO)
-1. Sign up for a [new developer Okta organization](https://www.okta.com/developer/signup/stormpath/), even if you already have an Okta organization.
-1. Import your Stormpath data into Okta. (link TODO)
+1. [Export](https://stormpath.com/export) your Stormpath data. (link TODO)
+1. Sign up for a [new developer Okta organization](https://www.okta.com/developer/signup/stormpath/), even if you already have an Okta organization. Signing up through this link will provision an Okta organization with features most similar to Stormpath.
+1. Import your Stormpath data into Okta. (coming soon)
 1. Upgrade the version of `Stormpath.AspNet`, `Stormpath.AspNetCore`, or `Stormpath.Owin` in your project to 4.0.0 or greater. (You may need to check the "Show prerelease" box in order to see the RC releases.)
 1. Remove any references to `Stormpath.SDK` or the `IClient` interface. The Stormpath .NET SDK has been deprecated. Any code that was using the SDK will need to be refactored to use the [Okta .NET SDK](https://github.com/okta/oktasdk-csharp) or [Okta REST API](http://developer.okta.com/docs/api/getting_started/api_test_client.html). If you need help, let us know at support@stormpath.com.
 1. Update your application configuration:
