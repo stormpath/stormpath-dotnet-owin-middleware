@@ -37,7 +37,7 @@ Task("Pack")
         "Stormpath.Owin.Views.Precompiled"
     }.ForEach(name =>
     {
-        DotNetCorePack("./src/" + name + ".csproj", new DotNetCorePackSettings
+        DotNetCorePack(string.Format("./src/{0}/{0}.csproj", name), new DotNetCorePackSettings
         {
             Configuration = configuration,
             OutputDirectory = "./artifacts/"
@@ -55,7 +55,7 @@ Task("Test")
         "Stormpath.Owin.UnitTest"
     }.ForEach(name =>
     {
-        DotNetCoreTest("./test/" + name + ".csproj");
+        DotNetCoreTest(string.Format("./test/{0}/{0}.csproj", name));
     });
 });
 
