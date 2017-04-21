@@ -10,7 +10,7 @@ If you have questions or need help, please reach out to us at support@stormpath.
 
 ### Migration guide
 
-Follow the handy [migration guide](migrating.md) to understand how to migrate an application step-by-step.
+Follow the [migration guide](migrating.md) to understand how to migrate an application step-by-step.
 
 ### Coming soon
 
@@ -59,4 +59,4 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Okta uses an API Token to authenticate calls to the Okta API, similar to Stormpath's API Key ID/Secret.  However, unlike Stormpath API credentials, Okta API Tokens will expire in 30 days if they are not used. This means you will get an API error if your application has not been started in 30 days. If this happens, you can generate a new API Token in the Okta Admin dashboard.
 * The `StateTokenBuilder` and `StateTokenParser` classes were moved from `Stormpath.Owin.Abstractions` to `Stormpath.Owin.Middleware`.
 * The `*FormViewModelBuilder` classes were moved from `Stormpath.Owin.Abstractions` to `Stormpath.Owin.Middleware`.
-* Configuration provided via an `appsettings.json` file must now be placed in an `Okta` section. (See other [configuration-related changes](TODO)).
+* Configuration provided via an `appsettings.json` file must now be placed in an `Okta` section. (See other [configuration-related changes](https://github.com/stormpath/stormpath-dotnet-config/blob/master/changelog.md)).
