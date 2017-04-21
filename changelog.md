@@ -32,6 +32,7 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 
 ### Breaking changes
 
+* The minimum supported .NET Framework version is now 4.5.1 (previosuly 4.5).
 * Instead of providing the Stormpath API key ID and secret via configuration, you'll need to provide an Okta org URL, API token, and application ID. See the [migration guide](migrating.md) for more information.
 * The Stormpath SDK has been removed. If you weren't using the SDK directly, this shouldn't impact you. If you were, you'll need to refactor the relevant code to use the Okta .NET SDK or REST API calls.
 * The SDK `IAccount` interface is no longer used to represent a Stormpath account profile. The `ICompatibleOktaAccount` interface is used instead. This interface has the same top-level profile properties as the Stormpath `IAccount` object (mapped to the appropriate Okta profile properties), and includes an `OktaUser` property that can be used to directly access the Okta user properties.
