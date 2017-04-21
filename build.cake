@@ -15,10 +15,16 @@ Task("Restore")
 Task("Build")
 .Does(() =>
 {
-    DotNetCoreBuild("./src/**/*.csproj", new DotNetCoreBuildSettings
+    var projects = GetFiles("./src/**/*.csproj");
+    Console.WriteLine("Building {0} projects", projects.Count());
+
+    foreach (var project in projects)
     {
-        Configuration = configuration
-    });
+        DotNetCoreBuild(project.FullPath, new DotNetCoreBuildSettings
+        {
+            Configuration = configuration
+        });
+    }
 });
 
 Task("Pack")
