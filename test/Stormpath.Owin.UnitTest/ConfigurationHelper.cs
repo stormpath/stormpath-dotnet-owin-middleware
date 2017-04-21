@@ -18,7 +18,7 @@ namespace Stormpath.Owin.UnitTest
 
             var integrationConfig = new IntegrationConfiguration(
                 compiledConfig, 
-                new OktaEnvironmentConfiguration("fooAuthServerId", "fooClientId", "fooClientSecret"),
+                new OktaEnvironmentConfiguration("fooAuthServerId", "fooClientId", "fooClientSecret123456"),
                 new KeyValuePair<string, ProviderConfiguration>[0]);
 
             return integrationConfig;

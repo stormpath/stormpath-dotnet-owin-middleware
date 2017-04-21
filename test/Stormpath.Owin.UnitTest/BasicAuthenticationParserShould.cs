@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Stormpath.Owin.Middleware;
 using Xunit;
 
@@ -10,7 +11,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void ReportNullHeaderInvalid()
         {
-            var parser = new BasicAuthenticationParser(null, null);
+            var parser = new BasicAuthenticationParser(null, NullLogger.Instance);
             parser.IsValid.Should().BeFalse();
             parser.Username.Should().BeNullOrEmpty();
         }
@@ -18,7 +19,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void ReportEmptyHeaderInvalid()
         {
-            var parser = new BasicAuthenticationParser(string.Empty, null);
+            var parser = new BasicAuthenticationParser(string.Empty, NullLogger.Instance);
             parser.IsValid.Should().BeFalse();
             parser.Username.Should().BeNullOrEmpty();
         }
@@ -26,7 +27,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void ReportNonBasicHeaderInvalid()
         {
-            var parser = new BasicAuthenticationParser("Bearer foobar", null);
+            var parser = new BasicAuthenticationParser("Bearer foobar", NullLogger.Instance);
             parser.IsValid.Should().BeFalse();
             parser.Username.Should().BeNullOrEmpty();
         }
@@ -34,7 +35,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void ReportEmptyPayloadInvalid()
         {
-            var parser = new BasicAuthenticationParser("Basic ", null);
+            var parser = new BasicAuthenticationParser("Basic ", NullLogger.Instance);
             parser.IsValid.Should().BeFalse();
             parser.Username.Should().BeNullOrEmpty();
         }
@@ -42,7 +43,7 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public void ReportBadPayloadInvalid()
         {
-            var parser = new BasicAuthenticationParser("Basic foobar", null);
+            var parser = new BasicAuthenticationParser("Basic foobar", NullLogger.Instance);
             parser.IsValid.Should().BeFalse();
             parser.Username.Should().BeNullOrEmpty();
         }

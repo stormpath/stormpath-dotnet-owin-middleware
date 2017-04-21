@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model;
 using Xunit;
@@ -37,7 +38,7 @@ namespace Stormpath.Owin.UnitTest
             var binder = new PocoBinder<ChangePasswordPostModel>(
                 hasValueFunc: key => propertyBag.ContainsKey(key),
                 valueFunc: key => propertyBag[key],
-                logger: null);
+                logger: NullLogger.Instance);
 
             var result = binder.Bind();
 

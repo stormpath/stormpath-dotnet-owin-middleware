@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Middleware.ViewModelBuilder;
 using Xunit;
@@ -43,7 +44,7 @@ namespace Stormpath.Owin.UnitTest
                 ConfigurationHelper.CreateFakeConfiguration(config),
                 new Dictionary<string, string[]>(),
                 previousFormData,
-                logger: null);
+                logger: NullLogger.Instance);
 
             var result = viewModelBuilder.Build();
             result.Form.Fields.Should().Contain(x => x.Name == "CustomFieldsRock" && x.Required);
