@@ -49,7 +49,7 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 
 #### Email verification
 
-* Okta cannot yet send an email for the email verification flow automatically. Your application will need to send this email by providing an implementation for `SendEmailVerificationHandler`. (TODO example)
+* Okta cannot yet send an email for the email verification flow automatically. Your application will need to send this email by providing an implementation for `SendVerificationEmailHandler`. (example coming soon)
 * The email verification requirement for new accounts must now be explicitly enabled using the new `web.register.emailVerificationRequired` setting.
 * The custom profile field `emailVerificationStatus` (string) must be defined in your Okta Universal Directory.
 * If `web.register.emailVerificationRequired == true`, the custom profile field `emailVerificationToken` (string) must be defined in your Okta Universal Directory.
