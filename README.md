@@ -5,7 +5,9 @@ We're available to answer all questions at [support@stormpath.com](mailto:suppor
 
 ## Migration Guide
 
-The latest version (4.0.0 and later) of this library supports migrating applications from the Stormpath API to the Okta API. For more information, see the [migration guide](migrating.md).
+The latest version (4.0.0-RC1 and later) of this library supports migrating applications from the Stormpath API to the Okta API. For more information, see the [migration guide](migrating.md).
+
+For a full list of breaking changes, see the [changelog](changelog.md).
 
 # Stormpath OWIN Middleware for .NET [![NuGet](https://img.shields.io/nuget/v/Stormpath.Owin.Middleware.svg)](https://www.nuget.org/packages/Stormpath.Owin.Middleware)
 
@@ -14,7 +16,7 @@ This library provides middleware that plugs into any OWIN pipeline and makes it 
 [Stormpath](https://stormpath.com) is a User Management API that reduces development time with instant-on, scalable user infrastructure. Stormpath's intuitive API and expert support make it easy for developers to authenticate, manage and secure users and roles in any application.
 
 ## ASP.NET or ASP.NET Core? Easy!
-If you are building an application with [ASP.NET 4.5+](https://github.com/stormpath/stormpath-aspnet) or [ASP.NET Core](https://github.com/stormpath/stormpath-aspnetcore), head over and grab the packages from those respective links. 
+If you are building an application with [ASP.NET 4.5.1+](https://github.com/stormpath/stormpath-aspnet) or [ASP.NET Core](https://github.com/stormpath/stormpath-aspnetcore), head over and grab the packages from those respective links. 
 
 ## Supported Platforms
 
