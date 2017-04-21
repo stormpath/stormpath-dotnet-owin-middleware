@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Stormpath.Owin.Abstractions;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
-    public sealed class CompatibleOktaAccount : ICompatibleOktaAccount
+    public sealed class CompatibleOktaAccount : ICompatibleOktaAccount, IHasOktaUser
     {
         private readonly User _oktaUser;
 
@@ -44,7 +45,7 @@ namespace Stormpath.Owin.Middleware.Okta
             _oktaUser = oktaUser ?? new User();
         }
 
-        public User OktaUser => _oktaUser;
+        public User GetOktaUser() => _oktaUser;
 
         private string GetStringOrDefault(string key)
             => _oktaUser.Profile?.GetOrDefault(key)?.ToString();

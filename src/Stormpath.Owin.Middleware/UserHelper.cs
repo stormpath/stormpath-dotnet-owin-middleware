@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
-using Stormpath.Owin.Middleware.Okta;
-using System;
+﻿using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {

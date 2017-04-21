@@ -24,7 +24,6 @@ using Owin;
 using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
-using Stormpath.Owin.Middleware.Okta;
 using Stormpath.Owin.Views.Precompiled;
 
 namespace Stormpath.Owin.NowinHarness

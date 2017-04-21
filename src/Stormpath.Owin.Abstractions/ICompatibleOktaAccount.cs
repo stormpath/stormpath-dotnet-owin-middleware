@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Stormpath.Owin.Middleware.Okta
+namespace Stormpath.Owin.Abstractions
 {
     public interface ICompatibleOktaAccount
     {
-        User OktaUser { get; }
-
         string Href { get; }
 
         string Status { get; }

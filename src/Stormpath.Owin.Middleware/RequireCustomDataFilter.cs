@@ -26,23 +26,10 @@ namespace Stormpath.Owin.Middleware
         }
 
         public bool IsAuthorized(ICompatibleOktaAccount account)
-        {
-            // todo rewrite CustomData authz
-            throw new NotImplementedException();
-            //var customData = account?.GetCustomData();
+            => _comparer.Equals(account?.CustomData[_key], _value);
 
-            //return _comparer.Equals(customData?[_key], _value);
-        }
-
+        [Obsolete("Use the synchronous IsAuthorized")]
         public Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken)
-        {
-            // todo rewrite Custom Data authz
-            throw new NotImplementedException();
-            //var customData = account == null
-            //    ? null
-            //    : await account.GetCustomDataAsync(cancellationToken).ConfigureAwait(false);
-
-            //return _comparer.Equals(customData?[_key], _value);
-        }
+            => Task.FromResult(IsAuthorized(account));
     }
 }

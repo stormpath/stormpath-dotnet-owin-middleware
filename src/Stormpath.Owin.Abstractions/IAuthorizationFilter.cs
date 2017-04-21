@@ -1,10 +1,14 @@
-﻿namespace Stormpath.Owin.Abstractions
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Stormpath.Owin.Abstractions
 {
-    // todo revisit
     public interface IAuthorizationFilter
     {
-        //    bool IsAuthorized(ICompatibleOktaAccount account);
+        bool IsAuthorized(ICompatibleOktaAccount account);
 
-        //    Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken);
+        [Obsolete("Use the synchronous IsAuthorized")]
+        Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken);
     }
 }

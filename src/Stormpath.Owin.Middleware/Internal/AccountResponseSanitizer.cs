@@ -1,4 +1,4 @@
-﻿using Stormpath.Owin.Middleware.Okta;
+﻿using Stormpath.Owin.Abstractions;
 
 namespace Stormpath.Owin.Middleware.Internal
 {

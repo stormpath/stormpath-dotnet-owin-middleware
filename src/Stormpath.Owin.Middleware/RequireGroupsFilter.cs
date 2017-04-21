@@ -48,15 +48,16 @@ namespace Stormpath.Owin.Middleware
             //return matchedGroup;
         }
 
+        [Obsolete("Use the synchronous IsAuthorized")]
         public Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken)
         {
+            if (account == null)
+            {
+                return Task.FromResult(false);
+            }
+
             // todo rewrite group authz logic
             throw new Exception("TODO");
-
-            //if (account == null)
-            //{
-            //    return false;
-            //}
 
             //var matchedGroup = false;
 
