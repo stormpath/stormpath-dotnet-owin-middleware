@@ -1,4 +1,4 @@
-﻿// <copyright file="LoginAccountStoreViewModel.cs" company="Stormpath, Inc.">
+﻿// <copyright file="AccountStoreViewModel.cs" company="Stormpath, Inc.">
 // Copyright (c) 2016 Stormpath, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,6 +22,24 @@ namespace Stormpath.Owin.Abstractions.ViewModel
 
         public string Name { get; set; }
 
-        public AccountStoreProviderViewModel Provider { get; set; }
+        public static string CreateUriFromTemplate(
+            string template,
+            string clientId,
+            string responseType,
+            string responseMode,
+            string scopes,
+            string redirectUri,
+            string state,
+            string nonce)
+        {
+            return template
+                .Replace("{clientId}", clientId)
+                .Replace("{responseType}", responseType)
+                .Replace("{responseMode}", responseMode)
+                .Replace("{scopes}", scopes)
+                .Replace("{redirectUri}", redirectUri)
+                .Replace("{state}", state)
+                .Replace("{nonce}", nonce);
+        }
     }
 }

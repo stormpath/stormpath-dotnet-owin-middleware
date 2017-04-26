@@ -322,6 +322,32 @@ namespace Stormpath.Owin.Middleware.Okta
             return SendAsync<GrantResult>(request, cancellationToken);
         }
 
+        public Task<GrantResult> PostAuthCodeGrantAsync(
+            string authorizationServerId,
+            string clientId,
+            string clientSecret,
+            string code,
+            string originalRedirectUri,
+            CancellationToken cancellationToken)
+        {
+            var url = $"oauth2/{authorizationServerId}/v1/token";
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            AddClientCredentialsAuth(request, clientId, clientSecret);
+
+            var parameters = new Dictionary<string, string>()
+            {
+                ["grant_type"] = "authorization_code",
+                ["code"] = code,
+                ["redirect_uri"] = originalRedirectUri,
+            };
+            request.Content = new FormUrlEncodedContent(parameters);
+
+            _logger.LogTrace($"Executing authorization code flow");
+            return SendAsync<GrantResult>(request, cancellationToken);
+
+        }
+
         public Task<TokenIntrospectionResult> IntrospectTokenAsync(
             string authorizationServerId,
             string clientId,
@@ -425,5 +451,8 @@ namespace Stormpath.Owin.Middleware.Okta
 
             return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
         }
+
+        public Task<IdentityProvider[]> GetIdentityProvidersAsync(CancellationToken ct)
+            => GetResource<IdentityProvider[]>($"{ApiPrefix}/idps", ct);
     }
 }

@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 
 namespace Stormpath.Owin.Middleware
@@ -34,6 +36,8 @@ namespace Stormpath.Owin.Middleware
         public string State { get; private set; }
 
         public bool Valid { get; private set; } = false;
+
+        public IEnumerable<Claim> Claims { get; private set; }
 
         private void DecodeToken(string appId, string secret, string token, ILogger logger)
         {
@@ -79,6 +83,8 @@ namespace Stormpath.Owin.Middleware
                 {
                     State = innerStateClaim.Value;
                 }
+
+                Claims = validJwtToken.Claims;
 
                 Valid = true;
                 return;

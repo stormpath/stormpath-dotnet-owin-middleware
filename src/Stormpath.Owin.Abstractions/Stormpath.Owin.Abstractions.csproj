@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stormpath.Configuration.Abstractions" Version="7.0.0-beta3" />
+    <PackageReference Include="Stormpath.Configuration.Abstractions" Version="7.0.0-beta4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.1" />
   </ItemGroup>
 

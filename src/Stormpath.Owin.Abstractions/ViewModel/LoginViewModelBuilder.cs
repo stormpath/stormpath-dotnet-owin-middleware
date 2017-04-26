@@ -14,22 +14,18 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections.Generic;
-using System.Linq;
 using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.Owin.Abstractions.Configuration;
+using System.Linq;
 
 namespace Stormpath.Owin.Abstractions.ViewModel
 {
     public sealed class LoginViewModelBuilder
     {
         private readonly WebLoginRouteConfiguration _loginRouteConfiguration;
-        private readonly IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> _providerConfigurations;
 
-        public LoginViewModelBuilder(WebLoginRouteConfiguration loginRouteConfiguration, IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> providerConfigurations)
+        public LoginViewModelBuilder(WebLoginRouteConfiguration loginRouteConfiguration)
         {
             _loginRouteConfiguration = loginRouteConfiguration;
-            _providerConfigurations = providerConfigurations;
         }
 
         public LoginViewModel Build()
@@ -41,20 +37,6 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                 _loginRouteConfiguration.Form.Fields,
                 Stormpath.Configuration.Abstractions.Default.Configuration.Web.Login.Form.Fields);
             result.Form.Fields = fieldViewModelBuilder.Build().ToArray();
-
-            // Social Providers
-            result.AccountStores = _providerConfigurations.Select(x => new AccountStoreViewModel
-            {
-                Name = x.Key,
-                Href = x.Value.CallbackUri,
-                Provider = new AccountStoreProviderViewModel()
-                {
-                    Href = x.Key,
-                    ClientId = x.Value.ClientId,
-                    ProviderId = x.Key,
-                    Scope = x.Value.Scope
-                }
-            }).ToArray();
 
             return result;
         }

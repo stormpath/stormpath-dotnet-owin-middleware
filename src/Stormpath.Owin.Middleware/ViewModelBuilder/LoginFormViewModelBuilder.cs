@@ -26,6 +26,9 @@ namespace Stormpath.Owin.Middleware.ViewModelBuilder
 {
     public sealed class LoginFormViewModelBuilder
     {
+        private const string OidcResponseType = "code";
+        private const string OidcResponseMode = "query";
+
         private readonly IntegrationConfiguration _configuration;
         private readonly bool _forgotPasswordEnabled;
         private readonly bool _verifyEmailEnabled;
@@ -54,7 +57,7 @@ namespace Stormpath.Owin.Middleware.ViewModelBuilder
 
         public LoginFormViewModel Build()
         {
-            var baseViewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login, _configuration.Providers);
+            var baseViewModelBuilder = new LoginViewModelBuilder(_configuration.Web.Login);
             var result = new LoginFormViewModel(baseViewModelBuilder.Build());
 
             // Copy values from configuration
@@ -117,6 +120,21 @@ namespace Stormpath.Owin.Middleware.ViewModelBuilder
             {
                 result.StateToken = new StateTokenBuilder(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret).ToString();
             }
+
+            // Social providers
+            result.AccountStores = _configuration.Providers.Select(x => new AccountStoreViewModel
+                {
+                    Name = x.Value.DisplayName ?? x.Key,
+                    Href = AccountStoreViewModel.CreateUriFromTemplate(
+                        template: x.Value.AuthorizeUri,
+                        clientId: _configuration.OktaEnvironment.ClientId,
+                        responseType: OidcResponseType,
+                        responseMode: OidcResponseMode,
+                        scopes: x.Value.Scope,
+                        redirectUri: _configuration.AbsoluteCallbackUri,
+                        state: result.StateToken,
+                        nonce: Guid.NewGuid().ToString())
+                }).ToArray();
 
             return result;
         }

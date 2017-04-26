@@ -85,6 +85,7 @@ namespace Stormpath.Owin.NowinHarness
                 {
                     Web = new WebConfiguration
                     {
+                        ServerUri = "http://localhost:8080",
                         Register = new WebRegisterRouteConfiguration
                         {
                             EmailVerificationRequired = false,

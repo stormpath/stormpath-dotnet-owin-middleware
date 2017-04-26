@@ -19,26 +19,18 @@ namespace Stormpath.Owin.Abstractions.Configuration
     public sealed class ProviderConfiguration
     {
         public ProviderConfiguration(
-            string clientId,
-            string clientSecret,
-            string callbackPath,
-            string callbackUri,
+            string displayName,
+            string authorizeUri,
             string scope)
         {
-            ClientId = clientId;
-            ClientSecret = clientSecret;
-            CallbackUri = callbackUri;
-            CallbackPath = callbackPath;
+            DisplayName = displayName;
+            AuthorizeUri = authorizeUri;
             Scope = scope;
         }
 
-        public string ClientId { get; }
+        public string DisplayName { get; set; }
 
-        public string ClientSecret { get; }
-
-        public string CallbackUri { get; }
-
-        public string CallbackPath { get; }
+        public string AuthorizeUri { get; set; }
 
         public string Scope { get; }
     }

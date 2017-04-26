@@ -37,6 +37,8 @@ namespace Stormpath.Owin.Middleware
 
         public TimeSpan ExpiresIn { get; set; } = TimeSpan.FromMinutes(30);
 
+        public IList<Claim> Claims { get; set; } = new List<Claim>();
+
         public override string ToString()
         {
             var expiry = DateTime.UtcNow.Add(ExpiresIn);
@@ -51,6 +53,11 @@ namespace Stormpath.Owin.Middleware
             if (!string.IsNullOrEmpty(State))
             {
                 customClaims.Add(new Claim(StateClaimName, State));
+            }
+
+            if (Claims != null)
+            {
+                customClaims.AddRange(Claims);
             }
 
             var signingCredentials = new SigningCredentials(

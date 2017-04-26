@@ -40,10 +40,16 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Okta handles custom profile fields differently than Stormpath. Any custom profile field you want to use must be defined in advance in the Universal Directory Profile. Otherwise, you will get API errors when creating a user with a custom profile field.
 * The only expansion option that currently works for the `/me` route is `customData`.
 
-* The `/forgot` and `/change` routes are now **disabled** by default. The routes can be enabled or disabled by changing the `web.forgotPassword.enabled` or `web.changePassword.enabled` settings.
+#### Social login
+
+* Social login has been revamped to use Okta and OpenID Connect.
+* Social login providers are no longer returned in the `/login` JSON view model (only in the HTML response).
+* The `AccountStoreProviderViewModel` object has been removed.
+* It is no longer possible to set separate callback URIs per social provider. All social login requests will go through Okta and back to the `/stormpathCallback` route.
 
 #### Password reset
 
+* The `/forgot` and `/change` routes are now **disabled** by default. The routes can be enabled or disabled by changing the `web.forgotPassword.enabled` or `web.changePassword.enabled` settings.
 * You will need to re-create the email template for the password reset email. See the [migration guide](migrating.md) for detailed steps.
 * The custom profile field `stormpathMigrationRecoveryAnswer` (string) must be defined in your Okta Universal Directory. This package uses it internally for the forgot password flow. (If you used the Stormpath import tool, this should be done for you automatically.)
 * Okta password reset tokens expire after 59 minutes by default. This can be changed in the Admin UI (Security - Policies - Account Recovery).

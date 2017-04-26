@@ -29,6 +29,14 @@ namespace Stormpath.Owin.Middleware.Okta
             string refreshToken,
             CancellationToken cancellationToken);
 
+        Task<GrantResult> PostAuthCodeGrantAsync(
+            string authorizationServerId,
+            string clientId,
+            string clientSecret,
+            string code,
+            string originalRedirectUri,
+            CancellationToken cancellationToken);
+
         Task<User> GetUserAsync(
             string userId,
             CancellationToken cancellationToken);
@@ -89,5 +97,7 @@ namespace Stormpath.Owin.Middleware.Okta
         Task<RecoveryTransactionObject> AnswerRecoveryQuestionAsync(string stateToken, string answer, CancellationToken cancellationToken);
 
         Task<RecoveryTransactionObject> ResetPasswordAsync(string stateToken, string newPassword, CancellationToken cancellationToken);
+
+        Task<IdentityProvider[]> GetIdentityProvidersAsync(CancellationToken ct);
     }
 }

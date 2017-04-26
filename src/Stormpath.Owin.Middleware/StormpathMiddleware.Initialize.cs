@@ -24,6 +24,7 @@ using Stormpath.Owin.Middleware.Route;
 using Stormpath.Configuration;
 using Stormpath.Owin.Middleware.Okta;
 using System.Threading;
+using System.Linq;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -127,15 +128,45 @@ namespace Stormpath.Owin.Middleware
                     throw new ArgumentNullException("The Okta application must be configured with a Client ID and Secret");
                 }
 
+                var authServerId = appDetails.Settings.Notifications.Vpn.Message; // Workaround to store AS id in app resource
+
                 logger.LogInformation($"Using Okta application '{appDetails.Label}'");
+
+                var idps = client.GetIdentityProvidersAsync(CancellationToken.None).Result;
+                var idpProviders = new Dictionary<string, ProviderConfiguration>(StringComparer.OrdinalIgnoreCase);
+                logger.LogInformation($"Adding {idps.Length} social providers");
+
+                foreach (var idp in idps)
+                {
+                    var name = idp.Type;
+                    existingConfig.Web.Social.TryGetValue(name, out var userConfig);
+
+                    idpProviders.Add(name, new ProviderConfiguration(
+                        userConfig?.DisplayName,
+                        PatchAuthorizeUri(idp.Links.Authorize.Href, authServerId),
+                        userConfig?.Scope));
+                }
+
+                var stormpathCallbackAbsoluteUri = string.Empty;
+                if (idpProviders.Any())
+                {
+                    if (string.IsNullOrEmpty(existingConfig.Web.ServerUri))
+                    {
+                        throw new ArgumentException("The web.serverUri property must be set to your server's absolute base URI when using social login providers.");
+                    }
+
+                    // TODO Absolute URI is required for now, until it can be automatically generated
+                    stormpathCallbackAbsoluteUri = BuildSafeUrl(existingConfig.Web.ServerUri, existingConfig.Web.Callback.Uri);
+                }
 
                 return new IntegrationConfiguration(
                     existingConfig,
                     new OktaEnvironmentConfiguration(
-                        appDetails.Settings.Notifications.Vpn.Message, // Workaround to store AS id in app resource
+                        authServerId,
                         credentials.ClientId,
                         credentials.ClientSecret),
-                    new KeyValuePair<string, ProviderConfiguration>[0]);
+                    idpProviders,
+                    stormpathCallbackAbsoluteUri);
             }
             catch (Exception ex)
             {
@@ -143,6 +174,9 @@ namespace Stormpath.Owin.Middleware
                 throw new Exception("Could not get application information from Okta", ex);
             }
         }
+
+        private static string PatchAuthorizeUri(string uri, string authServerId)
+            => uri?.Replace("/oauth2/v1/", $"/oauth2/{authServerId}/v1/");
 
         private AbstractRoute InitializeRoute<T>(RouteOptionsBase options = null)
             where T : AbstractRoute, new()
@@ -161,10 +195,6 @@ namespace Stormpath.Owin.Middleware
         {
             var routing = new Dictionary<string, RouteHandler>(StringComparer.Ordinal);
 
-            // TODO Absolute URI is required for now, until it can be automatically generated
-            var stormpathCallbackAbsoluteUri = new Lazy<string>(() =>
-                BuildSafeServerUrl(Configuration.Web, Configuration.Web.Callback.Uri));
-
             // /oauth/token
             if (Configuration.Web.Oauth2.Enabled)
             {
@@ -178,7 +208,7 @@ namespace Stormpath.Owin.Middleware
             // /stormpathCallback
             if (Configuration.Web.Callback.Enabled)
             {
-                logger.LogInformation($"Stormpath callback enabled on {Configuration.Web.Callback.Uri}", nameof(BuildRoutingTable));
+                logger.LogInformation($"Callback enabled on {Configuration.Web.Callback.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
                     Configuration.Web.Callback.Uri,
@@ -258,68 +288,10 @@ namespace Stormpath.Owin.Middleware
                     new RouteHandler(() => InitializeRoute<VerifyEmailRoute>().InvokeAsync));
             }
 
-            // todo how does social login work?
-
-            //// /callbacks/facebook
-            //if (FacebookCallbackRoute.ShouldBeEnabled(Configuration))
-            //{
-            //    var facebookProvider = Configuration.Providers
-            //        .First(p => p.Key.Equals("facebook", StringComparison.OrdinalIgnoreCase))
-            //        .Value;
-
-            //    logger.LogInformation($"Facebook callback route enabled on {facebookProvider.CallbackPath}", nameof(BuildRoutingTable));
-
-            //    routing.Add(
-            //        facebookProvider.CallbackPath,
-            //        new RouteHandler(client => InitializeRoute<FacebookCallbackRoute>(client).InvokeAsync));
-            //}
-
-            //// /callbacks/google
-            //if (GoogleCallbackRoute.ShouldBeEnabled(Configuration))
-            //{
-            //    var googleProvider = Configuration.Providers
-            //        .First(p => p.Key.Equals("google", StringComparison.OrdinalIgnoreCase))
-            //        .Value;
-
-            //    logger.LogInformation($"Google callback route enabled on {googleProvider.CallbackPath}", nameof(BuildRoutingTable));
-
-            //    routing.Add(
-            //        googleProvider.CallbackPath,
-            //        new RouteHandler(client => InitializeRoute<GoogleCallbackRoute>(client).InvokeAsync));
-            //}
-
-            //// /callbacks/github
-            //if (GithubCallbackRoute.ShouldBeEnabled(Configuration))
-            //{
-            //    var githubProvider = Configuration.Providers
-            //        .First(p => p.Key.Equals("github", StringComparison.OrdinalIgnoreCase))
-            //        .Value;
-
-            //    logger.LogInformation($"Github callback route enabled on {githubProvider.CallbackPath}", nameof(BuildRoutingTable));
-
-            //    routing.Add(
-            //        githubProvider.CallbackPath,
-            //        new RouteHandler(client => InitializeRoute<GithubCallbackRoute>(client).InvokeAsync));
-            //}
-
-            //// /callbacks/linkedin
-            //if (LinkedInCallbackRoute.ShouldBeEnabled(Configuration))
-            //{
-            //    var linkedInProvider = Configuration.Providers
-            //        .First(p => p.Key.Equals("linkedin", StringComparison.OrdinalIgnoreCase))
-            //        .Value;
-
-            //    logger.LogInformation($"LinkedIn callback route enabled on {linkedInProvider.CallbackPath}", nameof(BuildRoutingTable));
-
-            //    routing.Add(
-            //        linkedInProvider.CallbackPath,
-            //        new RouteHandler(client => InitializeRoute<LinkedInCallbackRoute>(client).InvokeAsync));
-            //}
-
             return routing;
         }
 
-        private static string BuildSafeServerUrl(WebConfiguration webConfig, string route)
-            => $"{webConfig.ServerUri.TrimEnd('/')}/{route.TrimStart('/')}";
+        private static string BuildSafeUrl(string baseUri, string route)
+            => $"{baseUri.TrimEnd('/')}/{route.TrimStart('/')}";
     }
 }

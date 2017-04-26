@@ -22,15 +22,22 @@ namespace Stormpath.Owin.Abstractions.Configuration
 {
     public sealed class IntegrationConfiguration : StormpathConfiguration
     {
-        public IntegrationConfiguration(StormpathConfiguration existing, OktaEnvironmentConfiguration oktaEnvironmentConfiguration, IEnumerable<KeyValuePair<string, ProviderConfiguration>> providers)
+        public IntegrationConfiguration(
+            StormpathConfiguration existing,
+            OktaEnvironmentConfiguration oktaEnvironmentConfiguration,
+            IEnumerable<KeyValuePair<string, ProviderConfiguration>> providers,
+            string absoluteCallbackUri)
             : base(existing?.ApiToken, existing?.Org, existing?.Application, existing?.Web)
         {
-            this.OktaEnvironment = oktaEnvironmentConfiguration;
-            this.Providers = providers.ToArray();
+            OktaEnvironment = oktaEnvironmentConfiguration;
+            Providers = providers.ToArray();
+            AbsoluteCallbackUri = absoluteCallbackUri;
         }
 
         public OktaEnvironmentConfiguration OktaEnvironment { get; }
 
         public IReadOnlyList<KeyValuePair<string, ProviderConfiguration>> Providers { get; }
+
+        public string AbsoluteCallbackUri { get; set; }
     }
 }

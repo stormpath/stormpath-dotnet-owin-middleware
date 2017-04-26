@@ -21,7 +21,5 @@ namespace Stormpath.Owin.Abstractions.ViewModel
     public class LoginViewModel
     {
         public LoginFormFieldViewModel Form { get; set; } = new LoginFormFieldViewModel();
-
-        public IReadOnlyList<AccountStoreViewModel> AccountStores { get; set; } = new List<AccountStoreViewModel>();
     }
 }

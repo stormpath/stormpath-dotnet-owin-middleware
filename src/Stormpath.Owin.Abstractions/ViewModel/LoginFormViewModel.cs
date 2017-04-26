@@ -37,8 +37,9 @@ namespace Stormpath.Owin.Abstractions.ViewModel
         {
             // Copy and extend
             this.Form = existing.Form;
-            this.AccountStores = existing.AccountStores;
         }
+
+        public IReadOnlyList<AccountStoreViewModel> AccountStores { get; set; } = new List<AccountStoreViewModel>();
 
         public string Status { get; set; }
 
