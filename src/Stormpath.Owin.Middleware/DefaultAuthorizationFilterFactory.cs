@@ -13,6 +13,9 @@ namespace Stormpath.Owin.Middleware
             _oktaClient = oktaClient;
         }
 
+        public IAuthorizationFilter CreateCustomDataFilter(string key, object value, IEqualityComparer<object> comparer = null)
+            => new RequireCustomDataFilter(key, value, comparer);
+
         public IAuthorizationFilter CreateGroupFilter(IEnumerable<string> allowedGroupNames)
             => new RequireGroupsFilter(_oktaClient, allowedGroupNames);
     }

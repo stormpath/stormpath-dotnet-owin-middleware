@@ -201,7 +201,34 @@ namespace Stormpath.Owin.NowinHarness
                 {
                     using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
                     {
-                        await writer.WriteAsync("<p>Special group access!</p>");
+                        await writer.WriteAsync("<p>Secret page for Superadmins!</p>");
+                        await writer.FlushAsync();
+                    }
+                }
+                else
+                {
+                    env["owin.ResponseStatusCode"] = 401;
+                }
+            })));
+
+            // Add a custom data-required route
+            app.Use(new Func<AppFunc, AppFunc>(next => (async env =>
+            {
+                if (env["owin.RequestPath"] as string != "/customdata")
+                {
+                    await next.Invoke(env);
+                    return;
+                }
+
+                env.TryGetValue(OwinKeys.StormpathUser, out var rawUser);
+                var customDataFilter = stormpath.AuthorizationFilterFactory.CreateCustomDataFilter("source", "Nowin");
+                var allowed = await customDataFilter.IsAuthorizedAsync(rawUser as ICompatibleOktaAccount, CancellationToken.None);
+
+                if (allowed)
+                {
+                    using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
+                    {
+                        await writer.WriteAsync("<p>Secret page for Nowin folks!</p>");
                         await writer.FlushAsync();
                     }
                 }

@@ -1,9 +1,7 @@
-﻿using System;
+﻿using Stormpath.Owin.Abstractions;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Stormpath.Owin.Abstractions;
-using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -13,12 +11,7 @@ namespace Stormpath.Owin.Middleware
         private readonly object _value;
         private readonly IEqualityComparer<object> _comparer;
 
-        public RequireCustomDataFilter(string key, object value)
-            : this(key, value, new DefaultSmartComparer())
-        {
-        }
-
-        public RequireCustomDataFilter(string key, object value, IEqualityComparer<object> comparer)
+        public RequireCustomDataFilter(string key, object value, IEqualityComparer<object> comparer = null)
         {
             _key = key;
             _value = value;
@@ -26,9 +19,15 @@ namespace Stormpath.Owin.Middleware
         }
 
         public bool IsAuthorized(ICompatibleOktaAccount account)
-            => _comparer.Equals(account?.CustomData[_key], _value);
+        {
+            object rawValue = null;
 
-        [Obsolete("Use the synchronous IsAuthorized")]
+            bool exists = account?.CustomData?.TryGetValue(_key, out rawValue) ?? false;
+            if (!exists) return false;
+
+            return _comparer.Equals(rawValue, _value);
+        }
+
         public Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken)
             => Task.FromResult(IsAuthorized(account));
     }
