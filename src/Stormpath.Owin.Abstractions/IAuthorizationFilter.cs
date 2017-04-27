@@ -8,7 +8,6 @@ namespace Stormpath.Owin.Abstractions
     {
         bool IsAuthorized(ICompatibleOktaAccount account);
 
-        [Obsolete("Use the synchronous IsAuthorized")]
         Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken);
     }
 }

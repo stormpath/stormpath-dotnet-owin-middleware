@@ -10,66 +10,36 @@ namespace Stormpath.Owin.Middleware
 {
     public sealed class RequireGroupsFilter : IAuthorizationFilter
     {
+        private readonly IOktaClient _oktaClient;
         private readonly string[] _allowedGroups;
 
-        public RequireGroupsFilter(IEnumerable<string> allowedGroupNamesOrHrefs)
+        public RequireGroupsFilter(IOktaClient oktaClient, IEnumerable<string> allowedGroupNames)
         {
-            _allowedGroups = allowedGroupNamesOrHrefs.ToArray();
+            _oktaClient = oktaClient;
+            _allowedGroups = allowedGroupNames.ToArray();
 
             if (_allowedGroups.Any(string.IsNullOrEmpty))
             {
-                throw new ArgumentException("Group names or hrefs must not be null", nameof(allowedGroupNamesOrHrefs));
+                throw new ArgumentException("Group names or hrefs must not be null", nameof(allowedGroupNames));
             }
         }
 
         public bool IsAuthorized(ICompatibleOktaAccount account)
         {
-            if (account == null)
-            {
-                return false;
-            }
+            var userId = account?.GetOktaUser()?.Id;
+            if (string.IsNullOrEmpty(userId)) return false;
 
-            // todo rewrite group authz logic
-            throw new Exception("TODO");
-
-            //var matchedGroup = false;
-
-            //foreach (var group in account.GetGroups().Synchronously())
-            //{
-            //    matchedGroup = _allowedGroups.Contains(group.Name, StringComparer.Ordinal)
-            //        || _allowedGroups.Contains(group.Href, StringComparer.Ordinal);
-
-            //    if (matchedGroup)
-            //    {
-            //        break;
-            //    }
-            //}
-
-            //return matchedGroup;
+            var groups = _oktaClient.GetGroupsForUserIdAsync(userId, CancellationToken.None).Result;
+            return groups.Any(x => _allowedGroups.Contains(x?.Profile?.Name, StringComparer.Ordinal));
         }
 
-        [Obsolete("Use the synchronous IsAuthorized")]
-        public Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken)
+        public async Task<bool> IsAuthorizedAsync(ICompatibleOktaAccount account, CancellationToken cancellationToken)
         {
-            if (account == null)
-            {
-                return Task.FromResult(false);
-            }
+            var userId = account?.GetOktaUser()?.Id;
+            if (string.IsNullOrEmpty(userId)) return false;
 
-            // todo rewrite group authz logic
-            throw new Exception("TODO");
-
-            //var matchedGroup = false;
-
-            //await account.GetGroups().ForEachAsync(group =>
-            //    {
-            //        matchedGroup = _allowedGroups.Contains(group.Name, StringComparer.Ordinal)
-            //                       || _allowedGroups.Contains(group.Href, StringComparer.Ordinal);
-            //        return matchedGroup;
-            //    },
-            //    cancellationToken).ConfigureAwait(false);
-
-            //return matchedGroup;
+            var groups = await _oktaClient.GetGroupsForUserIdAsync(userId, cancellationToken);
+            return groups.Any(x => _allowedGroups.Contains(x?.Profile?.Name, StringComparer.Ordinal));
         }
     }
 }

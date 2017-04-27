@@ -55,16 +55,9 @@ namespace Stormpath.Owin.Middleware.Okta
         public NotificationSettings Notifications { get; set; }
     }
 
-    public sealed class AppLink
-    {
-        public string Name { get; set; }
-        public string Href { get; set; }
-        public string Type { get; set; }
-    }
-
     public sealed class ApplicationLinks
     {
-        public List<AppLink> AppLinks { get; set; }
+        public List<Link> AppLinks { get; set; }
         public Link Users { get; set; }
         public Link Deactivate { get; set; }
         public Link Groups { get; set; }

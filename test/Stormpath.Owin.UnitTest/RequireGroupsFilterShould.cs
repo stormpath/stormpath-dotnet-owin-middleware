@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Stormpath.Owin.Middleware;
 using Xunit;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.UnitTest
 {
@@ -11,14 +12,16 @@ namespace Stormpath.Owin.UnitTest
         [Fact]
         public async Task ReturnFalseForNullAccountAsync()
         {
-            var filter = new RequireGroupsFilter(new[] { "group1"});
+            IOktaClient mockOktaClient = null;
+            var filter = new RequireGroupsFilter(mockOktaClient, new[] { "group1"});
             (await filter.IsAuthorizedAsync(null, CancellationToken.None)).Should().BeFalse();
         }
 
         [Fact]
         public void ReturnFalseForNullAccount()
         {
-            var filter = new RequireGroupsFilter(new[] { "group1" });
+            IOktaClient mockOktaClient = null;
+            var filter = new RequireGroupsFilter(mockOktaClient, new[] { "group1" });
             filter.IsAuthorized(null).Should().BeFalse();
         }
     }

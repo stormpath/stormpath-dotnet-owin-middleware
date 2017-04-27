@@ -72,13 +72,16 @@ namespace Stormpath.Owin.Middleware
                 options.PostVerifyEmailHandler ?? DefaultHandlers.PostVerifyEmailHandler,
                 options.SendVerificationEmailHandler ?? DefaultHandlers.SendVerificationEmailHandler);
 
+            var authFilterFactory = new DefaultAuthorizationFilterFactory(oktaClient);
+
             return new StormpathMiddleware(
                 jwksKeyProvider,
                 options.ViewRenderer,
                 options.Logger,
                 userAgentBuilder,
                 integrationConfiguration,
-                handlerConfiguration);
+                handlerConfiguration,
+                authFilterFactory);
         }
 
         private static void ThrowIfOktaConfigurationMissing(StormpathConfiguration config)

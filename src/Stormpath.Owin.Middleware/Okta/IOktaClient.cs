@@ -99,5 +99,7 @@ namespace Stormpath.Owin.Middleware.Okta
         Task<RecoveryTransactionObject> ResetPasswordAsync(string stateToken, string newPassword, CancellationToken cancellationToken);
 
         Task<IdentityProvider[]> GetIdentityProvidersAsync(CancellationToken ct);
+
+        Task<Group[]> GetGroupsForUserIdAsync(string userId, CancellationToken cancellationToken);
     }
 }

@@ -25,6 +25,7 @@ using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.Owin.Views.Precompiled;
+using System.Threading;
 
 namespace Stormpath.Owin.NowinHarness
 {
@@ -180,6 +181,33 @@ namespace Stormpath.Owin.NowinHarness
                         await writer.WriteAsync("<p>Zomg secret!</p>");
                         await writer.FlushAsync();
                     }
+                }
+            })));
+
+            // Add a group-only route
+            app.Use(new Func<AppFunc, AppFunc>(next => (async env =>
+            {
+                if (env["owin.RequestPath"] as string != "/group")
+                {
+                    await next.Invoke(env);
+                    return;
+                }
+
+                env.TryGetValue(OwinKeys.StormpathUser, out var rawUser);
+                var groupsFilter = stormpath.AuthorizationFilterFactory.CreateGroupFilter(new[] { "Superadmins" });
+                var allowed = await groupsFilter.IsAuthorizedAsync(rawUser as ICompatibleOktaAccount, CancellationToken.None);
+
+                if (allowed)
+                {
+                    using (var writer = new StreamWriter(env["owin.ResponseBody"] as Stream))
+                    {
+                        await writer.WriteAsync("<p>Special group access!</p>");
+                        await writer.FlushAsync();
+                    }
+                }
+                else
+                {
+                    env["owin.ResponseStatusCode"] = 401;
                 }
             })));
         }

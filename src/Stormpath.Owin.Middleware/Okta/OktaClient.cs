@@ -454,5 +454,8 @@ namespace Stormpath.Owin.Middleware.Okta
 
         public Task<IdentityProvider[]> GetIdentityProvidersAsync(CancellationToken ct)
             => GetResource<IdentityProvider[]>($"{ApiPrefix}/idps", ct);
+
+        public Task<Group[]> GetGroupsForUserIdAsync(string userId, CancellationToken cancellationToken)
+            => GetResource<Group[]>($"{ApiPrefix}/users/{userId}/groups", cancellationToken);
     }
 }

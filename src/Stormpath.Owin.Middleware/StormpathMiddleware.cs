@@ -14,17 +14,15 @@
 // limitations under the License.
 // </copyright>
 
+using Microsoft.Extensions.Logging;
+using Stormpath.Configuration.Abstractions.Immutable;
+using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Abstractions.Configuration;
+using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Route;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Route;
-
-using Stormpath.Owin.Abstractions;
-using Stormpath.Owin.Abstractions.Configuration;
-using Stormpath.Configuration.Abstractions.Immutable;
-using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -45,21 +43,25 @@ namespace Stormpath.Owin.Middleware
             ILogger logger,
             IFrameworkUserAgentBuilder userAgentBuilder,
             IntegrationConfiguration configuration,
-            HandlerConfiguration handlers)
+            HandlerConfiguration handlers,
+            IAuthorizationFilterFactory authorizationFilterFactory)
         {
             this.keyProvider = keyProvider;
             this.viewRenderer = viewRenderer;
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;
-            this.Configuration = configuration;
-            this.Handlers = handlers;
+            Configuration = configuration;
+            Handlers = handlers;
+            AuthorizationFilterFactory = authorizationFilterFactory;
 
-            this.routingTable = this.BuildRoutingTable();
+            routingTable = BuildRoutingTable();
         }
 
         public IntegrationConfiguration Configuration { get; }
 
         public HandlerConfiguration Handlers { get; }
+
+        public IAuthorizationFilterFactory AuthorizationFilterFactory { get; }
 
         public void Initialize(AppFunc next)
         {
@@ -68,7 +70,7 @@ namespace Stormpath.Owin.Middleware
 
         public async Task Invoke(IDictionary<string, object> environment)
         {
-            if (this._next == null)
+            if (_next == null)
             {
                 throw new ArgumentNullException(nameof(_next));
             }
@@ -76,53 +78,50 @@ namespace Stormpath.Owin.Middleware
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
             logger.LogTrace($"Incoming request {context.Request.Path}", "StormpathMiddleware.Invoke");
 
-            //using (var scopedClient = CreateScopedClient(context))
-            //{
-                var currentUser = await GetUserAsync(context, context.CancellationToken).ConfigureAwait(false);
+            var currentUser = await GetUserAsync(context, context.CancellationToken).ConfigureAwait(false);
 
-                if (currentUser == null)
+            if (currentUser == null)
+            {
+                logger.LogTrace("Request is anonymous", "StormpathMiddleware.Invoke");
+            }
+            else
+            {
+                logger.LogTrace($"Request for Account '{currentUser.Href}' via scheme {environment[OwinKeys.StormpathUserScheme]}", "StormpathMiddleware.Invoke");
+            }
+
+            AddStormpathVariablesToEnvironment(
+                environment,
+                Configuration,
+                currentUser);
+
+            var requestPath = GetRequestPathOrThrow(context);
+            var routeHandler = GetRouteHandler(requestPath);
+
+            if (routeHandler == null)
+            {
+                await _next.Invoke(environment);
+                return;
+            }
+
+            logger.LogTrace($"Handling request '{requestPath}'", "StormpathMiddleware.Invoke");
+
+            if (routeHandler.AuthenticationRequired)
+            {
+                var filter = new AuthenticationRequiredFilter(logger);
+                var isAuthenticated = await filter.InvokeAsync(environment);
+                if (!isAuthenticated)
                 {
-                    logger.LogTrace("Request is anonymous", "StormpathMiddleware.Invoke");
-                }
-                else
-                {
-                    logger.LogTrace($"Request for Account '{currentUser.Href}' via scheme {environment[OwinKeys.StormpathUserScheme]}", "StormpathMiddleware.Invoke");
-                }
-
-                AddStormpathVariablesToEnvironment(
-                    environment,
-                    Configuration,
-                    currentUser);
-
-                var requestPath = GetRequestPathOrThrow(context);
-                var routeHandler = GetRouteHandler(requestPath);
-
-                if (routeHandler == null)
-                {
-                    await this._next.Invoke(environment);
                     return;
                 }
+            }
 
-                logger.LogTrace($"Handling request '{requestPath}'", "StormpathMiddleware.Invoke");
+            var handled = await routeHandler.Handler()(context);
 
-                if (routeHandler.AuthenticationRequired)
-                {
-                    var filter = new AuthenticationRequiredFilter(this.logger);
-                    var isAuthenticated = await filter.InvokeAsync(environment);
-                    if (!isAuthenticated)
-                    {
-                        return;
-                    }
-                }
-
-                var handled = await routeHandler.Handler()(context);
-
-                if (!handled)
-                {
-                    logger.LogTrace("Handler skipped request.", "StormpathMiddleware.Invoke");
-                    await this._next.Invoke(environment);
-                }
-            //}
+            if (!handled)
+            {
+                logger.LogTrace("Handler skipped request.", "StormpathMiddleware.Invoke");
+                await _next.Invoke(environment);
+            }
         }
 
         private static string GetRequestPathOrThrow(IOwinEnvironment context)
@@ -140,7 +139,7 @@ namespace Stormpath.Owin.Middleware
         private RouteHandler GetRouteHandler(string requestPath)
         {
             RouteHandler handler = null;
-            this.routingTable.TryGetValue(requestPath, out handler);
+            routingTable.TryGetValue(requestPath, out handler);
             return handler;
         }
 
