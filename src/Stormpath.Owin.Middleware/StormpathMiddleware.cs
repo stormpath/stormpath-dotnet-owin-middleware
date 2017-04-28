@@ -92,6 +92,7 @@ namespace Stormpath.Owin.Middleware
             AddStormpathVariablesToEnvironment(
                 environment,
                 Configuration,
+                AuthorizationFilterFactory,
                 currentUser);
 
             var requestPath = GetRequestPathOrThrow(context);
@@ -146,9 +147,11 @@ namespace Stormpath.Owin.Middleware
         private static void AddStormpathVariablesToEnvironment(
             IDictionary<string, object> environment,
             StormpathConfiguration configuration,
+            IAuthorizationFilterFactory authorizationFilterFactory,
             ICompatibleOktaAccount currentUser)
         {
             environment[OwinKeys.StormpathConfiguration] = configuration;
+            environment[OwinKeys.StormpathAuthorizationFilterFactory] = authorizationFilterFactory;
 
             if (currentUser != null)
             {

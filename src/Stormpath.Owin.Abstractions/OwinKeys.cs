@@ -60,5 +60,7 @@ namespace Stormpath.Owin.Abstractions
         public static readonly string StormpathUserScheme = "stormpath.RequestUserScheme";
 
         public static readonly string StormpathConfiguration = "stormpath.Configuration";
+
+        public static readonly string StormpathAuthorizationFilterFactory = "stormpath.AuthorizationFilterFactory";
     }
 }
