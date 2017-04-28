@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Precompiled Razor views for the Stormpath.Owin library</Description>
     <Copyright>(c) 2016 Stormpath, Inc.</Copyright>
-    <VersionPrefix>1.0.0-beta1</VersionPrefix>
+    <VersionPrefix>1.0.0-beta3</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
     <TargetFrameworks>net45;netstandard1.1</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
