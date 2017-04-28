@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Stormpath OWIN middleware library</Description>
     <Copyright>(c) 2016 Stormpath, Inc.</Copyright>
-    <VersionPrefix>4.0.0-rc2-beta2</VersionPrefix>
+    <VersionPrefix>4.0.0-rc2-beta3</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
     <TargetFrameworks>net451;netstandard1.4</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591;CS0618</NoWarn>
