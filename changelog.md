@@ -1,8 +1,6 @@
 # Changelog
 
-## Version 4.0.0-RC1
-
-The 4.0 release of Stormpath.Owin will help you migrate an application [from Stormpath to Okta](https://stormpath.com/oktaplusstormpath). This will be the last major release of this project; future support for Okta-powered applications will live in a different project.
+The 4.0 series of Stormpath.Owin will help you migrate an application [from Stormpath to Okta](https://stormpath.com/oktaplusstormpath). This will be the last major release of this project; future support for Okta-powered applications will live in a different project.
 
 We've tried to make it as easy as possible to move a .NET application backed by Stormpath to Okta, but not everything works the same way. Some applications will work as-is, and some will require refactoring. Refer to the [migration guide](migrating.md) for more information.
 
@@ -16,8 +14,6 @@ Follow the [migration guide](migrating.md) to understand how to migrate an appli
 
 These features don't work yet, but are coming in a future RC.
 
-* Authorization filters (attributes)
-* Social login
 * Client Credentials (API key/secret) authentication
 * Updating user profile or custom fields (reading works, no way to save currently)
 
@@ -30,6 +26,23 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Custom Data is only be available on account resources.
 * The Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
 
+
+## Version 4.0.0-RC2
+
+### Breaking changes
+
+* Authorizing (using attributes in ASP.NET or handlers in ASP.NET Core) by Group `href` is no longer possible. Authorizing by Group name still works.
+
+#### Social login
+
+* Social login has been revamped to use Okta and OpenID Connect.
+* Social login providers are no longer returned in the `/login` JSON view model (only in the HTML response).
+* The `AccountStoreProviderViewModel` object has been removed.
+* It is no longer possible to set separate callback URIs per social provider. All social login requests will go through Okta and back to the `/stormpathCallback` route.
+
+
+## Version 4.0.0-RC1
+
 ### Breaking changes
 
 * The minimum supported .NET Framework version is now 4.5.1 (previosuly 4.5).
@@ -39,14 +52,6 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Custom Data is no longer a linked resource. It's now treated as a simple dictionary on the `ICompatibleOktaUser` object (or the Okta user object). 
 * Okta handles custom profile fields differently than Stormpath. Any custom profile field you want to use must be defined in advance in the Universal Directory Profile. Otherwise, you will get API errors when creating a user with a custom profile field.
 * The only expansion option that currently works for the `/me` route is `customData`.
-* Authorizing by Group `href` is no longer possible. (Authorizing by Group name still works.)
-
-#### Social login
-
-* Social login has been revamped to use Okta and OpenID Connect.
-* Social login providers are no longer returned in the `/login` JSON view model (only in the HTML response).
-* The `AccountStoreProviderViewModel` object has been removed.
-* It is no longer possible to set separate callback URIs per social provider. All social login requests will go through Okta and back to the `/stormpathCallback` route.
 
 #### Password reset
 
