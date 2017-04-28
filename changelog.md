@@ -39,6 +39,7 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Custom Data is no longer a linked resource. It's now treated as a simple dictionary on the `ICompatibleOktaUser` object (or the Okta user object). 
 * Okta handles custom profile fields differently than Stormpath. Any custom profile field you want to use must be defined in advance in the Universal Directory Profile. Otherwise, you will get API errors when creating a user with a custom profile field.
 * The only expansion option that currently works for the `/me` route is `customData`.
+* Authorizing by Group `href` is no longer possible. (Authorizing by Group name still works.)
 
 #### Social login
 

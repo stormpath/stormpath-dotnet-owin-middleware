@@ -32,7 +32,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
             string state,
             string nonce)
         {
-            return template
+            var templated = template
                 .Replace("{clientId}", clientId)
                 .Replace("{responseType}", responseType)
                 .Replace("{responseMode}", responseMode)
@@ -40,6 +40,8 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                 .Replace("{redirectUri}", redirectUri)
                 .Replace("{state}", state)
                 .Replace("{nonce}", nonce);
+
+            return $"{templated}"; //&prompt=login (TODO)
         }
     }
 }

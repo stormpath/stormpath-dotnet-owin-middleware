@@ -34,7 +34,7 @@ node util/okta-test-data.js --apiToken=TOKEN --org=https://dev-YOUR_ORG.oktaprev
 
 	* If you were using `STORMPATH_*` environment variables to set any configuration properties, you'll need to update them to `OKTA_*`.
 
-	* Most of the remaining configuration can be left untouched. See the [configuration breaking changes](todo) (TODO).
+	* Most of the remaining configuration can be left untouched. See the [configuration breaking changes](https://github.com/stormpath/stormpath-dotnet-config/blob/master/changelog.md).
 	
 	* A minimal example configuration looks like:
 	
