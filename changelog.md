@@ -39,6 +39,7 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Social login providers are no longer returned in the `/login` JSON view model (only in the HTML response).
 * The `AccountStoreProviderViewModel` object has been removed.
 * It is no longer possible to set separate callback URIs per social provider. All social login requests will go through Okta and back to the `/stormpathCallback` route.
+* It is no longer possible to determine if a social account is registering (new) or logging in (returning). All social accounts are treated as returning accounts.
 
 
 ## Version 4.0.0-RC1
