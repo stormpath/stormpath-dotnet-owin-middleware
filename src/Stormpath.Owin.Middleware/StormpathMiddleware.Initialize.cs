@@ -141,10 +141,12 @@ namespace Stormpath.Owin.Middleware
 
                 foreach (var idp in idps)
                 {
-                    var name = idp.Type;
-                    existingConfig.Web.Social.TryGetValue(name, out var userConfig);
+                    if (string.IsNullOrEmpty(idp?.Links?.Authorize?.Href)) continue;
 
-                    idpProviders.Add(name, new ProviderConfiguration(
+                    existingConfig.Web.Social.TryGetValue(idp.Type, out var userConfig);
+
+                    idpProviders.Add(idp.Id, new ProviderConfiguration(
+                        idp.Type,
                         userConfig?.DisplayName,
                         PatchAuthorizeUri(idp.Links.Authorize.Href, authServerId),
                         userConfig?.Scope));

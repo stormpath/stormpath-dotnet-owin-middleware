@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Nowin test harness for Stormpath.Owin.Middleware</Description>
     <Copyright>(c) 2016 Stormpath, Inc.</Copyright>
-    <VersionPrefix>4.0.0-beta1</VersionPrefix>
+    <VersionPrefix>4.0.0-rc2</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
     <TargetFramework>net451</TargetFramework>
     <AssemblyName>Stormpath.Owin.NowinHarness</AssemblyName>

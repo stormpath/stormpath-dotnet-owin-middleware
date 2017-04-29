@@ -20,6 +20,8 @@ namespace Stormpath.Owin.Abstractions.ViewModel
     {
         public string Href { get; set; }
 
+        public string Type { get; set; }
+
         public string Name { get; set; }
 
         public static string CreateUriFromTemplate(

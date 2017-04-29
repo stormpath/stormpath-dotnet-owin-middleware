@@ -811,7 +811,7 @@ WriteAttributeValue("", 6821, Model.FormData.Get(field.Name) ?? string.Empty, 68
             WriteAttributeValue("", 7813, "btn", 7813, 3, true);
             WriteAttributeValue(" ", 7816, "btn-social", 7817, 11, true);
 #line 145 "Login.cshtml"
-WriteAttributeValue(" ", 7827, $"btn-{idp.Name.ToLower()}", 7828, 31, false);
+WriteAttributeValue(" ", 7827, $"btn-{idp.Type.ToLower()}", 7828, 31, false);
 
 #line default
 #line hidden

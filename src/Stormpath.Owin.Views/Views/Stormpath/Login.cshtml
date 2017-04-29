@@ -144,7 +144,7 @@
 
                             @foreach(var idp in Model.AccountStores)
                             {
-                                <button class="btn btn-social @($"btn-{idp.Name.ToLower()}")"
+                                <button class="btn btn-social @($"btn-{idp.Type.ToLower()}")"
                                         onclick="window.location ='@idp.Href'">@idp.Name</button>
                             }
                         </div>

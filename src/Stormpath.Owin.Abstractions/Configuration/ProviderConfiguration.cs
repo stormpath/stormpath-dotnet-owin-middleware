@@ -19,14 +19,18 @@ namespace Stormpath.Owin.Abstractions.Configuration
     public sealed class ProviderConfiguration
     {
         public ProviderConfiguration(
+            string type,
             string displayName,
             string authorizeUri,
             string scope)
         {
+            Type = type;
             DisplayName = displayName;
             AuthorizeUri = authorizeUri;
             Scope = scope;
         }
+
+        public string Type { get; set; }
 
         public string DisplayName { get; set; }
 

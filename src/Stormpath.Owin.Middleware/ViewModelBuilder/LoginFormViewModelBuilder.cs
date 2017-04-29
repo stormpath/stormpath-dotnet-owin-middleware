@@ -124,7 +124,8 @@ namespace Stormpath.Owin.Middleware.ViewModelBuilder
             // Social providers
             result.AccountStores = _configuration.Providers.Select(x => new AccountStoreViewModel
                 {
-                    Name = x.Value.DisplayName ?? x.Key,
+                    Type = x.Value.Type,
+                    Name = x.Value.DisplayName ?? x.Value.Type,
                     Href = AccountStoreViewModel.CreateUriFromTemplate(
                         template: x.Value.AuthorizeUri,
                         clientId: _configuration.OktaEnvironment.ClientId,
