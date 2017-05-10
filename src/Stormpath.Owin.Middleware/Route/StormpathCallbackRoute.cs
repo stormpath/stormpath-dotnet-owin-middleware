@@ -1,5 +1,6 @@
 ﻿using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Okta;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,17 +39,20 @@ namespace Stormpath.Owin.Middleware.Route
                 _configuration.AbsoluteCallbackUri,
                 cancellationToken);
 
-            return await LoginAndRedirectAsync(context, grantResult, parsedStateToken.Path, cancellationToken);
+            var user = await UserHelper.GetUserFromAccessTokenAsync(_oktaClient, grantResult.AccessToken, _logger, cancellationToken);
+
+            return await LoginAndRedirectAsync(context, grantResult, user, parsedStateToken.Path, cancellationToken);
         }
 
         private async Task<bool> LoginAndRedirectAsync(
             IOwinEnvironment context,
             GrantResult grantResult,
+            User user,
             string nextPath,
             CancellationToken cancellationToken)
         {
             var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
-            await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+            await executor.HandlePostLoginAsync(context, grantResult, user, cancellationToken);
 
             // TODO determine whether this is a new account or not
 

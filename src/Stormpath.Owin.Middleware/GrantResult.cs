@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {

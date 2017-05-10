@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stormpath.Owin.Middleware.Internal;
+using System.Linq;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
@@ -457,5 +458,58 @@ namespace Stormpath.Owin.Middleware.Okta
 
         public Task<Group[]> GetGroupsForUserIdAsync(string userId, CancellationToken cancellationToken)
             => GetResource<Group[]>($"{ApiPrefix}/users/{userId}/groups", cancellationToken);
+
+        private const string ProfileAttributeDoesNotExist = "E0000031";
+
+        public async Task<ShimApiKey> GetApiKeyAsync(string apiKeyId, CancellationToken cancellationToken)
+        {
+            User foundUser = null;
+            string foundKeypair = null;
+
+            for (var i = 0; i < 10; i++)
+            {
+                try
+                {
+                    var foundUsers = await SearchUsersAsync($"profile.stormpathApiKey_{i} sw \"{apiKeyId}\"", cancellationToken);
+
+                    foundUser = foundUsers?.FirstOrDefault();
+
+                    if (foundUser != null)
+                    {
+                        foundUser.Profile.TryGetValue($"stormpathApiKey_{i}", out var rawValue);
+                        foundKeypair = rawValue?.ToString();
+                        break;
+                    }
+                }
+                catch (OktaException oex)
+                {
+                    object rawCode = null;
+                    oex?.Body?.TryGetValue("errorCode", out rawCode);
+                    var code = rawCode?.ToString();
+                    if (string.IsNullOrEmpty(code)) throw;
+
+                    // Code E0000031 means "the profile attribute doesn't exist"
+                    if (code.Equals(ProfileAttributeDoesNotExist))
+                    {
+                        _logger.LogWarning($"The profile attribute 'profile.stormpathApiKey_{i}' should be added to your Universal Directory configuration.");
+                        continue;
+                    }
+                }
+            }
+
+            if (foundUser == null) return null;
+
+            var keypairTokens = foundKeypair?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+            var valid = keypairTokens?.Length == 2;
+            if (!valid) return null;
+
+            return new ShimApiKey
+            {
+                Id = keypairTokens[0],
+                Secret = keypairTokens[1],
+                Status = "ENABLED",
+                User = foundUser
+            };
+        }
     }
 }

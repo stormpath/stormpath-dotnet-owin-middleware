@@ -61,6 +61,13 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
+                if (grantType.Equals("client_credentials", StringComparison.OrdinalIgnoreCase)
+                    && _configuration.Web.Oauth2.Client_Credentials.Enabled)
+                {
+                    await ExecuteClientCredentialsFlow(context, _oktaClient, cancellationToken);
+                    return true;
+                }
+
                 if (grantType.Equals("password", StringComparison.OrdinalIgnoreCase)
                     && _configuration.Web.Oauth2.Password.Enabled)
                 {
@@ -106,14 +113,14 @@ namespace Stormpath.Owin.Middleware.Route
             var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
                 => Error.Create(context, new BadRequest(message), ct));
 
-            var grantResult = await executor.PasswordGrantAsync(
+            var (grantResult, user) = await executor.PasswordGrantAsync(
                 context,
                 jsonErrorHandler,
                 username,
                 password,
                 cancellationToken);
 
-            await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+            await executor.HandlePostLoginAsync(context, grantResult, user, cancellationToken);
 
             var sanitizer = new GrantResultResponseSanitizer();
             return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(grantResult)).ConfigureAwait(false);
@@ -130,6 +137,61 @@ namespace Stormpath.Owin.Middleware.Route
 
             var sanitizer = new GrantResultResponseSanitizer();
             return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithRefreshToken(grantResult)).ConfigureAwait(false);
+        }
+
+        private async Task<bool> ExecuteClientCredentialsFlow(IOwinEnvironment context, IOktaClient oktaClient, CancellationToken cancellationToken)
+        {
+            var jsonErrorHandler = new Func<AbstractError, CancellationToken, Task>((err, ct)
+                => Error.Create(context, err, ct));
+
+            var basicHeaderParser = new BasicAuthenticationParser(context.Request.Headers.GetString("Authorization"), _logger);
+            if (!basicHeaderParser.IsValid)
+            {
+                await jsonErrorHandler(new OauthInvalidRequest(), cancellationToken);
+                return true;
+            }
+
+            var apiKey = await oktaClient.GetApiKeyAsync(basicHeaderParser.Username, cancellationToken);
+
+            var validKey =
+                apiKey != null &&
+                apiKey.Status.Equals("enabled", StringComparison.OrdinalIgnoreCase) &&
+                apiKey.Secret.Equals(basicHeaderParser.Password, StringComparison.OrdinalIgnoreCase);
+
+            if (!validKey)
+            {
+                await jsonErrorHandler(new OauthInvalidClient(), cancellationToken);
+                return true;
+            }
+
+            var validAccount =
+                apiKey.User != null &&
+                apiKey.User.Status.Equals("active", StringComparison.OrdinalIgnoreCase);
+
+            if (!validAccount)
+            {
+                await jsonErrorHandler(new OauthInvalidClient(), cancellationToken);
+                return true;
+            }
+
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
+
+            var tokenResult = await executor.ClientCredentialsGrantAsync(
+                context,
+                jsonErrorHandler,
+                basicHeaderParser.Username,
+                basicHeaderParser.Password,
+                cancellationToken);
+
+            if (tokenResult == null)
+            {
+                return true; // Some error occurred and the handler was invoked
+            }
+            
+            await executor.HandlePostLoginAsync(context, tokenResult, apiKey.User, cancellationToken);
+
+            var sanitizer = new GrantResultResponseSanitizer();
+            return await JsonResponse.Ok(context, sanitizer.SanitizeResponseWithoutRefreshToken(tokenResult)).ConfigureAwait(false);
         }
     }
 }

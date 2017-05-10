@@ -94,7 +94,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
-                var grantResult = await executor.PasswordGrantAsync(
+                var (grantResult, user) = await executor.PasswordGrantAsync(
                     context,
                     htmlErrorHandler,
                     model.Login,
@@ -106,7 +106,7 @@ namespace Stormpath.Owin.Middleware.Route
                     return true; // The error handler was invoked
                 }
 
-                await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+                await executor.HandlePostLoginAsync(context, grantResult, user, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -148,7 +148,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
 
-            var grantResult = await executor.PasswordGrantAsync(
+            var (grantResult, user) = await executor.PasswordGrantAsync(
                 context,
                 jsonErrorHandler,
                 model.Login,
@@ -160,7 +160,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true; // The error handler was invoked
             }
 
-            var account = await executor.HandlePostLoginAsync(context, grantResult, cancellationToken);
+            var account = await executor.HandlePostLoginAsync(context, grantResult, user, cancellationToken);
 
             var sanitizer = new AccountResponseSanitizer();
             var responseModel = new

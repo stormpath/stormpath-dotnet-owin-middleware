@@ -151,7 +151,7 @@ namespace Stormpath.Owin.Middleware
             ICompatibleOktaAccount account = null;
             try
             {
-                account = await UserHelper.GetUserFromAccessTokenAsync(oktaClient, accessTokenJwt, logger, context.CancellationToken);
+                account = await UserHelper.GetAccountFromAccessTokenAsync(oktaClient, accessTokenJwt, logger, context.CancellationToken);
             }
             catch (Exception ex)
             {
@@ -183,7 +183,7 @@ namespace Stormpath.Owin.Middleware
             ICompatibleOktaAccount account = null;
             try
             {
-                account = await UserHelper.GetUserFromAccessTokenAsync(oktaClient, grantResult.AccessToken, logger, context.CancellationToken);
+                account = await UserHelper.GetAccountFromAccessTokenAsync(oktaClient, grantResult.AccessToken, logger, context.CancellationToken);
             }
             catch (Exception ex)
             {
