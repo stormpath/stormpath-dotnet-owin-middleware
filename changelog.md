@@ -32,6 +32,7 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 ### Breaking changes
 
 * Authorizing (using attributes in ASP.NET or handlers in ASP.NET Core) by Group `href` is no longer possible. Authorizing by Group name still works.
+* Any `OrganizationNameKey` value that is set in a pre-handler is not honored.
 
 #### Social login
 
