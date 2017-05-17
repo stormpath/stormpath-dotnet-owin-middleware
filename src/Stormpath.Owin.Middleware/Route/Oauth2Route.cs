@@ -156,7 +156,7 @@ namespace Stormpath.Owin.Middleware.Route
             var validKey =
                 apiKey != null &&
                 apiKey.Status.Equals("enabled", StringComparison.OrdinalIgnoreCase) &&
-                apiKey.Secret.Equals(basicHeaderParser.Password, StringComparison.OrdinalIgnoreCase);
+                ConstantTimeComparer.Equals(apiKey.Secret, basicHeaderParser.Password);
 
             if (!validKey)
             {
