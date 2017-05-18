@@ -31,7 +31,7 @@ namespace Stormpath.Owin.Middleware
                 _configuration.OktaEnvironment.ClientId,
                 _configuration.OktaEnvironment.ClientSecret);
             var orphanValidationResult = orphanValidator.ValidateAsync(token);
-            if (orphanValidationResult != null)
+            if (orphanValidationResult != TokenIntrospectionResult.Invalid)
             {
                 return Task.FromResult(orphanValidationResult);
             }
