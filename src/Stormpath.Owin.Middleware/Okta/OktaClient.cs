@@ -474,12 +474,23 @@ namespace Stormpath.Owin.Middleware.Okta
 
                     foundUser = foundUsers?.FirstOrDefault();
 
-                    if (foundUser != null)
+                    if (foundUser == null) continue;
+
+                    foundUser.Profile.TryGetValue($"stormpathApiKey_{i}", out var rawValue);
+                    foundKeypair = rawValue?.ToString();
+
+                    var keypairTokens = foundKeypair?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                    var valid = keypairTokens?.Length == 2;
+
+                    if (!valid) continue;
+
+                    return new ShimApiKey
                     {
-                        foundUser.Profile.TryGetValue($"stormpathApiKey_{i}", out var rawValue);
-                        foundKeypair = rawValue?.ToString();
-                        break;
-                    }
+                        Id = keypairTokens[0],
+                        Secret = keypairTokens[1],
+                        Status = "ENABLED",
+                        User = foundUser
+                    };
                 }
                 catch (OktaException oex)
                 {
@@ -497,19 +508,7 @@ namespace Stormpath.Owin.Middleware.Okta
                 }
             }
 
-            if (foundUser == null) return null;
-
-            var keypairTokens = foundKeypair?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-            var valid = keypairTokens?.Length == 2;
-            if (!valid) return null;
-
-            return new ShimApiKey
-            {
-                Id = keypairTokens[0],
-                Secret = keypairTokens[1],
-                Status = "ENABLED",
-                User = foundUser
-            };
+            return null;
         }
     }
 }

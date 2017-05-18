@@ -14,20 +14,19 @@
 // limitations under the License.
 // </copyright>
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Stormpath.Configuration.Abstractions.Immutable;
+using Microsoft.IdentityModel.Tokens;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Okta;
-using System.IdentityModel.Tokens.Jwt;
 using Stormpath.Owin.Middleware.Model.Error;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Stormpath.Owin.Middleware.Okta;
+using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -109,7 +108,7 @@ namespace Stormpath.Owin.Middleware
             IOwinEnvironment environment,
             Func<AbstractError, CancellationToken, Task> errorHandler,
             string id,
-            string secret,
+            string userId,
             CancellationToken cancellationToken)
         {
             var preLoginHandlerContext = new PreLoginContext(environment)
@@ -135,14 +134,14 @@ namespace Stormpath.Owin.Middleware
 
             return new GrantResult
             {
-                AccessToken = BuildClientCredentialsAccessToken(id, ttl),
+                AccessToken = BuildClientCredentialsAccessToken(id, userId, ttl),
                 TokenType = "Bearer",
                 ExpiresIn = ttl,
                 // Scope = TODO
             };
         }
 
-        private string BuildClientCredentialsAccessToken(string id, int timeToLive)
+        private string BuildClientCredentialsAccessToken(string id, string userId, int timeToLive)
         {
             var signingKey = _configuration.OktaEnvironment.ClientSecret;
 
@@ -155,7 +154,9 @@ namespace Stormpath.Owin.Middleware
             {
                 new Claim("sub", id),
                 new Claim("jti", Guid.NewGuid().ToString()),
-                new Claim("iat", ((long)((now - Cookies.Epoch).TotalSeconds)).ToString(), ClaimValueTypes.Integer64)
+                new Claim("iat", ((long)((now - Cookies.Epoch).TotalSeconds)).ToString(), ClaimValueTypes.Integer64),
+                new Claim("cid", _configuration.OktaEnvironment.ClientId),
+                new Claim("uid", userId)
             };
 
             var jwt = new JwtSecurityToken(

@@ -180,7 +180,7 @@ namespace Stormpath.Owin.Middleware.Route
                 context,
                 jsonErrorHandler,
                 basicHeaderParser.Username,
-                basicHeaderParser.Password,
+                apiKey.User.Id,
                 cancellationToken);
 
             if (tokenResult == null)
