@@ -151,24 +151,10 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var apiKey = await oktaClient.GetApiKeyAsync(basicHeaderParser.Username, cancellationToken);
+            var apiKeyResolver = new ApiKeyResolver(oktaClient);
+            var apiKey = await apiKeyResolver.LookupApiKeyIdAsync(basicHeaderParser.Username, basicHeaderParser.Password, cancellationToken);
 
-            var validKey =
-                apiKey != null &&
-                apiKey.Status.Equals("enabled", StringComparison.OrdinalIgnoreCase) &&
-                ConstantTimeComparer.Equals(apiKey.Secret, basicHeaderParser.Password);
-
-            if (!validKey)
-            {
-                await jsonErrorHandler(new OauthInvalidClient(), cancellationToken);
-                return true;
-            }
-
-            var validAccount =
-                apiKey.User != null &&
-                apiKey.User.Status.Equals("active", StringComparison.OrdinalIgnoreCase);
-
-            if (!validAccount)
+            if (apiKey == null)
             {
                 await jsonErrorHandler(new OauthInvalidClient(), cancellationToken);
                 return true;

@@ -48,8 +48,37 @@ namespace Stormpath.Owin.Middleware
                 return cookieAuthenticationResult;
             }
 
+            var apiAuthenticationResult = await TryBasicAuthenticationAsync(context, oktaClient);
+            if (apiAuthenticationResult != null)
+            {
+                context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.ApiCredentials;
+                return apiAuthenticationResult;
+            }
+
             logger.LogTrace("No user found on request", nameof(GetUserAsync));
             return null;
+        }
+
+        private Task<ICompatibleOktaAccount> TryBasicAuthenticationAsync(IOwinEnvironment context, IOktaClient client)
+        {
+            var basicHeaderParser = new BasicAuthenticationParser(
+                context.Request.Headers.GetString("Authorization"),
+                logger);
+            if (!basicHeaderParser.IsValid)
+            {
+                return Task.FromResult<ICompatibleOktaAccount>(null);
+            }
+
+            try
+            {
+                logger.LogInformation("Using Basic header to authenticate request");
+                return ValidateApiCredentialsAsync(context, client, basicHeaderParser.Username, basicHeaderParser.Password);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(1001, ex, "Error during TryBasicAuthenticationAsync");
+                return Task.FromResult<ICompatibleOktaAccount>(null);
+            }
         }
 
         private Task<ICompatibleOktaAccount> TryBearerAuthenticationAsync(IOwinEnvironment context, IOktaClient oktaClient)
@@ -195,6 +224,24 @@ namespace Stormpath.Owin.Middleware
             Cookies.AddTokenCookiesToResponse(context, grantResult, Configuration, logger);
 
             return account;
+        }
+
+        private async Task<ICompatibleOktaAccount> ValidateApiCredentialsAsync(
+            IOwinEnvironment context,
+            IOktaClient client,
+            string id,
+            string secret)
+        {
+            var apiKeyResolver = new ApiKeyResolver(client);
+            var apiKey = await apiKeyResolver.LookupApiKeyIdAsync(id, secret, context.CancellationToken);
+
+            if (apiKey == null)
+            {
+                logger.LogInformation($"API key with ID {id} and matching secret was not found", nameof(ValidateApiCredentialsAsync));
+                return null;
+            }
+
+            return new CompatibleOktaAccount(apiKey.User);
         }
     }
 }
