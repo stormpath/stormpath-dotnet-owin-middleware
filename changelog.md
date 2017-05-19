@@ -10,13 +10,6 @@ If you have questions or need help, please reach out to us at support@stormpath.
 
 Follow the [migration guide](migrating.md) to understand how to migrate an application step-by-step.
 
-### Coming soon
-
-These features don't work yet, but are coming in a future RC.
-
-* Client Credentials (API key/secret) authentication
-* Updating user profile or custom fields (reading works, no way to save currently)
-
 ### Stormpath features that will not migrate
 
 See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormpath.com/oktaplusstormpath) for a complete list of features that are not being migrated. The relevant points for this library are:
@@ -26,12 +19,18 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Custom Data is only be available on account resources.
 * The Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
 
+## Version 4.0.0-RC3
+
+### Breaking changes
+
+* The Client Credentials grant works, but it is handled differently in Okta than it was at Stormpath. The API key ID and secret are stored in the user profile, and are verified locally by this middleware code. This feature is intended to help our customers migrate, but won't be how Okta supports API key management going forward. If you're using the API key management features of Stormpath heavily, please reach out to support@stormpath.com and let us know so we can assist.
 
 ## Version 4.0.0-RC2
 
 ### Breaking changes
 
 * Authorizing (using attributes in ASP.NET or handlers in ASP.NET Core) by Group `href` is no longer possible. Authorizing by Group name still works.
+* Any `OrganizationNameKey` value that is set in a pre-handler is not honored.
 
 #### Social login
 

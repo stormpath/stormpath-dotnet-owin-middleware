@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stormpath.Owin.Middleware.Internal;
+using System.Linq;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
@@ -295,8 +296,28 @@ namespace Stormpath.Owin.Middleware.Okta
             };
             request.Content = new FormUrlEncodedContent(parameters);
 
+            var exceptionFormatter = new Func<int, string, Exception>((statusCode, body) =>
+            {
+                _logger.LogWarning($"{statusCode} {body}");
+
+                try
+                {
+                    var deserialized = JsonConvert.DeserializeObject<OauthApiError>(body);
+                    var isInvalidGrantError = deserialized?.Error?.Equals("invalid_grant") ?? false;
+
+                    if (!isInvalidGrantError) return DefaultExceptionFormatter(statusCode, body);
+
+                    return new InvalidOperationException("Invalid username or password.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(1005, ex, "Error while formatting error response");
+                    return DefaultExceptionFormatter(statusCode, body);
+                }
+            });
+
             _logger.LogTrace($"Executing password grant flow for subject {username}");
-            return SendAsync<GrantResult>(request, cancellationToken);
+            return SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
         }
 
         public Task<GrantResult> PostRefreshGrantAsync(
@@ -457,5 +478,57 @@ namespace Stormpath.Owin.Middleware.Okta
 
         public Task<Group[]> GetGroupsForUserIdAsync(string userId, CancellationToken cancellationToken)
             => GetResource<Group[]>($"{ApiPrefix}/users/{userId}/groups", cancellationToken);
+
+        private const string ProfileAttributeDoesNotExist = "E0000031";
+
+        public async Task<ShimApiKey> GetApiKeyAsync(string apiKeyId, CancellationToken cancellationToken)
+        {
+            User foundUser = null;
+            string foundKeypair = null;
+
+            for (var i = 0; i < 10; i++)
+            {
+                try
+                {
+                    var foundUsers = await SearchUsersAsync($"profile.stormpathApiKey_{i} sw \"{apiKeyId}\"", cancellationToken);
+
+                    foundUser = foundUsers?.FirstOrDefault();
+
+                    if (foundUser == null) continue;
+
+                    foundUser.Profile.TryGetValue($"stormpathApiKey_{i}", out var rawValue);
+                    foundKeypair = rawValue?.ToString();
+
+                    var keypairTokens = foundKeypair?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                    var valid = keypairTokens?.Length == 2;
+
+                    if (!valid) continue;
+
+                    return new ShimApiKey
+                    {
+                        Id = keypairTokens[0],
+                        Secret = keypairTokens[1],
+                        Status = "ENABLED",
+                        User = foundUser
+                    };
+                }
+                catch (OktaException oex)
+                {
+                    object rawCode = null;
+                    oex?.Body?.TryGetValue("errorCode", out rawCode);
+                    var code = rawCode?.ToString();
+                    if (string.IsNullOrEmpty(code)) throw;
+
+                    // Code E0000031 means "the profile attribute doesn't exist"
+                    if (code.Equals(ProfileAttributeDoesNotExist))
+                    {
+                        _logger.LogWarning($"The profile attribute 'profile.stormpathApiKey_{i}' should be added to your Universal Directory configuration.");
+                        continue;
+                    }
+                }
+            }
+
+            return null;
+        }
     }
 }

@@ -14,16 +14,19 @@
 // limitations under the License.
 // </copyright>
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Stormpath.Configuration.Abstractions.Immutable;
+using Microsoft.IdentityModel.Tokens;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
+using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Okta;
+using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -48,7 +51,7 @@ namespace Stormpath.Owin.Middleware
             _logger = logger;
         }
 
-        public async Task<GrantResult> PasswordGrantAsync(
+        public async Task<(GrantResult GrantResult, User User)> PasswordGrantAsync(
             IOwinEnvironment environment,
             Func<string, CancellationToken, Task> errorHandler,
             string login,
@@ -70,7 +73,7 @@ namespace Stormpath.Owin.Middleware
                         ? "An error has occurred. Please try again."
                         : preLoginHandlerContext.Result.ErrorMessage;
                     await errorHandler(message, cancellationToken);
-                    return null;
+                    return (null, null);
                 }
             }
 
@@ -93,10 +96,79 @@ namespace Stormpath.Owin.Middleware
             if (!validationResult.Active)
             {
                 _logger.LogWarning("The user's token was invalid.");
-                return null;
+                return (null, null);
             }
 
-            return grantResult;
+            var user = await UserHelper.GetUserFromAccessTokenAsync(_oktaClient, grantResult.AccessToken, _logger, cancellationToken);
+
+            return (grantResult, user);
+        }
+
+        public async Task<GrantResult> ClientCredentialsGrantAsync(
+            IOwinEnvironment environment,
+            Func<AbstractError, CancellationToken, Task> errorHandler,
+            string id,
+            string userId,
+            CancellationToken cancellationToken)
+        {
+            var preLoginHandlerContext = new PreLoginContext(environment)
+            {
+                Login = id
+            };
+
+            await _handlers.PreLoginHandler(preLoginHandlerContext, cancellationToken);
+
+            if (preLoginHandlerContext.Result != null)
+            {
+                if (!preLoginHandlerContext.Result.Success)
+                {
+                    var message = string.IsNullOrEmpty(preLoginHandlerContext.Result.ErrorMessage)
+                        ? "An error has occurred. Please try again."
+                        : preLoginHandlerContext.Result.ErrorMessage;
+                    await errorHandler(new BadRequest(message), cancellationToken);
+                    return null;
+                }
+            }
+
+            var ttl = _configuration.Web.Oauth2.Client_Credentials.AccessToken.Ttl ?? 3600;
+
+            return new GrantResult
+            {
+                AccessToken = BuildClientCredentialsAccessToken(id, userId, ttl),
+                TokenType = "Bearer",
+                ExpiresIn = ttl,
+                // Scope = TODO
+            };
+        }
+
+        private string BuildClientCredentialsAccessToken(string id, string userId, int timeToLive)
+        {
+            var signingKey = _configuration.OktaEnvironment.ClientSecret;
+
+            var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(
+                new SymmetricSecurityKey(Encoding.ASCII.GetBytes(signingKey)), SecurityAlgorithms.HmacSha256);
+
+            var now = DateTime.UtcNow;
+
+            var claims = new[]
+            {
+                new Claim("sub", id),
+                new Claim("jti", Guid.NewGuid().ToString()),
+                new Claim("iat", ((long)((now - Cookies.Epoch).TotalSeconds)).ToString(), ClaimValueTypes.Integer64),
+                new Claim("cid", _configuration.OktaEnvironment.ClientId),
+                new Claim("uid", userId)
+            };
+
+            var jwt = new JwtSecurityToken(
+                claims: claims,
+                issuer: _configuration.Application.Id,
+                expires: now + TimeSpan.FromSeconds(timeToLive),
+                notBefore: DateTime.UtcNow,
+                signingCredentials: signingCredentials);
+            // TODO audience
+            // TODO scope
+
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
 
         // TODO restore
@@ -112,14 +184,15 @@ namespace Stormpath.Owin.Middleware
         public async Task<ICompatibleOktaAccount> HandlePostLoginAsync(
             IOwinEnvironment context,
             GrantResult grantResult,
+            User user,
             CancellationToken cancellationToken)
         {
-            var stormpathCompatibleUser = await UserHelper.GetUserFromAccessTokenAsync(_oktaClient, grantResult.AccessToken, _logger, cancellationToken);
+            var stormpathCompatibleUser = new CompatibleOktaAccount(user);
 
             var postLoginHandlerContext = new PostLoginContext(context, stormpathCompatibleUser);
             await _handlers.PostLoginHandler(postLoginHandlerContext, cancellationToken);
 
-            //Save the custom redirect URI from the handler, if any
+            // Save the custom redirect URI from the handler, if any
             _nextUriFromPostHandler = postLoginHandlerContext.Result?.RedirectUri;
 
             // Add Stormpath cookies

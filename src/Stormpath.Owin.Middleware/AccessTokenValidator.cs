@@ -25,6 +25,17 @@ namespace Stormpath.Owin.Middleware
 
         public Task<TokenIntrospectionResult> ValidateAsync(string token, CancellationToken cancellationToken)
         {
+            // Try to validate the token as a token issued by the Client Credentials flow (OauthRoute)
+            var orphanValidator = new OrphanAccessTokenValidator(
+                _configuration.Application.Id,
+                _configuration.OktaEnvironment.ClientId,
+                _configuration.OktaEnvironment.ClientSecret);
+            var orphanValidationResult = orphanValidator.ValidateAsync(token);
+            if (orphanValidationResult != TokenIntrospectionResult.Invalid)
+            {
+                return Task.FromResult(orphanValidationResult);
+            }
+
             if (_configuration.Web.Oauth2.Password.ValidationStrategy == WebOauth2TokenValidationStrategy.Stormpath)
             {
                 var remoteValidator = new RemoteTokenValidator(
