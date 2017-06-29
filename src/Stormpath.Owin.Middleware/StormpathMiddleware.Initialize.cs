@@ -25,6 +25,7 @@ using Stormpath.Configuration;
 using Stormpath.Owin.Middleware.Okta;
 using System.Threading;
 using System.Linq;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -44,6 +45,8 @@ namespace Stormpath.Owin.Middleware
 
             // Construct the framework User-Agent
             IFrameworkUserAgentBuilder userAgentBuilder = new DefaultFrameworkUserAgentBuilder(options.LibraryUserAgent);
+
+            options.Logger = options.Logger ?? NullLogger.Instance;
 
             options.Logger.LogInformation("Stormpath middleware starting up", nameof(StormpathMiddleware));
 
