@@ -27,5 +27,14 @@ namespace Stormpath.Owin.Middleware.Model.Error
                 error = "invalid_request"
             };
         }
+
+        public OauthInvalidRequest(string errorDescription)
+        {
+            Body = new
+            {
+                error = "invalid_request",
+                error_description = errorDescription
+            };
+        }
     }
 }

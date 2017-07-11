@@ -113,6 +113,12 @@ namespace Stormpath.Owin.Middleware.Route
             var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
                 => Error.Create(context, new BadRequest(message), ct));
 
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            {
+                await Error.Create(context, new OauthInvalidRequest("Missing username or password"), cancellationToken);
+                return true;
+            }
+
             var (grantResult, user) = await executor.PasswordGrantAsync(
                 context,
                 jsonErrorHandler,
