@@ -40,7 +40,7 @@ namespace Stormpath.Owin.Middleware.Model
         public IDictionary<string, object> CustomData { get; set; } = null;
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public object Groups { get; set; } = null;
+        public MeGroupsCollectionModel Groups { get; set; } = null;
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public object ProviderData { get; set; } = null;

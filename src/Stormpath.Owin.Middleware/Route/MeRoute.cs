@@ -41,14 +41,15 @@ namespace Stormpath.Owin.Middleware.Route
 
             var responseModel = new
             {
-                account = await ExpandAccount(stormpathAccount, _configuration.Web.Me.Expand, cancellationToken)
+                account = await ExpandAccount(stormpathAccount, _oktaClient, _configuration.Web.Me.Expand, cancellationToken)
             };
 
             return await JsonResponse.Ok(context, responseModel);
         }
 
-        private static Task<MeResponseModel> ExpandAccount(
+        private static async Task<MeResponseModel> ExpandAccount(
             ICompatibleOktaAccount account,
+            IOktaClient oktaClient,
             IReadOnlyDictionary<string, bool> expansionOptions,
             CancellationToken cancellationToken)
         {
@@ -70,7 +71,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (!expansionOptions.Any(e => e.Value))
             {
-                return Task.FromResult(sanitizedModel);
+                return sanitizedModel;
             }
 
             if (expansionOptions.Any(e => e.Key.Equals("customData", StringComparison.OrdinalIgnoreCase) && e.Value))
@@ -78,9 +79,28 @@ namespace Stormpath.Owin.Middleware.Route
                 sanitizedModel.CustomData = account.CustomData;
             }
 
-            // TODO other expansion patches
+            if (expansionOptions.Any(e => e.Key.Equals("groups", StringComparison.OrdinalIgnoreCase) && e.Value))
+            {
+                var groups = await oktaClient.GetGroupsForUserIdAsync(account.GetOktaUser().Id, cancellationToken);
 
-            return Task.FromResult(sanitizedModel);
+                sanitizedModel.Groups = new MeGroupsCollectionModel
+                {
+                    Size = groups.Length,
+                    Items = groups.Select(g => new MeGroupModel
+                        {
+                            Id = g.Id,
+                            Name = g.Profile.Name,
+                            Description = g.Profile.Description,
+                            CreatedAt = g.Created,
+                            ModifiedAt = g.LastUpdated
+                        })
+                        .ToArray()
+                };
+            }
+
+            // TODO other expansion patches?
+
+            return sanitizedModel;
         }
     }
 }
