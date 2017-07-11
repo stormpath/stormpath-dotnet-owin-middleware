@@ -19,6 +19,16 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Custom Data is only be available on account resources.
 * The Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
 
+## Version 4.0.0-RC5
+
+* The `/oauth/token` route will now return `400 Bad Request` if the username or password fields are missing. This shouldn't be a breaking change compared to the previous Stormpath functionality, but earlier versions of the migration code failed with a less-helpful error message here.
+
+* The `/me` endpoint will now return the user's groups if `expand: groups` is set in the configuration (this unbreaks a previously-breaking change). Compared to previous Stormpath functionality, the embedded group object does not have an `href` (it has an `id` instead), and the Status property is always `enabled` (because groups in Okta cannot be disabled).
+
+## Version 4.0.0-RC4
+
+No breaking changes. A few bug fixes, detailed in the [release notes](https://github.com/stormpath/stormpath-dotnet-owin-middleware/releases/tag/4.0.0-rc4).
+
 ## Version 4.0.0-RC3
 
 ### Breaking changes
@@ -51,7 +61,7 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * The SDK `IAccount` interface is no longer used to represent a Stormpath account profile. The `ICompatibleOktaAccount` interface is used instead. This interface has the same top-level profile properties as the Stormpath `IAccount` object (mapped to the appropriate Okta profile properties), and includes an `OktaUser` property that can be used to directly access the Okta user properties.
 * Custom Data is no longer a linked resource. It's now treated as a simple dictionary on the `ICompatibleOktaUser` object (or the Okta user object). 
 * Okta handles custom profile fields differently than Stormpath. Any custom profile field you want to use must be defined in advance in the Universal Directory Profile. Otherwise, you will get API errors when creating a user with a custom profile field.
-* The only expansion option that currently works for the `/me` route is `customData`.
+* The only expansion options that currently work for the `/me` route are `customData` and `groups`. The `groups` option expands the user's Okta groups, which are similar to Stormpath groups (but have an `id` instead of an `href` field).
 
 #### Password reset
 
