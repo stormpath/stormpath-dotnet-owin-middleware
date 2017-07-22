@@ -54,6 +54,7 @@ namespace Stormpath.Owin.Middleware
                     _keyProvider,
                     _configuration.Org,
                     _configuration.OktaEnvironment.AuthorizationServerId,
+                    _configuration.OktaEnvironment.ValidAudiences,
                     _configuration.OktaEnvironment.ClientId,
                     _configuration.OktaEnvironment.ClientSecret);
 

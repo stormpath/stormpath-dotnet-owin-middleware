@@ -23,6 +23,11 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 
 No breaking changes from RC5.
 
+Some internal cleanup:
+
+* Removed the `StormpathTokenExchanger` and `SocialExecutor` classes (unused)
+* Added an `aud` check to the local token verifier
+
 ## Version 4.0.0-RC5
 
 * The `/oauth/token` route will now return `400 Bad Request` if the username or password fields are missing. This shouldn't be a breaking change compared to the previous Stormpath functionality, but earlier versions of the migration code failed with a less-helpful error message here.

@@ -156,7 +156,7 @@ namespace Stormpath.Owin.NowinHarness
                 if (!env.ContainsKey(OwinKeys.StormpathUser))
                 {
                     var deleteCookieAction =
-                        new Action<Configuration.Abstractions.Immutable.WebCookieConfiguration>(_ => { }); // TODO
+                        new Action<Configuration.Abstractions.Immutable.WebCookieConfiguration>(_ => { });
                     var setStatusCodeAction = new Action<int>(code => env["owin.ResponseStatusCode"] = code);
                     var setHeaderAction = new Action<string, string>((name, value) =>
                         (env["owin.ResponseHeaders"] as IDictionary<string, string[]>).SetString(name, value));

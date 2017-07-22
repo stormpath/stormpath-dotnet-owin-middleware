@@ -389,7 +389,6 @@ namespace Stormpath.Owin.Middleware.Okta
             };
             request.Content = new FormUrlEncodedContent(parameters);
 
-            // todo why can't I remove this await?
             return SendAsync<TokenIntrospectionResult>(request, cancellationToken);
         }
 
@@ -530,5 +529,8 @@ namespace Stormpath.Owin.Middleware.Okta
 
             return null;
         }
+
+        public Task<AuthorizationServer> GetAuthorizationServerAsync(string authorizationServerId, CancellationToken cancellationToken)
+            => GetResource<AuthorizationServer>($"{ApiPrefix}/authorizationServers/{authorizationServerId}", cancellationToken);
     }
 }

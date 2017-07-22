@@ -103,5 +103,7 @@ namespace Stormpath.Owin.Middleware.Okta
         Task<Group[]> GetGroupsForUserIdAsync(string userId, CancellationToken cancellationToken);
 
         Task<ShimApiKey> GetApiKeyAsync(string apiKeyId, CancellationToken cancellationToken);
+
+        Task<AuthorizationServer> GetAuthorizationServerAsync(string authorizationServerId, CancellationToken cancellationToken);
     }
 }

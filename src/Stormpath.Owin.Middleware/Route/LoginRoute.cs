@@ -131,11 +131,6 @@ namespace Stormpath.Owin.Middleware.Route
         {
             var model = await PostBodyParser.ToModel<LoginPostModel>(context, bodyContentType, _logger, cancellationToken);
 
-            if (model.ProviderData != null)
-            {
-                return await HandleSocialLogin(context, model, cancellationToken);
-            }
-
             var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
                 => Error.Create(context, new BadRequest(message), ct));
 
@@ -169,104 +164,6 @@ namespace Stormpath.Owin.Middleware.Route
             };
 
             return await JsonResponse.Ok(context, responseModel);
-        }
-
-        private Task<bool> HandleSocialLogin(IOwinEnvironment context, LoginPostModel model,
-            CancellationToken cancellationToken)
-        {
-            // todo how does social login work?
-            throw new Exception("TODO");
-
-            //if (string.IsNullOrEmpty(model.ProviderData.ProviderId))
-            //{
-            //    return await Error.Create(context, new BadRequest("No provider specified"), cancellationToken);
-            //}
-
-            //var application = await client.GetApplicationAsync(_configuration.Application.Href, cancellationToken);
-            //var socialExecutor = new SocialExecutor(client, _configuration, _handlers, _logger);
-
-            //try
-            //{
-            //    IProviderAccountRequest providerRequest;
-
-            //    switch (model.ProviderData.ProviderId)
-            //    {
-            //        case "facebook":
-            //        {
-            //            providerRequest = client.Providers()
-            //                .Facebook()
-            //                .Account()
-            //                .SetAccessToken(model.ProviderData.AccessToken)
-            //                .Build();
-            //            break;
-            //        }
-            //        case "google":
-            //        {
-            //            providerRequest = client.Providers()
-            //                .Google()
-            //                .Account()
-            //                .SetCode(model.ProviderData.Code)
-            //                .Build();
-            //            break;
-            //        }
-            //        case "github":
-            //        {
-            //            providerRequest = client.Providers()
-            //                .Github()
-            //                .Account()
-            //                .SetAccessToken(model.ProviderData.AccessToken)
-            //                .Build();
-            //            break;
-            //        }
-            //        case "linkedin":
-            //        {
-            //            providerRequest = client.Providers()
-            //                .LinkedIn()
-            //                .Account()
-            //                .SetAccessToken(model.ProviderData.AccessToken)
-            //                .Build();
-            //            break;
-            //        }
-            //        default:
-            //            providerRequest = null;
-            //            break;
-            //    }
-
-            //    if (providerRequest == null)
-            //    {
-            //        return await Error.Create(context,
-            //            new BadRequest($"Unknown provider '{model.ProviderData.ProviderId}'"), cancellationToken);
-            //    }
-
-            //    var loginResult =
-            //        await socialExecutor.LoginWithProviderRequestAsync(context, providerRequest, cancellationToken);
-
-            //    await socialExecutor.HandleLoginResultAsync(
-            //        context,
-            //        application,
-            //        loginResult,
-            //        cancellationToken);
-
-            //    var sanitizer = new AccountResponseSanitizer();
-            //    var responseModel = new
-            //    {
-            //        account = sanitizer.Sanitize(loginResult.Account)
-            //    };
-
-            //    return await JsonResponse.Ok(context, responseModel);
-
-            //}
-            //catch (ResourceException rex)
-            //{
-            //    // TODO improve error logging (include request id, etc)
-            //    _logger.LogError(rex.DeveloperMessage, source: nameof(HandleSocialLogin));
-            //    return await Error.Create(context, new BadRequest("An error occurred while processing the login"), cancellationToken);
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError(ex, source: nameof(HandleSocialLogin));
-            //    return await Error.Create(context, new BadRequest("An error occurred while processing the login"), cancellationToken);
-            //}
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Stormpath.Owin.Middleware.Route
 
             if (string.IsNullOrEmpty(code))
             {
-                throw new ArgumentNullException(nameof(code), "Code was null."); // TODO json response, for now
+                throw new ArgumentNullException(nameof(code), "Code was null.");
             }
 
             // Verify state token for authenticity
@@ -28,7 +28,7 @@ namespace Stormpath.Owin.Middleware.Route
             var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
             if (!parsedStateToken.Valid)
             {
-                throw new InvalidOperationException("State token was invalid"); // TODO json response, for now
+                throw new InvalidOperationException("State token was invalid");
             }
 
             var grantResult = await _oktaClient.PostAuthCodeGrantAsync(

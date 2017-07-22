@@ -98,8 +98,6 @@ namespace Stormpath.Owin.Middleware.Route
                 };
             }
 
-            // TODO other expansion patches?
-
             return sanitizedModel;
         }
     }

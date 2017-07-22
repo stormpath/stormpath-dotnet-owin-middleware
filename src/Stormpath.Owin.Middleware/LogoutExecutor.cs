@@ -43,7 +43,6 @@ namespace Stormpath.Owin.Middleware
                 var preLogoutContext = new PreLogoutContext(context, account);
                 await _handlers.PreLogoutHandler(preLogoutContext, cancellationToken);
 
-                // TODO delete tokens for other types of auth too
                 await RevokeCookieTokens(cookieParser, cancellationToken);
                 await RevokeHeaderToken(context, cancellationToken);
 

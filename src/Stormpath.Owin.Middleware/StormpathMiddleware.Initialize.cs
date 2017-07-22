@@ -89,7 +89,6 @@ namespace Stormpath.Owin.Middleware
 
         private static void ThrowIfOktaConfigurationMissing(StormpathConfiguration config)
         {
-            // TODO update after changing configuration model
             if (string.IsNullOrEmpty(config?.ApiToken))
             {
                 throw new ArgumentNullException("okta.apiToken");
@@ -134,9 +133,12 @@ namespace Stormpath.Owin.Middleware
                     throw new ArgumentNullException("The Okta application must be configured with a Client ID and Secret");
                 }
 
-                var authServerId = appDetails.Settings.Notifications.Vpn.Message; // Workaround to store AS id in app resource
-
                 logger.LogInformation($"Using Okta application '{appDetails.Label}'");
+
+                var authServerId = appDetails.Settings.Notifications.Vpn.Message; // Workaround to store AS id in app resource
+                var authServer = client.GetAuthorizationServerAsync(authServerId, CancellationToken.None).Result;
+
+                logger.LogInformation($"Using authorization server '{authServer.Name}'");
 
                 var idps = client.GetIdentityProvidersAsync(CancellationToken.None).Result;
                 var idpProviders = new Dictionary<string, ProviderConfiguration>(StringComparer.OrdinalIgnoreCase);
@@ -163,14 +165,14 @@ namespace Stormpath.Owin.Middleware
                         throw new ArgumentException("The web.serverUri property must be set to your server's absolute base URI when using social login providers.");
                     }
 
-                    // TODO Absolute URI is required for now, until it can be automatically generated
                     stormpathCallbackAbsoluteUri = BuildSafeUrl(existingConfig.Web.ServerUri, existingConfig.Web.Callback.Uri);
                 }
 
                 return new IntegrationConfiguration(
                     existingConfig,
                     new OktaEnvironmentConfiguration(
-                        authServerId,
+                        authServer.Id,
+                        authServer.Audiences,
                         credentials.ClientId,
                         credentials.ClientSecret),
                     idpProviders,

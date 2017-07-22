@@ -14,19 +14,15 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
 using Stormpath.Owin.Middleware.Model.Error;
 using Stormpath.Owin.Middleware.Okta;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -85,7 +81,6 @@ namespace Stormpath.Owin.Middleware
                 password,
                 cancellationToken);
 
-            // todo move this into a new class TokenValidator
             var remoteValidator = new RemoteTokenValidator(
                 _oktaClient,
                 _configuration.OktaEnvironment.AuthorizationServerId,
@@ -134,52 +129,11 @@ namespace Stormpath.Owin.Middleware
 
             return new GrantResult
             {
-                AccessToken = BuildClientCredentialsAccessToken(id, userId, ttl),
+                AccessToken = new OrphanAccessTokenBuilder(_configuration).Build(id, userId, ttl),
                 TokenType = "Bearer",
                 ExpiresIn = ttl,
-                // Scope = TODO
             };
         }
-
-        private string BuildClientCredentialsAccessToken(string id, string userId, int timeToLive)
-        {
-            var signingKey = _configuration.OktaEnvironment.ClientSecret;
-
-            var signingCredentials = new Microsoft.IdentityModel.Tokens.SigningCredentials(
-                new SymmetricSecurityKey(Encoding.ASCII.GetBytes(signingKey)), SecurityAlgorithms.HmacSha256);
-
-            var now = DateTime.UtcNow;
-
-            var claims = new[]
-            {
-                new Claim("sub", id),
-                new Claim("jti", Guid.NewGuid().ToString()),
-                new Claim("iat", ((long)((now - Cookies.Epoch).TotalSeconds)).ToString(), ClaimValueTypes.Integer64),
-                new Claim("cid", _configuration.OktaEnvironment.ClientId),
-                new Claim("uid", userId)
-            };
-
-            var jwt = new JwtSecurityToken(
-                claims: claims,
-                issuer: _configuration.Application.Id,
-                expires: now + TimeSpan.FromSeconds(timeToLive),
-                notBefore: DateTime.UtcNow,
-                signingCredentials: signingCredentials);
-            // TODO audience
-            // TODO scope
-
-            return new JwtSecurityTokenHandler().WriteToken(jwt);
-        }
-
-        // TODO restore
-        //public async Task<LoginResult> TokenExchangeGrantAsync(
-        //    IOwinEnvironment environment,
-        //    ICompatibleOktaAccount account,
-        //    CancellationToken cancellationToken)
-        //{
-        //    var tokenExchanger = new StormpathTokenExchanger(_client, application, _configuration, _logger);
-        //    return await tokenExchanger.ExchangeAsync(account, cancellationToken);
-        //}
 
         public async Task<ICompatibleOktaAccount> HandlePostLoginAsync(
             IOwinEnvironment context,

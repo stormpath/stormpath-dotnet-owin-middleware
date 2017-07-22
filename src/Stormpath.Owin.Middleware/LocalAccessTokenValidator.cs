@@ -15,6 +15,7 @@ namespace Stormpath.Owin.Middleware
         private readonly IKeyProvider _keyProvider;
         private readonly string _orgHref;
         private readonly string _authorizationServerId;
+        private readonly string[] _validAudiences;
         private readonly string _clientId;
         private readonly string _clientSecret;
 
@@ -23,6 +24,7 @@ namespace Stormpath.Owin.Middleware
             IKeyProvider keyProvider,
             string orgHref,
             string authorizationServerId,
+            IEnumerable<string> validAudiences,
             string clientId,
             string clientSecret)
         {
@@ -31,14 +33,13 @@ namespace Stormpath.Owin.Middleware
 
             _orgHref = orgHref;
             _authorizationServerId = authorizationServerId;
+            _validAudiences = validAudiences.ToArray();
             _clientId = clientId;
             _clientSecret = clientSecret;
         }
 
         public async Task<JwtSecurityToken> ValidateSecurityTokenAsync(string token, CancellationToken cancellationToken)
         {
-            // TODO need ITs for this
-
             var param = new TokenValidationParameters()
             {
                 ValidateIssuer = true,
@@ -48,9 +49,8 @@ namespace Stormpath.Owin.Middleware
                 RequireSignedTokens = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKeyResolver = await _keyProvider.GetSigningKeyResolver(cancellationToken),
-
-                // TODO what will the standard audience be?
-                ValidateAudience = false
+                ValidateAudience = true,
+                ValidAudiences = _validAudiences,
             };
 
             try

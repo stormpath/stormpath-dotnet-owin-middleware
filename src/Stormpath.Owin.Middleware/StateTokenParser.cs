@@ -53,7 +53,7 @@ namespace Stormpath.Owin.Middleware
 
                 var validationParameters = new TokenValidationParameters()
                 {
-                    //ClockSkew = ?? todo
+                    ClockSkew = TimeSpan.FromSeconds(300),
                     RequireExpirationTime = true,
                     RequireSignedTokens = true,
                     ValidateAudience = true,

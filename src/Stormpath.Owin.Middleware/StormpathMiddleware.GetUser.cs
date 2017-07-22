@@ -31,7 +31,6 @@ namespace Stormpath.Owin.Middleware
     {
         private async Task<ICompatibleOktaAccount> GetUserAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            // TODO: Reuse the same client across requests
             var oktaClient = new OktaClient(Configuration.Org, Configuration.ApiToken, userAgentBuilder, logger);
 
             var bearerAuthenticationResult = await TryBearerAuthenticationAsync(context, oktaClient);

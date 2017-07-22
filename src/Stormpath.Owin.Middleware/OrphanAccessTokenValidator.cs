@@ -29,8 +29,6 @@ namespace Stormpath.Owin.Middleware
 
         public JwtSecurityToken ValidateSecurityToken(string token)
         {
-            // TODO need ITs for this
-
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_clientSecret));
 
             var param = new TokenValidationParameters()
@@ -42,9 +40,8 @@ namespace Stormpath.Owin.Middleware
                 RequireSignedTokens = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = signingKey,
-
-                // TODO what will the standard audience be?
-                ValidateAudience = false
+                ValidateAudience = true,
+                ValidAudience = _clientId,
             };
 
             try

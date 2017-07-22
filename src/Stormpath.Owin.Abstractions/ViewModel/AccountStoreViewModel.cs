@@ -43,7 +43,7 @@ namespace Stormpath.Owin.Abstractions.ViewModel
                 .Replace("{state}", state)
                 .Replace("{nonce}", nonce);
 
-            return $"{templated}"; //&prompt=login (TODO)
+            return $"{templated}";
         }
     }
 }

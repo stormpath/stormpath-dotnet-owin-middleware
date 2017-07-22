@@ -78,14 +78,14 @@ namespace Stormpath.Owin.Middleware.Route
                 if (contentNegotiationResult.ContentType == ContentType.Json)
                 {
                     // Sanitize framework-level errors
-                    await Error.Create(owinContext, 400, ex.Message, owinContext.CancellationToken);
+                    await Error.Create(owinContext, 500, ex.Message, owinContext.CancellationToken);
                     return true;
                 }
                 else
                 {
-                    // todo handle framework errors
-                    _logger.LogError(1007, ex, nameof(InvokeAsync));
-                    throw;
+                    // TODO return HTML?
+                    await Error.Create(owinContext, 500, ex.Message, owinContext.CancellationToken);
+                    return true;
                 }
             }
         }
