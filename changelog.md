@@ -19,6 +19,10 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Custom Data is only be available on account resources.
 * The Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
 
+## Version 4.0.0
+
+No breaking changes from RC5.
+
 ## Version 4.0.0-RC5
 
 * The `/oauth/token` route will now return `400 Bad Request` if the username or password fields are missing. This shouldn't be a breaking change compared to the previous Stormpath functionality, but earlier versions of the migration code failed with a less-helpful error message here.

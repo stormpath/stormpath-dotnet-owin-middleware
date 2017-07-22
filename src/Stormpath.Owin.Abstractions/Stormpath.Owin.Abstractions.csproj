@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common components for the Stormpath.Owin library</Description>
-    <VersionPrefix>2.0.0-beta6</VersionPrefix>
+    <VersionPrefix>2.0.0</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
     <TargetFrameworks>net45;netstandard1.1</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Stormpath.Configuration.Abstractions" Version="7.0.0-beta4" />
+    <PackageReference Include="Stormpath.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.1" />
   </ItemGroup>
 
