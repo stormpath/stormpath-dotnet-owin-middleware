@@ -8,21 +8,12 @@ The Stormpath API will sunset on **2017-08-17 19:00 UTC** (August 17, 2017 at no
 
 * Read the [changelog](changelog.md) for information on breaking changes.
 
-* The data import tool (step 4) is currently being polished and will be released soon. Until then, you can create some test data in your Okta organization using the [Test Data](https://github.com/stormpath/express-stormpath/blob/4.0.0/util/okta-test-data.js) script from the express-stormpath project:
-
-```
-git clone https://github.com/stormpath/express-stormpath.git --branch 4.0.0
-cd express-stormpath
-npm install
-node util/okta-test-data.js --apiToken=TOKEN --org=https://dev-YOUR_ORG.oktapreview.com/
-```
-
 ## Migration steps
 
 1. Create a test user in your existing system with a known password.
 1. [Export](https://stormpath.com/export) your Stormpath data.
 1. Sign up for a [new developer Okta organization](https://www.okta.com/developer/signup/stormpath/), even if you already have an Okta organization. Signing up through this link will provision an Okta organization with features most similar to Stormpath.
-1. Import your Stormpath data into Okta. (coming soon)
+1. Import your Stormpath data into Okta using the [import tool](https://github.com/okta/stormpath-migration).
 1. Upgrade the version of `Stormpath.AspNet`, `Stormpath.AspNetCore`, or `Stormpath.Owin` in your project to 4.0.0 or greater. (You may need to check the "Show prerelease" box in order to see the RC releases.)
 1. Remove any references to `Stormpath.SDK` or the `IClient` interface. The Stormpath .NET SDK has been deprecated. Any code that was using the SDK will need to be refactored to use the [Okta .NET SDK](https://github.com/okta/oktasdk-csharp) or [Okta REST API](http://developer.okta.com/docs/api/getting_started/api_test_client.html). If you need help, let us know at support@stormpath.com.
 1. Update your application configuration:
