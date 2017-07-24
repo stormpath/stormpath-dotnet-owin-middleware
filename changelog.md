@@ -22,8 +22,8 @@ Follow the [migration guide](migrating.md) to understand how to migrate an appli
 
 See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormpath.com/oktaplusstormpath) for a complete list of features that are not being migrated. The relevant points for this library are:
 
-* Organizations and multitenancy is handled differently in Okta. If your application utilizes the Organization resource, please contact support@stormpath.com so we can help you find a solution.
-* ID Site will not work with Okta. If you are using ID Site, reach out to support@stormpath.com for help.
+* Organizations and multitenancy is handled differently in Okta. If your application utilizes the Organization resource, please contact developers@okta.com so we can help you find a solution.
+* ID Site will not work with Okta. If you are using ID Site, reach out to developers@okta.com for help.
 * Custom Data is only be available on account resources.
 * The Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
 
