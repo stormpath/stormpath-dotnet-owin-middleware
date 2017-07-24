@@ -4,7 +4,15 @@ The 4.0 series of Stormpath.Owin will help you migrate an application [from Stor
 
 We've tried to make it as easy as possible to move a .NET application backed by Stormpath to Okta, but not everything works the same way. Some applications will work as-is, and some will require refactoring. Refer to the [migration guide](migrating.md) for more information.
 
-If you have questions or need help, please reach out to us at support@stormpath.com.
+### Who should use this library
+
+This library and information is relevant if:
+
+ - You are a Stormpath customer that is migrating to Okta [(learn more)](https://stormpath.com/oktaplusstormpath).
+ - You have successfully exported your tenant data from Stormpath [(learn more)](https://stormpath.com/export).
+ - You plan to imported your data into Okta [(learn more)](https://developer.okta.com/documentation/stormpath-import).
+
+If you fall into one of these categories, please read the information below (and in the Migration Guide) to understand what features have changed, and what features are the same. If you have questions or need help, please reach out to us at developers@okta.com.
 
 ### Migration guide
 
