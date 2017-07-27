@@ -45,7 +45,11 @@ namespace Stormpath.Owin.Middleware.Internal
 
             if (!string.IsNullOrEmpty(grantResult.RefreshToken))
             {
-                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshToken, null, IsSecureRequest(context), logger);
+                var expirationDate = configuration.Web.RefreshTokenCookie.MaxAge == null
+                    ? (DateTimeOffset?)null
+                    : DateTimeOffset.UtcNow.AddSeconds(configuration.Web.RefreshTokenCookie.MaxAge.Value);
+
+                SetTokenCookie(context, configuration.Web.RefreshTokenCookie, grantResult.RefreshToken, expirationDate, IsSecureRequest(context), logger);
             }
         }
 

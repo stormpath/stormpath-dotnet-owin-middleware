@@ -102,6 +102,10 @@ namespace Stormpath.Owin.NowinHarness
                         VerifyEmail = new WebVerifyEmailRouteConfiguration()
                         {
                             Enabled = false
+                        },
+                        RefreshTokenCookie = new WebRefreshTokenCookieConfiguration
+                        {
+                            MaxAge = 30 * 86400 // 30 days
                         }
                     }
                 }
