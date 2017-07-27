@@ -27,7 +27,7 @@ namespace Stormpath.Owin.Middleware
             _clientSecret = clientSecret;
         }
 
-        public JwtSecurityToken ValidateSecurityToken(string token)
+        private JwtSecurityToken ValidateSecurityToken(string token)
         {
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_clientSecret));
 
@@ -55,6 +55,14 @@ namespace Stormpath.Owin.Middleware
                 // Token is invalid
                 return null;
             }
+        }
+
+        public bool IsOrphanToken(string token)
+        {
+            // Tokens issued by the Client Credentials flow are signed with HS256 (symmetric) encryption
+            // See OrphanAccessTokenBuilder
+            var decodedHeaderOnly = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            return decodedHeaderOnly?.Header?.Alg?.Equals("HS256", StringComparison.Ordinal) ?? false;
         }
 
         public TokenIntrospectionResult ValidateAsync(string token)
