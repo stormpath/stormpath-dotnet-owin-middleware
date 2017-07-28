@@ -22,7 +22,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
@@ -31,23 +30,21 @@ namespace Stormpath.Owin.Middleware
     {
         private async Task<ICompatibleOktaAccount> GetUserAsync(IOwinEnvironment context, CancellationToken cancellationToken)
         {
-            var oktaClient = new OktaClient(Configuration.Org, Configuration.ApiToken, userAgentBuilder, logger);
-
-            var bearerAuthenticationResult = await TryBearerAuthenticationAsync(context, oktaClient);
+            var bearerAuthenticationResult = await TryBearerAuthenticationAsync(context, Client);
             if (bearerAuthenticationResult != null)
             {
                 context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.Bearer;
                 return bearerAuthenticationResult;
             }
 
-            var cookieAuthenticationResult = await TryCookieAuthenticationAsync(context, oktaClient);
+            var cookieAuthenticationResult = await TryCookieAuthenticationAsync(context, Client);
             if (cookieAuthenticationResult != null)
             {
                 context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.Cookie;
                 return cookieAuthenticationResult;
             }
 
-            var apiAuthenticationResult = await TryBasicAuthenticationAsync(context, oktaClient);
+            var apiAuthenticationResult = await TryBasicAuthenticationAsync(context, Client);
             if (apiAuthenticationResult != null)
             {
                 context.Request[OwinKeys.StormpathUserScheme] = RequestAuthenticationScheme.ApiCredentials;

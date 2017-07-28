@@ -53,7 +53,14 @@ namespace Stormpath.Owin.Middleware
             var baseConfiguration = ConfigurationLoader.Initialize().Load(options.Configuration);
             ThrowIfOktaConfigurationMissing(baseConfiguration);
             ThrowIfConfigurationInconsistent(baseConfiguration);
-            var oktaClient = new OktaClient(baseConfiguration.Org, baseConfiguration.ApiToken, userAgentBuilder, options.Logger);
+
+            var oktaClient = new OktaClient(
+                baseConfiguration.Org,
+                baseConfiguration.ApiToken,
+                userAgentBuilder,
+                options.CacheProvider,
+                options.CacheEntryOptions,
+                options.Logger);
 
             var integrationConfiguration = GetAdditionalConfigFromServer(baseConfiguration, oktaClient, options.Logger);
 
@@ -84,7 +91,8 @@ namespace Stormpath.Owin.Middleware
                 userAgentBuilder,
                 integrationConfiguration,
                 handlerConfiguration,
-                authFilterFactory);
+                authFilterFactory,
+                oktaClient);
         }
 
         private static void ThrowIfOktaConfigurationMissing(StormpathConfiguration config)
@@ -194,9 +202,7 @@ namespace Stormpath.Owin.Middleware
             var route = new T();
             options = options ?? new RouteOptionsBase();
 
-            // TODO: Reuse the same client across requests
-            var oktaClient = new OktaClient(Configuration.Org, Configuration.ApiToken, userAgentBuilder, logger);
-            route.Initialize(Configuration, Handlers, viewRenderer, logger, options, oktaClient);
+            route.Initialize(Configuration, Handlers, viewRenderer, logger, options, Client);
 
             return route;
         }

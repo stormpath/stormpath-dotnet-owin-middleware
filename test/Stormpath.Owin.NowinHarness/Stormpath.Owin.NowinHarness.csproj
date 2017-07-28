@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="1.1.2" />
     <PackageReference Include="Microsoft.Owin.Hosting" Version="3.0.1" />
     <PackageReference Include="Nowin" Version="0.22.2" />
   </ItemGroup>

@@ -17,7 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Hosting;
 using Owin;
@@ -25,7 +28,6 @@ using Stormpath.Configuration.Abstractions;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Middleware;
 using Stormpath.Owin.Views.Precompiled;
-using System.Threading;
 
 namespace Stormpath.Owin.NowinHarness
 {
@@ -61,6 +63,11 @@ namespace Stormpath.Owin.NowinHarness
                 LibraryUserAgent = "nowin/0.22.2",
                 ViewRenderer = new PrecompiledViewRenderer(logger),
                 Logger = logger,
+                CacheProvider = new MemoryDistributedCache(new MemoryCache(new MemoryCacheOptions())),
+                CacheEntryOptions = new Dictionary<Type, DistributedCacheEntryOptions>()
+                {
+                    [typeof(Middleware.Okta.User)] = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30) }
+                },
                 PreRegistrationHandler = (ctx, ct) =>
                 {
                     ctx.Account.CustomData["source"] = "Nowin";

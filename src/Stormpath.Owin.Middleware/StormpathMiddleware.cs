@@ -23,6 +23,8 @@ using Stormpath.Owin.Middleware.Route;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -44,24 +46,30 @@ namespace Stormpath.Owin.Middleware
             IFrameworkUserAgentBuilder userAgentBuilder,
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
-            IAuthorizationFilterFactory authorizationFilterFactory)
+            IAuthorizationFilterFactory authorizationFilterFactory,
+            OktaClient oktaClient)
         {
             this.keyProvider = keyProvider;
             this.viewRenderer = viewRenderer;
             this.logger = logger;
             this.userAgentBuilder = userAgentBuilder;
+
             Configuration = configuration;
             Handlers = handlers;
             AuthorizationFilterFactory = authorizationFilterFactory;
+
+            Client = oktaClient;
 
             routingTable = BuildRoutingTable();
         }
 
         public IntegrationConfiguration Configuration { get; }
 
-        public HandlerConfiguration Handlers { get; }
-
         public IAuthorizationFilterFactory AuthorizationFilterFactory { get; }
+
+        private HandlerConfiguration Handlers { get; }
+
+        private OktaClient Client { get; }
 
         public void Initialize(AppFunc next)
         {

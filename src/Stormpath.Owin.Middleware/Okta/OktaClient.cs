@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Stormpath.Owin.Middleware.Internal;
-using System.Linq;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
@@ -26,7 +26,16 @@ namespace Stormpath.Owin.Middleware.Okta
         private readonly HttpClient _httpClient;
         private readonly string _userAgent;
 
-        public OktaClient(string orgUrl, string apiToken, IFrameworkUserAgentBuilder userAgentBuilder, ILogger logger)
+        private readonly IDistributedCache _cacheProvider;
+        private readonly IDictionary<Type, DistributedCacheEntryOptions> _cacheEntryOptions;
+
+        public OktaClient(
+            string orgUrl,
+            string apiToken,
+            IFrameworkUserAgentBuilder userAgentBuilder,
+            IDistributedCache cacheProvider,
+            IDictionary<Type, DistributedCacheEntryOptions> cacheEntryOptions,
+            ILogger logger)
         {
             if (string.IsNullOrEmpty(orgUrl))
             {
@@ -46,6 +55,9 @@ namespace Stormpath.Owin.Middleware.Okta
 
             _httpClient = CreateClient(_orgUrl, _userAgent);
             _logger.LogTrace($"Client configured to connect to {_orgUrl}");
+
+            _cacheProvider = cacheProvider;
+            _cacheEntryOptions = cacheEntryOptions;
         }
 
         private static string CreateUserAgent(IFrameworkUserAgentBuilder userAgentBuilder)
@@ -84,6 +96,28 @@ namespace Stormpath.Owin.Middleware.Okta
             client.DefaultRequestHeaders.Add("User-Agent", userAgent);
 
             return client;
+        }
+
+        private string BuildCacheKey(string type, string path)
+        {
+            // Cache keys are the object types concatenated with the full, absolute URL:
+            // User:https://dev-123.oktapreview.com/api/v1/users/x1y2z3
+
+            return $"{type}:{_orgUrl.TrimEnd('/')}/{path.TrimStart('/')}";
+        }
+
+        private DistributedCacheEntryOptions GetCacheOptions<T>()
+        {
+            if (_cacheEntryOptions != null && _cacheEntryOptions.TryGetValue(typeof(T), out var options))
+            {
+                return options;
+            }
+
+            // Default cache entry options
+            return new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+            };
         }
 
         private const string DefaultErrorMessage = "HTTP request failure";
@@ -143,23 +177,62 @@ namespace Stormpath.Owin.Middleware.Okta
             request.Headers.Authorization = new AuthenticationHeaderValue("SSWS", _apiToken);
         }
 
-        private Task<T> GetResource<T>(string path, CancellationToken cancellationToken)
+        private async Task<T> GetCachedResource<T>(string path, CancellationToken cancellationToken)
+        {
+            var resourceJson = string.Empty;
+            var typeName = typeof(T).Name;
+
+            // If there's a cache, try to retrieve from the cache
+            if (_cacheProvider != null)
+            {
+                resourceJson = await _cacheProvider.GetStringAsync(BuildCacheKey(typeName, path));
+            }
+
+            if (!string.IsNullOrEmpty(resourceJson))
+            {
+                return Deserialize<T>(resourceJson);
+            }
+
+            resourceJson = await GetResource(path, cancellationToken);
+
+            // If there's a cache, save this resource
+            if (_cacheProvider != null)
+            {
+                await _cacheProvider.SetStringAsync(BuildCacheKey(typeName, path), resourceJson, GetCacheOptions<T>());
+            }
+
+            return Deserialize<T>(resourceJson);
+        }
+
+        private Task<string> GetResource(string path, CancellationToken cancellationToken)
         {
             // orgUrl already is guaranteed to have a trailing slash
             var sanitizedResourcePath = path.TrimStart('/');
 
             var request = new HttpRequestMessage(HttpMethod.Get, sanitizedResourcePath);
             AddSswsAuth(request);
-            return SendAsync<T>(request, cancellationToken);
+            return SendAsync(request, cancellationToken);
         }
 
-        private Task SendAsync(
+        private async Task<T> GetResource<T>(string path, CancellationToken cancellationToken)
+        {
+            var json = await GetResource(path, cancellationToken);
+            return Deserialize<T>(json);
+        }
+
+        private T Deserialize<T>(string json)
+            => JsonConvert.DeserializeObject<T>(json);
+
+        private async Task<T> SendAsync<T>(
             HttpRequestMessage request,
             CancellationToken cancellationToken,
             Func<int, string, Exception> exceptionFormatter = null)
-            => SendAsync<IDictionary<string, object>>(request, cancellationToken, exceptionFormatter);
+        {
+            var json = await SendAsync(request, cancellationToken, exceptionFormatter);
+            return Deserialize<T>(json);
+        }
 
-        private async Task<T> SendAsync<T>(
+        private async Task<string> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken,
             Func<int, string, Exception> exceptionFormatter = null)
@@ -175,7 +248,7 @@ namespace Stormpath.Owin.Middleware.Okta
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 return response.IsSuccessStatusCode
-                    ? JsonConvert.DeserializeObject<T>(json)
+                    ? json
                     : throw exceptionFormatter((int)response.StatusCode, json);
             }
         }
@@ -187,7 +260,7 @@ namespace Stormpath.Owin.Middleware.Okta
             => GetResource<ApplicationClientCredentials>($"{ApiPrefix}/internal/apps/{appId}/settings/clientcreds", cancellationToken);
 
         public Task<User> GetUserAsync(string userId, CancellationToken cancellationToken)
-            => GetResource<User>($"{ApiPrefix}/users/{userId}", cancellationToken);
+            => GetCachedResource<User>($"{ApiPrefix}/users/{userId}", cancellationToken);
 
         public Task<List<User>> FindUsersByEmailAsync(string email, CancellationToken cancellationToken)
         {
@@ -198,7 +271,7 @@ namespace Stormpath.Owin.Middleware.Okta
         public Task<List<User>> SearchUsersAsync(string searchExpression, CancellationToken cancellationToken)
             => GetResource<List<User>>($"{ApiPrefix}/users?search={searchExpression}", cancellationToken);
 
-        public Task<User> UpdateUserProfileAsync(string userId, IDictionary<string, object> updatedProfileProperties, CancellationToken cancellationToken)
+        public async Task<User> UpdateUserProfileAsync(string userId, IDictionary<string, object> updatedProfileProperties, CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/users/{userId}";
 
@@ -211,17 +284,30 @@ namespace Stormpath.Owin.Middleware.Okta
             };
             request.Content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
 
-            return SendAsync<User>(request, cancellationToken);
+            // If there's a cache, expire this user's entry
+            if (_cacheProvider != null)
+            {
+                await _cacheProvider.RemoveAsync(BuildCacheKey(typeof(User).Name, url)); 
+            }
+
+            return await SendAsync<User>(request, cancellationToken);
         }
 
-        public Task ActivateUserAsync(string userId, CancellationToken cancellationToken)
+        public async Task ActivateUserAsync(string userId, CancellationToken cancellationToken)
         {
             var url = $"{ApiPrefix}/users/{userId}/lifecycle/activate?sendEmail=false";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             AddSswsAuth(request);
 
-            return SendAsync<User>(request, cancellationToken);
+            // If there's a cache, expire this user's entry
+            if (_cacheProvider != null)
+            {
+                await _cacheProvider.RemoveAsync(BuildCacheKey(typeof(User).Name, url)); 
+            }
+
+            await SendAsync<User>(request, cancellationToken);
+            return;
         }
 
         public Task<User> CreateUserAsync(

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Stormpath OWIN middleware library</Description>
     <Copyright>(c) 2017 Stormpath, Inc.</Copyright>
-    <VersionPrefix>4.1.0-beta1</VersionPrefix>
+    <VersionPrefix>4.1.0-beta2</VersionPrefix>
     <Authors>Nate Barbettini</Authors>
     <TargetFrameworks>net451;netstandard1.4</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591;CS0618</NoWarn>
@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="1.1.2" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="2.1.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
