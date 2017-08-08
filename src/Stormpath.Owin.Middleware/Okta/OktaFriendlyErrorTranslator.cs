@@ -20,7 +20,7 @@ namespace Stormpath.Owin.Middleware.Okta
             }
 
             oex.Body.TryGetValue("errorCode", out var rawErrorCode);
-            return rawErrorCode?.ToString();
+            return rawErrorCode?.ToString() ?? string.Empty;
         }
 
         private static string GetFirstErrorCause(OktaException oex)
@@ -38,7 +38,8 @@ namespace Stormpath.Owin.Middleware.Okta
             var firstCause =
                 ((rawErrorCauses as IEnumerable<IEnumerable<object>>)?.FirstOrDefault() // Unwrap the array
                 ?.FirstOrDefault() as IEnumerable<object>) // First child item
-                ?.FirstOrDefault()?.ToString(); // First value (string)
+                ?.FirstOrDefault()?.ToString() // First value (string)
+                ?? string.Empty;
 
             return firstCause;
         }
