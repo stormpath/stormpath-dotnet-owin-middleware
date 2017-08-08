@@ -86,15 +86,23 @@ namespace Stormpath.Owin.Middleware.Route
                 }
             }
             // Special handling of API errors for the OAuth route
+            // (This only applies to errors that aren't handled by an errorHandler
+            // passed to the executor in one of the methods below)
             catch (OktaException oex)
             {
                 string message = oex.Message;
                 oex.Body.TryGetValue("error_description", out var rawMessage);
-                if (!string.IsNullOrEmpty(rawMessage.ToString())) message = rawMessage.ToString();
+                if (!string.IsNullOrEmpty(rawMessage.ToString()))
+                {
+                    message = rawMessage.ToString();
+                }
 
                 string error = "invalid_grant";
                 oex.Body.TryGetValue("error", out var rawError);
-                if (!string.IsNullOrEmpty(rawError.ToString())) error = rawError.ToString();
+                if (!string.IsNullOrEmpty(rawError.ToString()))
+                {
+                    error = rawError.ToString();
+                }
 
                 return await Error.Create(context, new OauthError(message, error), cancellationToken);
             }
@@ -108,10 +116,10 @@ namespace Stormpath.Owin.Middleware.Route
 
         private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, string username, string password, CancellationToken cancellationToken)
         {
-            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
 
             var jsonErrorHandler = new Func<string, CancellationToken, Task>((message, ct)
-                => Error.Create(context, new BadRequest(message), ct));
+                => Error.Create(context, new OauthError(message, "invalid_grant"), cancellationToken));
 
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
@@ -125,6 +133,11 @@ namespace Stormpath.Owin.Middleware.Route
                 username,
                 password,
                 cancellationToken);
+
+            if (grantResult == null)
+            {
+                return true; // The error handler was invoked
+            }
 
             await executor.HandlePostLoginAsync(context, grantResult, user, cancellationToken);
 
@@ -166,7 +179,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
 
             var tokenResult = await executor.ClientCredentialsGrantAsync(
                 context,

@@ -84,6 +84,8 @@ namespace Stormpath.Owin.Middleware
 
             var authFilterFactory = new DefaultAuthorizationFilterFactory(oktaClient);
 
+            var errorTranslator = options.FriendlyErrorTranslator ?? new OktaFriendlyErrorTranslator();
+
             return new StormpathMiddleware(
                 jwksKeyProvider,
                 options.ViewRenderer,
@@ -92,7 +94,8 @@ namespace Stormpath.Owin.Middleware
                 integrationConfiguration,
                 handlerConfiguration,
                 authFilterFactory,
-                oktaClient);
+                oktaClient,
+                errorTranslator);
         }
 
         private static void ThrowIfOktaConfigurationMissing(StormpathConfiguration config)
@@ -202,7 +205,7 @@ namespace Stormpath.Owin.Middleware
             var route = new T();
             options = options ?? new RouteOptionsBase();
 
-            route.Initialize(Configuration, Handlers, viewRenderer, logger, options, Client);
+            route.Initialize(Configuration, Handlers, _viewRenderer, _logger, options, Client, _errorTranslator);
 
             return route;
         }
@@ -214,7 +217,7 @@ namespace Stormpath.Owin.Middleware
             // /oauth/token
             if (Configuration.Web.Oauth2.Enabled)
             {
-                logger.LogInformation($"Oauth2 route enabled on {Configuration.Web.Oauth2.Uri}", nameof(BuildRoutingTable));
+                _logger.LogInformation($"Oauth2 route enabled on {Configuration.Web.Oauth2.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
                     Configuration.Web.Oauth2.Uri,
@@ -224,7 +227,7 @@ namespace Stormpath.Owin.Middleware
             // /stormpathCallback
             if (Configuration.Web.Callback.Enabled)
             {
-                logger.LogInformation($"Callback enabled on {Configuration.Web.Callback.Uri}", nameof(BuildRoutingTable));
+                _logger.LogInformation($"Callback enabled on {Configuration.Web.Callback.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
                     Configuration.Web.Callback.Uri,
@@ -234,7 +237,7 @@ namespace Stormpath.Owin.Middleware
             // /register
             if (Configuration.Web.Register.Enabled)
             {
-                logger.LogInformation($"Register route enabled on {Configuration.Web.Register.Uri}",
+                _logger.LogInformation($"Register route enabled on {Configuration.Web.Register.Uri}",
                     nameof(BuildRoutingTable));
 
                 routing.Add(
@@ -245,7 +248,7 @@ namespace Stormpath.Owin.Middleware
             // /login
             if (Configuration.Web.Login.Enabled)
             {
-                logger.LogInformation($"Login route enabled on {Configuration.Web.Login.Uri}", nameof(BuildRoutingTable));
+                _logger.LogInformation($"Login route enabled on {Configuration.Web.Login.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
                     Configuration.Web.Login.Uri,
@@ -255,7 +258,7 @@ namespace Stormpath.Owin.Middleware
             // /me
             if (Configuration.Web.Me.Enabled)
             {
-                logger.LogInformation($"Me route enabled on {Configuration.Web.Me.Uri}", nameof(BuildRoutingTable));
+                _logger.LogInformation($"Me route enabled on {Configuration.Web.Me.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
                     Configuration.Web.Me.Uri,
@@ -265,7 +268,7 @@ namespace Stormpath.Owin.Middleware
             // /logout
             if (Configuration.Web.Logout.Enabled)
             {
-                logger.LogInformation($"Logout route enabled on {Configuration.Web.Logout.Uri}",
+                _logger.LogInformation($"Logout route enabled on {Configuration.Web.Logout.Uri}",
                     nameof(BuildRoutingTable));
 
                 routing.Add(
@@ -276,7 +279,7 @@ namespace Stormpath.Owin.Middleware
             // /forgot   
             if (ForgotPasswordRoute.ShouldBeEnabled(Configuration))
             {
-                logger.LogInformation($"ForgotPassword route enabled on {Configuration.Web.ForgotPassword.Uri}",
+                _logger.LogInformation($"ForgotPassword route enabled on {Configuration.Web.ForgotPassword.Uri}",
                     nameof(BuildRoutingTable));
 
                 routing.Add(
@@ -287,7 +290,7 @@ namespace Stormpath.Owin.Middleware
             // /change
             if (ChangePasswordRoute.ShouldBeEnabled(Configuration))
             {
-                logger.LogInformation($"ChangePassword route enabled on {Configuration.Web.ChangePassword.Uri}", nameof(BuildRoutingTable));
+                _logger.LogInformation($"ChangePassword route enabled on {Configuration.Web.ChangePassword.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
                     Configuration.Web.ChangePassword.Uri,
@@ -297,7 +300,7 @@ namespace Stormpath.Owin.Middleware
             // /verify
             if (VerifyEmailRoute.ShouldBeEnabled(Configuration))
             {
-                logger.LogInformation($"VerifyEmail route enabled on {Configuration.Web.VerifyEmail.Uri}", nameof(BuildRoutingTable));
+                _logger.LogInformation($"VerifyEmail route enabled on {Configuration.Web.VerifyEmail.Uri}", nameof(BuildRoutingTable));
 
                 routing.Add(
                     Configuration.Web.VerifyEmail.Uri,

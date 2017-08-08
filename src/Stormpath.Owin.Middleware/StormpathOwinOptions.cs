@@ -22,6 +22,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 using Stormpath.Owin.Abstractions;
+using Stormpath.Owin.Middleware.Okta;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -38,6 +39,8 @@ namespace Stormpath.Owin.Middleware
         public IViewRenderer ViewRenderer { get; set; }
 
         public IDistributedCache CacheProvider { get; set; }
+
+        public IFriendlyErrorTranslator FriendlyErrorTranslator { get; set; }
 
         public IDictionary<Type, DistributedCacheEntryOptions> CacheEntryOptions { get; set; }
 

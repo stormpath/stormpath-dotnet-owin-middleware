@@ -90,7 +90,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
 
             try
             {
@@ -141,7 +141,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true;
             }
 
-            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
 
             var (grantResult, user) = await executor.PasswordGrantAsync(
                 context,

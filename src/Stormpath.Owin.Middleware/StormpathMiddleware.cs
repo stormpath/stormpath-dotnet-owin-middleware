@@ -14,17 +14,16 @@
 // limitations under the License.
 // </copyright>
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stormpath.Configuration.Abstractions.Immutable;
 using Stormpath.Owin.Abstractions;
 using Stormpath.Owin.Abstractions.Configuration;
 using Stormpath.Owin.Middleware.Internal;
-using Stormpath.Owin.Middleware.Route;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Distributed;
 using Stormpath.Owin.Middleware.Okta;
+using Stormpath.Owin.Middleware.Route;
 
 namespace Stormpath.Owin.Middleware
 {
@@ -32,11 +31,12 @@ namespace Stormpath.Owin.Middleware
 
     public sealed partial class StormpathMiddleware
     {
-        private readonly IKeyProvider keyProvider;
-        private readonly IViewRenderer viewRenderer;
-        private readonly ILogger logger;
-        private readonly IFrameworkUserAgentBuilder userAgentBuilder;
-        private readonly IReadOnlyDictionary<string, RouteHandler> routingTable;
+        private readonly IKeyProvider _keyProvider;
+        private readonly IViewRenderer _viewRenderer;
+        private readonly ILogger _logger;
+        private readonly IFrameworkUserAgentBuilder _userAgentBuilder;
+        private readonly IReadOnlyDictionary<string, RouteHandler> _routingTable;
+        private readonly IFriendlyErrorTranslator _errorTranslator;
         private AppFunc _next;
 
         private StormpathMiddleware(
@@ -47,12 +47,13 @@ namespace Stormpath.Owin.Middleware
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
             IAuthorizationFilterFactory authorizationFilterFactory,
-            OktaClient oktaClient)
+            OktaClient oktaClient,
+            IFriendlyErrorTranslator errorTranslator)
         {
-            this.keyProvider = keyProvider;
-            this.viewRenderer = viewRenderer;
-            this.logger = logger;
-            this.userAgentBuilder = userAgentBuilder;
+            _keyProvider = keyProvider;
+            _viewRenderer = viewRenderer;
+            _logger = logger;
+            _userAgentBuilder = userAgentBuilder;
 
             Configuration = configuration;
             Handlers = handlers;
@@ -60,7 +61,9 @@ namespace Stormpath.Owin.Middleware
 
             Client = oktaClient;
 
-            routingTable = BuildRoutingTable();
+            _errorTranslator = errorTranslator;
+
+            _routingTable = BuildRoutingTable();
         }
 
         public IntegrationConfiguration Configuration { get; }
@@ -84,17 +87,17 @@ namespace Stormpath.Owin.Middleware
             }
 
             IOwinEnvironment context = new DefaultOwinEnvironment(environment);
-            logger.LogTrace($"Incoming request {context.Request.Path}", "StormpathMiddleware.Invoke");
+            _logger.LogTrace($"Incoming request {context.Request.Path}", "StormpathMiddleware.Invoke");
 
             var currentUser = await GetUserAsync(context, context.CancellationToken).ConfigureAwait(false);
 
             if (currentUser == null)
             {
-                logger.LogTrace("Request is anonymous", "StormpathMiddleware.Invoke");
+                _logger.LogTrace("Request is anonymous", "StormpathMiddleware.Invoke");
             }
             else
             {
-                logger.LogTrace($"Request for Account '{currentUser.Href}' via scheme {environment[OwinKeys.StormpathUserScheme]}", "StormpathMiddleware.Invoke");
+                _logger.LogTrace($"Request for Account '{currentUser.Href}' via scheme {environment[OwinKeys.StormpathUserScheme]}", "StormpathMiddleware.Invoke");
             }
 
             AddStormpathVariablesToEnvironment(
@@ -112,11 +115,11 @@ namespace Stormpath.Owin.Middleware
                 return;
             }
 
-            logger.LogTrace($"Handling request '{requestPath}'", "StormpathMiddleware.Invoke");
+            _logger.LogTrace($"Handling request '{requestPath}'", "StormpathMiddleware.Invoke");
 
             if (routeHandler.AuthenticationRequired)
             {
-                var filter = new AuthenticationRequiredFilter(logger);
+                var filter = new AuthenticationRequiredFilter(_logger);
                 var isAuthenticated = await filter.InvokeAsync(environment);
                 if (!isAuthenticated)
                 {
@@ -128,7 +131,7 @@ namespace Stormpath.Owin.Middleware
 
             if (!handled)
             {
-                logger.LogTrace("Handler skipped request.", "StormpathMiddleware.Invoke");
+                _logger.LogTrace("Handler skipped request.", "StormpathMiddleware.Invoke");
                 await _next.Invoke(environment);
             }
         }
@@ -148,7 +151,7 @@ namespace Stormpath.Owin.Middleware
         private RouteHandler GetRouteHandler(string requestPath)
         {
             RouteHandler handler = null;
-            routingTable.TryGetValue(requestPath, out handler);
+            _routingTable.TryGetValue(requestPath, out handler);
             return handler;
         }
 
@@ -179,7 +182,7 @@ namespace Stormpath.Owin.Middleware
             }
 
             return string
-                .Join(" ", callingAgent, userAgentBuilder.GetUserAgent())
+                .Join(" ", callingAgent, _userAgentBuilder.GetUserAgent())
                 .Trim();
         }
     }

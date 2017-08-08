@@ -52,7 +52,7 @@ namespace Stormpath.Owin.Middleware.Route
             if (!hasSelfServiceCode)
             {
                 _logger.LogWarning($"User ID '{recoveryTransaction?.Embedded?.User?.Id}' does not contain profile.{SelfServiceResetKey}");
-                throw new InvalidOperationException("An unexpected error occurred");
+                throw new NotSupportedException("An unexpected error occurred");
             }
 
             var stormpathCompatibleAccount = new CompatibleOktaAccount(fullUser);
@@ -106,26 +106,27 @@ namespace Stormpath.Owin.Middleware.Route
             var model = PostBodyParser.ToModel<ChangePasswordPostModel>(body, bodyContentType, _logger);
             var formData = FormContentParser.Parse(body, _logger);
 
-            var stateToken = formData.GetString(StringConstants.StateTokenName);
-            var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
-            if (!parsedStateToken.Valid)
+            async Task<bool> HtmlErrorHandler(string message)
             {
                 var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
                 var changePasswordViewModel = viewModelBuilder.Build();
-                changePasswordViewModel.Errors.Add("An error occurred. Please try again.");
+                changePasswordViewModel.Errors.Add(message);
 
                 await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
                 return true;
             }
 
+            var stateToken = formData.GetString(StringConstants.StateTokenName);
+            var parsedStateToken = new StateTokenParser(_configuration.Application.Id, _configuration.OktaEnvironment.ClientSecret, stateToken, _logger);
+
+            if (!parsedStateToken.Valid)
+            {
+                return await HtmlErrorHandler("An error occurred. Please try again.");
+            }
+
             if (!model.Password.Equals(model.ConfirmPassword, StringComparison.Ordinal))
             {
-                var viewModelBuilder = new ChangePasswordFormViewModelBuilder(_configuration);
-                var changePasswordViewModel = viewModelBuilder.Build();
-                changePasswordViewModel.Errors.Add("Passwords do not match.");
-
-                await RenderViewAsync(context, _configuration.Web.ChangePassword.View, changePasswordViewModel, cancellationToken);
-                return true;
+                return await HtmlErrorHandler("The passwords you entered do not match.");
             }
 
             var spToken = queryString.GetString("sptoken");
@@ -133,6 +134,16 @@ namespace Stormpath.Owin.Middleware.Route
             try
             {
                 await ChangePasswordAsync(context, model, spToken, cancellationToken);
+            }
+            catch (OktaException oex)
+            {
+                var message = _errorTranslator.GetFriendlyMessage(oex);
+                return await HtmlErrorHandler(message);
+            }
+            catch (NotSupportedException)
+            {
+                // No self-service code available on user's profile
+                return await HtmlErrorHandler("A system error occurred. Please contact the administrator.");
             }
             catch (Exception ex)
             {
@@ -161,7 +172,7 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 await _oktaClient.VerifyRecoveryTokenAsync(spToken, cancellationToken);
             }
-            catch (InvalidOperationException)
+            catch (OktaException)
             {
                 return await Error.Create(context, 404, "The requested resource was not found", cancellationToken);
             }
@@ -180,8 +191,20 @@ namespace Stormpath.Owin.Middleware.Route
             {
                 await ChangePasswordAsync(context, model, model.SpToken, cancellationToken);
             }
-            catch (InvalidOperationException)
+            catch (NotSupportedException)
             {
+                // No self-service code available on user's profile
+                return await Error.Create(context, 400, "A system error occurred. Please contact the administrator.", cancellationToken);
+            }
+            catch (OktaException oex)
+            {
+                oex.Body.TryGetValue("errorCode", out var rawErrorCode);
+                if (rawErrorCode?.ToString() == "E0000080") // Password requirements error
+                {
+                    var message = _errorTranslator.GetFriendlyMessage(oex);
+                    return await Error.Create(context, 400, message, cancellationToken);
+                }
+
                 return await Error.Create(context, 404, "The requested resource was not found", cancellationToken);
             }
             // Other errors are caught in AbstractRouteMiddleware
