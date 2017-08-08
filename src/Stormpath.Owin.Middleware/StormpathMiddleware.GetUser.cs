@@ -51,7 +51,7 @@ namespace Stormpath.Owin.Middleware
                 return apiAuthenticationResult;
             }
 
-            logger.LogTrace("No user found on request", nameof(GetUserAsync));
+            _logger.LogTrace("No user found on request", nameof(GetUserAsync));
             return null;
         }
 
@@ -59,7 +59,7 @@ namespace Stormpath.Owin.Middleware
         {
             var basicHeaderParser = new BasicAuthenticationParser(
                 context.Request.Headers.GetString("Authorization"),
-                logger);
+                _logger);
             if (!basicHeaderParser.IsValid)
             {
                 return Task.FromResult<ICompatibleOktaAccount>(null);
@@ -67,12 +67,12 @@ namespace Stormpath.Owin.Middleware
 
             try
             {
-                logger.LogInformation("Using Basic header to authenticate request");
+                _logger.LogInformation("Using Basic header to authenticate request");
                 return ValidateApiCredentialsAsync(context, client, basicHeaderParser.Username, basicHeaderParser.Password);
             }
             catch (Exception ex)
             {
-                logger.LogWarning(1001, ex, "Error during TryBasicAuthenticationAsync");
+                _logger.LogWarning(1001, ex, "Error during TryBasicAuthenticationAsync");
                 return Task.FromResult<ICompatibleOktaAccount>(null);
             }
         }
@@ -81,13 +81,13 @@ namespace Stormpath.Owin.Middleware
         {
             var bearerHeaderParser = new BearerAuthenticationParser(
                 context.Request.Headers.GetString("Authorization"),
-                logger);
+                _logger);
             if (!bearerHeaderParser.IsValid)
             {
                 return Task.FromResult<ICompatibleOktaAccount>(null);
             }
 
-            logger.LogInformation("Using Bearer header to authenticate request", nameof(TryBearerAuthenticationAsync));
+            _logger.LogInformation("Using Bearer header to authenticate request", nameof(TryBearerAuthenticationAsync));
             return ValidateAccessTokenAsync(context, oktaClient, bearerHeaderParser.Token);
         }
 
@@ -97,19 +97,19 @@ namespace Stormpath.Owin.Middleware
 
             if (!context.Request.Headers.TryGetValue("Cookie", out rawCookies))
             {
-                logger.LogTrace("No cookie header found", nameof(TryCookieAuthenticationAsync));
+                _logger.LogTrace("No cookie header found", nameof(TryCookieAuthenticationAsync));
                 return null;
             }
 
-            var cookieParser = new CookieParser(rawCookies, logger);
+            var cookieParser = new CookieParser(rawCookies, _logger);
 
             if (cookieParser.Count == 0)
             {
-                logger.LogTrace("No cookies parsed from header", nameof(TryCookieAuthenticationAsync));
+                _logger.LogTrace("No cookies parsed from header", nameof(TryCookieAuthenticationAsync));
                 return null;
             }
 
-            logger.LogTrace("Cookies found on request: " + string.Join(", ", cookieParser.AsEnumerable().Select(x => $"'{x.Key}'")), nameof(TryCookieAuthenticationAsync));
+            _logger.LogTrace("Cookies found on request: " + string.Join(", ", cookieParser.AsEnumerable().Select(x => $"'{x.Key}'")), nameof(TryCookieAuthenticationAsync));
 
             var accessToken = cookieParser.Get(this.Configuration.Web.AccessTokenCookie.Name);
             var refreshToken = cookieParser.Get(this.Configuration.Web.RefreshTokenCookie.Name);
@@ -117,70 +117,70 @@ namespace Stormpath.Owin.Middleware
             // Attempt to validate incoming Access Token
             if (!string.IsNullOrEmpty(accessToken))
             {
-                logger.LogTrace($"Found nonempty access token cookie '{this.Configuration.Web.AccessTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
+                _logger.LogTrace($"Found nonempty access token cookie '{this.Configuration.Web.AccessTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
 
                 var validAccount = await ValidateAccessTokenAsync(context, oktaClient, accessToken);
                 if (validAccount != null)
                 {
-                    logger.LogInformation("Request authenticated using Access Token cookie", nameof(TryCookieAuthenticationAsync));
+                    _logger.LogInformation("Request authenticated using Access Token cookie", nameof(TryCookieAuthenticationAsync));
                     return validAccount;
                 }
                 else
                 {
-                    logger.LogInformation("Access token cookie was not valid", nameof(TryCookieAuthenticationAsync));
+                    _logger.LogInformation("Access token cookie was not valid", nameof(TryCookieAuthenticationAsync));
                 }
             }
 
             // Try using refresh token instead
             if (!string.IsNullOrEmpty(refreshToken))
             {
-                logger.LogTrace($"Found nonempty refresh token cookie '{this.Configuration.Web.RefreshTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
+                _logger.LogTrace($"Found nonempty refresh token cookie '{this.Configuration.Web.RefreshTokenCookie.Name}'", nameof(TryCookieAuthenticationAsync));
 
                 var refreshedAccount = await RefreshAccessTokenAsync(context, oktaClient, refreshToken);
                 if (refreshedAccount != null)
                 {
-                    logger.LogInformation("Request authenticated using Refresh Token cookie", nameof(TryCookieAuthenticationAsync));
+                    _logger.LogInformation("Request authenticated using Refresh Token cookie", nameof(TryCookieAuthenticationAsync));
                     return refreshedAccount;
                 }
                 else
                 {
-                    logger.LogInformation("Refresh token cookie was not valid", nameof(TryCookieAuthenticationAsync));
+                    _logger.LogInformation("Refresh token cookie was not valid", nameof(TryCookieAuthenticationAsync));
                 }
             }
 
             // Failed on both counts. Delete access and refresh token cookies if necessary
             if (cookieParser.Contains(this.Configuration.Web.AccessTokenCookie.Name))
             {
-                Cookies.DeleteTokenCookie(context, this.Configuration.Web.AccessTokenCookie, logger);
+                Cookies.DeleteTokenCookie(context, this.Configuration.Web.AccessTokenCookie, _logger);
             }
             if (cookieParser.Contains(this.Configuration.Web.RefreshTokenCookie.Name))
             {
-                Cookies.DeleteTokenCookie(context, this.Configuration.Web.RefreshTokenCookie, logger);
+                Cookies.DeleteTokenCookie(context, this.Configuration.Web.RefreshTokenCookie, _logger);
             }
 
-            logger.LogInformation("No access or refresh token cookies found", nameof(TryCookieAuthenticationAsync));
+            _logger.LogInformation("No access or refresh token cookies found", nameof(TryCookieAuthenticationAsync));
             return null;
         }
 
         private async Task<ICompatibleOktaAccount> ValidateAccessTokenAsync(IOwinEnvironment context, IOktaClient oktaClient, string accessTokenJwt)
         {
-            var accessTokenValidator = new AccessTokenValidator(oktaClient, keyProvider, Configuration);
+            var accessTokenValidator = new AccessTokenValidator(oktaClient, _keyProvider, Configuration);
 
             var validationResult = await accessTokenValidator.ValidateAsync(accessTokenJwt, context.CancellationToken);
             if (!validationResult.Active)
             {
-                logger.LogInformation("Failed to authenticate the request due to a malformed or expired access token.");
+                _logger.LogInformation("Failed to authenticate the request due to a malformed or expired access token.");
                 return null;
             }
 
             ICompatibleOktaAccount account = null;
             try
             {
-                account = await UserHelper.GetAccountFromAccessTokenAsync(oktaClient, accessTokenJwt, logger, context.CancellationToken);
+                account = await UserHelper.GetAccountFromAccessTokenAsync(oktaClient, accessTokenJwt, _logger, context.CancellationToken);
             }
             catch (Exception ex)
             {
-                logger.LogError(1000, ex, $"Failed to get account {validationResult.Uid}", nameof(ValidateAccessTokenAsync));
+                _logger.LogError(1000, ex, $"Failed to get account {validationResult.Uid}", nameof(ValidateAccessTokenAsync));
             }
 
             return account;
@@ -200,7 +200,7 @@ namespace Stormpath.Owin.Middleware
             }
             catch (Exception ex)
             {
-                logger.LogWarning(1000, ex, $"Failed to refresh an access_token given refresh_token {refreshTokenJwt}.");
+                _logger.LogWarning(1000, ex, $"Failed to refresh an access_token given refresh_token {refreshTokenJwt}.");
                 return null;
             }
 
@@ -208,16 +208,16 @@ namespace Stormpath.Owin.Middleware
             ICompatibleOktaAccount account = null;
             try
             {
-                account = await UserHelper.GetAccountFromAccessTokenAsync(oktaClient, grantResult.AccessToken, logger, context.CancellationToken);
+                account = await UserHelper.GetAccountFromAccessTokenAsync(oktaClient, grantResult.AccessToken, _logger, context.CancellationToken);
             }
             catch (Exception ex)
             {
-                logger.LogError(1000, ex, $"Failed to get account from new access_token");
+                _logger.LogError(1000, ex, $"Failed to get account from new access_token");
                 return null;
             }
 
-            logger.LogTrace("Access token refreshed using Refresh token. Adding cookies to response");
-            Cookies.AddTokenCookiesToResponse(context, grantResult, Configuration, logger);
+            _logger.LogTrace("Access token refreshed using Refresh token. Adding cookies to response");
+            Cookies.AddTokenCookiesToResponse(context, grantResult, Configuration, _logger);
 
             return account;
         }
@@ -233,7 +233,7 @@ namespace Stormpath.Owin.Middleware
 
             if (apiKey == null)
             {
-                logger.LogInformation($"API key with ID {id} and matching secret was not found", nameof(ValidateApiCredentialsAsync));
+                _logger.LogInformation($"API key with ID {id} and matching secret was not found", nameof(ValidateApiCredentialsAsync));
                 return null;
             }
 
