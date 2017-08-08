@@ -509,7 +509,7 @@ namespace Stormpath.Owin.Middleware.Okta
             };
             request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-            return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
+            return SendAsync<RecoveryTransactionObject>(request, cancellationToken);
         }
 
         public Task<RecoveryTransactionObject> AnswerRecoveryQuestionAsync(string stateToken, string answer, CancellationToken cancellationToken)
@@ -522,7 +522,7 @@ namespace Stormpath.Owin.Middleware.Okta
             var body = new { stateToken, answer };
             request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-            return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
+            return SendAsync<RecoveryTransactionObject>(request, cancellationToken);
         }
 
         public Task<RecoveryTransactionObject> ResetPasswordAsync(string stateToken, string newPassword, CancellationToken cancellationToken)
@@ -535,7 +535,7 @@ namespace Stormpath.Owin.Middleware.Okta
             var body = new { stateToken, newPassword };
             request.Content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-            return SendAsync<RecoveryTransactionObject>(request, cancellationToken, SummaryFormatter);
+            return SendAsync<RecoveryTransactionObject>(request, cancellationToken);
         }
 
         public Task<IdentityProvider[]> GetIdentityProvidersAsync(CancellationToken ct)

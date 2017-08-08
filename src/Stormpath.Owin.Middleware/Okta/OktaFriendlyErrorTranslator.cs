@@ -9,16 +9,27 @@ namespace Stormpath.Owin.Middleware.Okta
         private const string DefaultMessage = "Sorry, an error has occurred. Please try again.";
 
         private const string ValidationErrorCode = "E0000001";
+        private const string PasswordRequirementsErrorCode = "E0000080";
         private const string InvalidGrant = "invalid_grant";
 
         private static string GetCodeFromException(OktaException oex)
         {
+            if (oex == null)
+            {
+                return null;
+            }
+
             oex.Body.TryGetValue("errorCode", out var rawErrorCode);
             return rawErrorCode?.ToString();
         }
 
         private static string GetFirstErrorCause(OktaException oex)
         {
+            if (oex == null)
+            {
+                return null;
+            }
+
             if (!oex.Body.TryGetValue("errorCauses", out var rawErrorCauses))
             {
                 return null;
@@ -35,6 +46,11 @@ namespace Stormpath.Owin.Middleware.Okta
         private static bool TryHandleOauthError(OktaException oex, out string message)
         {
             message = null;
+
+            if (oex == null)
+            {
+                return false;
+            }
 
             oex.Body.TryGetValue("error", out var rawError);
             var error = rawError?.ToString();
@@ -64,21 +80,20 @@ namespace Stormpath.Owin.Middleware.Okta
                 return false;
             }
 
-            if (!code.Equals(ValidationErrorCode, StringComparison.Ordinal))
-            {
-                return false;
-            }
-
             var cause = GetFirstErrorCause(oex);
 
-            if (string.IsNullOrEmpty(cause))
+            if (code.Equals(ValidationErrorCode, StringComparison.Ordinal))
             {
-                return false;
+                if (cause.StartsWith("Password requirements were not met", StringComparison.Ordinal))
+                {
+                    message = cause;
+                    return true;
+                }
             }
 
-            if (cause.StartsWith("Password requirements were not met", StringComparison.Ordinal))
+            if (code.Equals(PasswordRequirementsErrorCode, StringComparison.Ordinal))
             {
-                message = cause;
+                message = cause ?? "Password requirements were not met.";
                 return true;
             }
 
