@@ -176,7 +176,7 @@ namespace Stormpath.Owin.Middleware.Route
                 providedCustomFields.Add(item.Key, string.Join(",", item.Value));
             }
 
-            var executor = new RegisterExecutor(_configuration, _handlers, _oktaClient, _logger);
+            var executor = new RegisterExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
 
             try
             {
@@ -288,7 +288,7 @@ namespace Stormpath.Owin.Middleware.Route
                 return true; // Some error occurred and the handler was invoked
             }
 
-            var executor = new RegisterExecutor(_configuration, _handlers, _oktaClient, _logger);
+            var executor = new RegisterExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
 
             var formDataForHandler = sanitizedFormData
                 .ToDictionary(kv => kv.Key, kv => kv.Value?.ToString());

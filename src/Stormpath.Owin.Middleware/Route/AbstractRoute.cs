@@ -34,6 +34,7 @@ namespace Stormpath.Owin.Middleware.Route
         protected ILogger _logger;
         protected RouteOptionsBase _options;
         protected IOktaClient _oktaClient;
+        protected IFriendlyErrorTranslator _errorTranslator;
 
         public void Initialize(
             IntegrationConfiguration configuration,
@@ -41,7 +42,8 @@ namespace Stormpath.Owin.Middleware.Route
             IViewRenderer viewRenderer,
             ILogger logger,
             RouteOptionsBase options,
-            IOktaClient oktaClient)
+            IOktaClient oktaClient,
+            IFriendlyErrorTranslator errorTranslator)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _viewRenderer = viewRenderer ?? throw new ArgumentNullException(nameof(viewRenderer));
@@ -49,6 +51,7 @@ namespace Stormpath.Owin.Middleware.Route
             _logger = logger;
             _options = options;
             _oktaClient = oktaClient ?? throw new ArgumentNullException(nameof(oktaClient));
+            _errorTranslator = errorTranslator ?? new OktaFriendlyErrorTranslator();
 
             _initialized = true;
         }

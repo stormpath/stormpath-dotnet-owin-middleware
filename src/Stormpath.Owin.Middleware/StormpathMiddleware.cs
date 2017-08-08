@@ -36,6 +36,7 @@ namespace Stormpath.Owin.Middleware
         private readonly ILogger _logger;
         private readonly IFrameworkUserAgentBuilder _userAgentBuilder;
         private readonly IReadOnlyDictionary<string, RouteHandler> _routingTable;
+        private readonly IFriendlyErrorTranslator _errorTranslator;
         private AppFunc _next;
 
         private StormpathMiddleware(
@@ -46,7 +47,8 @@ namespace Stormpath.Owin.Middleware
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
             IAuthorizationFilterFactory authorizationFilterFactory,
-            OktaClient oktaClient)
+            OktaClient oktaClient,
+            IFriendlyErrorTranslator errorTranslator)
         {
             _keyProvider = keyProvider;
             _viewRenderer = viewRenderer;
@@ -58,6 +60,8 @@ namespace Stormpath.Owin.Middleware
             AuthorizationFilterFactory = authorizationFilterFactory;
 
             Client = oktaClient;
+
+            _errorTranslator = errorTranslator;
 
             _routingTable = BuildRoutingTable();
         }

@@ -84,6 +84,8 @@ namespace Stormpath.Owin.Middleware
 
             var authFilterFactory = new DefaultAuthorizationFilterFactory(oktaClient);
 
+            var errorTranslator = options.FriendlyErrorTranslator ?? new OktaFriendlyErrorTranslator();
+
             return new StormpathMiddleware(
                 jwksKeyProvider,
                 options.ViewRenderer,
@@ -92,7 +94,8 @@ namespace Stormpath.Owin.Middleware
                 integrationConfiguration,
                 handlerConfiguration,
                 authFilterFactory,
-                oktaClient);
+                oktaClient,
+                errorTranslator);
         }
 
         private static void ThrowIfOktaConfigurationMissing(StormpathConfiguration config)
@@ -202,7 +205,7 @@ namespace Stormpath.Owin.Middleware
             var route = new T();
             options = options ?? new RouteOptionsBase();
 
-            route.Initialize(Configuration, Handlers, _viewRenderer, _logger, options, Client);
+            route.Initialize(Configuration, Handlers, _viewRenderer, _logger, options, Client, _errorTranslator);
 
             return route;
         }
