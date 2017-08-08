@@ -13,7 +13,7 @@ using Stormpath.Owin.Middleware.Internal;
 
 namespace Stormpath.Owin.Middleware.Okta
 {
-    public sealed class OktaClient : IOktaClient
+    internal sealed class OktaClient : IOktaClient
     {
         private const string OktaClientUserAgent = "stormpath-oktagration";
         private const string ApiPrefix = "api/v1";
