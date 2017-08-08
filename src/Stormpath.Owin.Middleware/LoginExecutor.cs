@@ -31,6 +31,7 @@ namespace Stormpath.Owin.Middleware
         private readonly IntegrationConfiguration _configuration;
         private readonly HandlerConfiguration _handlers;
         private readonly IOktaClient _oktaClient;
+        private readonly IFriendlyErrorTranslator _errorTranslator;
         private readonly ILogger _logger;
 
         private string _nextUriFromPostHandler = null;
@@ -39,11 +40,13 @@ namespace Stormpath.Owin.Middleware
             IntegrationConfiguration configuration,
             HandlerConfiguration handlers,
             IOktaClient oktaClient,
+            IFriendlyErrorTranslator errorTranslator,
             ILogger logger)
         {
             _configuration = configuration;
             _handlers = handlers;
             _oktaClient = oktaClient;
+            _errorTranslator = errorTranslator;
             _logger = logger;
         }
 
@@ -73,13 +76,29 @@ namespace Stormpath.Owin.Middleware
                 }
             }
 
-            var grantResult = await _oktaClient.PostPasswordGrantAsync(
-                _configuration.OktaEnvironment.AuthorizationServerId,
-                _configuration.OktaEnvironment.ClientId,
-                _configuration.OktaEnvironment.ClientSecret,
-                preLoginHandlerContext.Login,
-                password,
-                cancellationToken);
+            GrantResult grantResult = null;
+
+            try
+            {
+                grantResult = await _oktaClient.PostPasswordGrantAsync(
+                    _configuration.OktaEnvironment.AuthorizationServerId,
+                    _configuration.OktaEnvironment.ClientId,
+                    _configuration.OktaEnvironment.ClientSecret,
+                    preLoginHandlerContext.Login,
+                    password,
+                    cancellationToken);
+            }
+            catch (OktaException oex)
+            {
+                var message = _errorTranslator.GetFriendlyMessage(oex);
+                await errorHandler(message, cancellationToken);
+                // return null below
+            }
+
+            if (grantResult == null)
+            {
+                return (null, null);
+            }
 
             var remoteValidator = new RemoteTokenValidator(
                 _oktaClient,

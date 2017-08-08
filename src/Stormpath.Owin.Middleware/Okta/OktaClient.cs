@@ -382,28 +382,8 @@ namespace Stormpath.Owin.Middleware.Okta
             };
             request.Content = new FormUrlEncodedContent(parameters);
 
-            var exceptionFormatter = new Func<int, string, Exception>((statusCode, body) =>
-            {
-                _logger.LogWarning($"{statusCode} {body}");
-
-                try
-                {
-                    var deserialized = JsonConvert.DeserializeObject<OauthApiError>(body);
-                    var isInvalidGrantError = deserialized?.Error?.Equals("invalid_grant") ?? false;
-
-                    if (!isInvalidGrantError) return DefaultExceptionFormatter(statusCode, body);
-
-                    return new InvalidOperationException("Invalid username or password.");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(1005, ex, "Error while formatting error response");
-                    return DefaultExceptionFormatter(statusCode, body);
-                }
-            });
-
             _logger.LogTrace($"Executing password grant flow for subject {username}");
-            return SendAsync<GrantResult>(request, cancellationToken, exceptionFormatter);
+            return SendAsync<GrantResult>(request, cancellationToken);
         }
 
         public Task<GrantResult> PostRefreshGrantAsync(

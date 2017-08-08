@@ -51,7 +51,7 @@ namespace Stormpath.Owin.Middleware.Route
             string nextPath,
             CancellationToken cancellationToken)
         {
-            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _logger);
+            var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
             await executor.HandlePostLoginAsync(context, grantResult, user, cancellationToken);
 
             // TODO determine whether this is a new account or not
