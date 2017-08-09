@@ -27,7 +27,7 @@ namespace Stormpath.Owin.Abstractions.Configuration
             OktaEnvironmentConfiguration oktaEnvironmentConfiguration,
             IEnumerable<KeyValuePair<string, ProviderConfiguration>> providers,
             string absoluteCallbackUri)
-            : base(existing?.ApiToken, existing?.Org, existing?.Application, existing?.Web)
+            : base(existing?.ApiToken, existing?.Org, existing?.AuthorizationServerId, existing?.Application, existing?.Web)
         {
             OktaEnvironment = oktaEnvironmentConfiguration;
             Providers = providers.ToArray();

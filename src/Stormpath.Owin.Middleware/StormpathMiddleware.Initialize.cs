@@ -134,9 +134,12 @@ namespace Stormpath.Owin.Middleware
                 var appDetails = client.GetApplicationAsync(existingConfig.Application.Id, CancellationToken.None).Result;
                 var credentials = client.GetClientCredentialsAsync(existingConfig.Application.Id, CancellationToken.None).Result;
 
-                if (string.IsNullOrEmpty(appDetails?.Settings?.Notifications?.Vpn?.Message))
+                var authorizationServerId = existingConfig.AuthorizationServerId
+                    ?? appDetails?.Settings?.Notifications?.Vpn?.Message;
+
+                if (string.IsNullOrEmpty(authorizationServerId))
                 {
-                    throw new ArgumentNullException("The Okta application must be configured with a link to the Authorization Server");
+                    throw new ArgumentNullException("You must specify an Authorization Server ID");
                 }
 
                 if (string.IsNullOrEmpty(credentials?.ClientId) || string.IsNullOrEmpty(credentials?.ClientSecret))
@@ -146,8 +149,7 @@ namespace Stormpath.Owin.Middleware
 
                 logger.LogInformation($"Using Okta application '{appDetails.Label}'");
 
-                var authServerId = appDetails.Settings.Notifications.Vpn.Message; // Workaround to store AS id in app resource
-                var authServer = client.GetAuthorizationServerAsync(authServerId, CancellationToken.None).Result;
+                var authServer = client.GetAuthorizationServerAsync(authorizationServerId, CancellationToken.None).Result;
 
                 logger.LogInformation($"Using authorization server '{authServer.Name}'");
 
@@ -164,7 +166,7 @@ namespace Stormpath.Owin.Middleware
                     idpProviders.Add(idp.Id, new ProviderConfiguration(
                         idp.Type,
                         userConfig?.DisplayName,
-                        PatchAuthorizeUri(idp.Links.Authorize.Href, authServerId),
+                        PatchAuthorizeUri(idp.Links.Authorize.Href, authorizationServerId),
                         userConfig?.Scope));
                 }
 
