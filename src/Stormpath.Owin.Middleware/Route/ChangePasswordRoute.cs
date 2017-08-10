@@ -133,6 +133,16 @@ namespace Stormpath.Owin.Middleware.Route
 
             try
             {
+                await _oktaClient.VerifyRecoveryTokenAsync(spToken, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(1008, ex, "Error verifying reset password token");
+                return await HttpResponse.Redirect(context, _configuration.Web.ChangePassword.ErrorUri);
+            }
+
+            try
+            {
                 await ChangePasswordAsync(context, model, spToken, cancellationToken);
             }
             catch (OktaException oex)
