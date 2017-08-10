@@ -27,6 +27,30 @@ See the Compatibility Matrix on the [Stormpath-Okta Customer FAQ](https://stormp
 * Custom Data is only be available on account resources.
 * The Verification Success Email, Welcome Email, and Password Reset Success Email workflows are not supported.
 
+### Note about password reset
+
+The password reset (`/forgot` and `/change` routes) rely on a code saved to the Okta user profile in the `stormpathMigrationRecoveryAnswer` field.
+
+If you import users from Stormpath or create new users through the `/register` route in this middleware, this is handled for you automatically.
+
+If you create new Okta users manually (either through the developer dashboard or API), you'll need to add a random code to this field yourself. For an example, see [this gist](https://gist.github.com/nbarbettini/a97a71c7d21ee5a3cd998a3e90c45370).
+
+## Version 4.1.0
+
+No breaking changes.
+
+Some nonbreaking fixes and improvements:
+
+* Restored limited caching support. Caching is disabled by default. Caching works with User resources only and is intended to speed up the response time of the middleware. Any cache system that supports the Microsoft Caching Extensions interface is supported. To turn on and configure caching, see [this code snippet](https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/test/Stormpath.Owin.NowinHarness/Program.cs#L66-L70).
+
+* Improved error messages in the registration and password reset flows when the user tries to save a password that isn't complex enough. It's possible to customize these error messages through the `IFriendlyErrorTranslator` interface; for more details, see [PR #97](https://github.com/stormpath/stormpath-dotnet-owin-middleware/pull/97).
+
+* Added the `web.refreshTokenCookie.maxAge` property to the configuration object, which controls the expiration time (Max-Age) of the refresh token cookie. If this isn't set, the refresh token cookie will expire when the browser is closed (Session expiration). This is a breaking change from Stormpath behavior, but not a breaking change from v4.0.0 of this library.
+
+* Added the `authorizationServerId` property to the configuration object, which you can set to explicitly select the Okta Authorization Server to use. If it is null or empty, the middleware will attempt to discover the imported Authorization Server to use (as before).
+
+* Added the `web.oauth2.password.defaultScope` property to the configuration object, which gives your application more control over which scopes are automatically requested when a client uses the `/oauth/token` route exposed by the middleware. In v4.0.0, the scope was hardcoded to `openid offline_access`. If you don't want a refresh token issued automatically, change this setting to `openid`.
+
 ## Version 4.0.0
 
 No breaking changes from RC5.
