@@ -41,10 +41,14 @@ This document is intended to give you a high-level understanding of the steps re
 	}
 	```
 
-1. _(Optional)_ If you used the Password Reset workflow in Stormpath, update the Okta Password Reset email template. You can copy the current template from the Stormpath Admin Console, and paste it into the Okta template found at Settings > Email & SMS > Forgot Password.  You'll want to use the ``${recoveryToken}`` variable to create a link that points the user to the change password endpoint on your application, for example: ``http://localhost:3000/change?sptoken=${recoveryToken}``. If the validator complains about `${resetPasswordLink}` being missing, place it in an HTML comment: `<!-- ${resetPasswordLink} -->`
+1. _(Optional)_ If you used the Password Reset workflow in Stormpath, update the Okta Password Reset email template. You can copy the current template from the Stormpath Admin Console, and paste it into the Okta template found at Settings > Email & SMS > Forgot Password.
 
-1. _(Optional)_ If you used the Email Verification workflow in Stormpath, you'll need to use the `SendVerificationEmailHandler` in this library, plus an email service like SendGrid, to send your own verification email.
+ You'll want to use the ``${recoveryToken}`` variable to create a link that points the user to the change password endpoint on your application, for example: ``http://localhost:3000/change?sptoken=${recoveryToken}``. If the validator complains about `${resetPasswordLink}` being missing, place it in an HTML comment: `<!-- ${resetPasswordLink} -->`
 
-1. Run your application with your configuration pointed to the new Okta organization that contains your imported data, and try logging in with the test user you created in step 1.
+Also, read the [note on password reset](https://github.com/stormpath/stormpath-dotnet-owin-middleware/blob/master/changelog.md#note-about-password-reset) in the changelog.
+
+9. _(Optional)_ If you used the Email Verification workflow in Stormpath, you'll need to use the `SendVerificationEmailHandler` in this library, plus an email service like SendGrid, to send your own verification email.
+
+9. Run your application with your configuration pointed to the new Okta organization that contains your imported data, and try logging in with the test user you created in step 1.
 
 If you run into problems, please let us know at developers@okta.com. We'll be continually updating this library (and document) as needed to help make the migration process as smooth as possible.
