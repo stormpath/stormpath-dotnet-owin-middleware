@@ -59,10 +59,17 @@ namespace Stormpath.Owin.Middleware
 
         public bool IsOrphanToken(string token)
         {
-            // Tokens issued by the Client Credentials flow are signed with HS256 (symmetric) encryption
-            // See OrphanAccessTokenBuilder
-            var decodedHeaderOnly = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            return decodedHeaderOnly?.Header?.Alg?.Equals("HS256", StringComparison.Ordinal) ?? false;
+            try
+            {
+                // Tokens issued by the Client Credentials flow are signed with HS256 (symmetric) encryption
+                // See OrphanAccessTokenBuilder
+                var decodedHeaderOnly = new JwtSecurityTokenHandler().ReadJwtToken(token);
+                return decodedHeaderOnly?.Header?.Alg?.Equals("HS256", StringComparison.Ordinal) ?? false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public TokenIntrospectionResult ValidateAsync(string token)
