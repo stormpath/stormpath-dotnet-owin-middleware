@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -55,8 +56,11 @@ namespace Stormpath.Owin.Middleware
             Func<string, CancellationToken, Task> errorHandler,
             string login,
             string password,
+            string scope,
             CancellationToken cancellationToken)
         {
+            var combinedScope = AddDefaultScope(scope);
+
             var preLoginHandlerContext = new PreLoginContext(environment)
             {
                 Login = login
@@ -86,6 +90,7 @@ namespace Stormpath.Owin.Middleware
                     _configuration.OktaEnvironment.ClientSecret,
                     preLoginHandlerContext.Login,
                     password,
+                    combinedScope,
                     cancellationToken);
             }
             catch (OktaException oex)
@@ -204,6 +209,15 @@ namespace Stormpath.Owin.Middleware
             }
 
             return HttpResponse.Redirect(context, nextLocation);
+        }
+
+        private string AddDefaultScope(string userScope)
+        {
+            return
+                new ScopeParser(_configuration.Web.Oauth2.Password.DefaultScope)
+                .Concat(new ScopeParser(userScope))
+                .Distinct()
+                .Join(" ");
         }
     }
 }

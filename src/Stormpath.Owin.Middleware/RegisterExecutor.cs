@@ -188,11 +188,13 @@ namespace Stormpath.Owin.Middleware
             CancellationToken cancellationToken)
         {
             var loginExecutor = new LoginExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
+
             var (grantResult, user) = await loginExecutor.PasswordGrantAsync(
                 environment,
                 errorHandler,
                 postModel.Email,
-                postModel.Password, 
+                postModel.Password,
+                _configuration.Web.Oauth2.Password.DefaultScope,
                 cancellationToken);
 
             await loginExecutor.HandlePostLoginAsync(environment, grantResult, user, cancellationToken);

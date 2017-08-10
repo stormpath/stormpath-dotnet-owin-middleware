@@ -17,7 +17,6 @@ namespace Stormpath.Owin.Middleware.Okta
     {
         private const string OktaClientUserAgent = "stormpath-oktagration";
         private const string ApiPrefix = "api/v1";
-        private const string DefaultPasswordGrantScopes = "openid offline_access";
 
         private readonly string _orgUrl;
         private readonly string _apiToken;
@@ -366,6 +365,7 @@ namespace Stormpath.Owin.Middleware.Okta
             string clientSecret,
             string username,
             string password,
+            string scope,
             CancellationToken cancellationToken)
         {
             var url = $"oauth2/{authorizationServerId}/v1/token";
@@ -376,7 +376,7 @@ namespace Stormpath.Owin.Middleware.Okta
             var parameters = new Dictionary<string, string>()
             {
                 ["grant_type"] = "password",
-                ["scope"] = DefaultPasswordGrantScopes,
+                ["scope"] = scope,
                 ["username"] = username,
                 ["password"] = password
             };

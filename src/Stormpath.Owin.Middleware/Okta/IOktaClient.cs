@@ -20,6 +20,7 @@ namespace Stormpath.Owin.Middleware.Okta
             string clientSecret, 
             string username, 
             string password,
+            string scope,
             CancellationToken cancellationToken);
 
         Task<GrantResult> PostRefreshGrantAsync(

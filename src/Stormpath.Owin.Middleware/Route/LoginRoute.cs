@@ -99,6 +99,7 @@ namespace Stormpath.Owin.Middleware.Route
                     htmlErrorHandler,
                     model.Login,
                     model.Password,
+                    _configuration.Web.Oauth2.Password.DefaultScope,
                     cancellationToken);
 
                 if (grantResult == null)
@@ -148,6 +149,7 @@ namespace Stormpath.Owin.Middleware.Route
                 jsonErrorHandler,
                 model.Login,
                 model.Password,
+                _configuration.Web.Oauth2.Password.DefaultScope,
                 cancellationToken);
 
             if (grantResult == null)

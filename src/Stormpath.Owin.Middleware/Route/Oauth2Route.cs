@@ -73,7 +73,8 @@ namespace Stormpath.Owin.Middleware.Route
                 {
                     var username = WebUtility.UrlDecode(formData.GetString("username"));
                     var password = WebUtility.UrlDecode(formData.GetString("password"));
-                    await ExecutePasswordFlow(context, username, password, cancellationToken);
+                    var scope = WebUtility.UrlDecode(formData.GetString("scope"));
+                    await ExecutePasswordFlow(context, username, password, scope, cancellationToken);
                     return true;
                 }
 
@@ -114,7 +115,7 @@ namespace Stormpath.Owin.Middleware.Route
             return await Error.Create<OauthUnsupportedGrant>(context, cancellationToken);
         }
 
-        private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, string username, string password, CancellationToken cancellationToken)
+        private async Task<bool> ExecutePasswordFlow(IOwinEnvironment context, string username, string password, string scope, CancellationToken cancellationToken)
         {
             var executor = new LoginExecutor(_configuration, _handlers, _oktaClient, _errorTranslator, _logger);
 
@@ -132,6 +133,7 @@ namespace Stormpath.Owin.Middleware.Route
                 jsonErrorHandler,
                 username,
                 password,
+                scope,
                 cancellationToken);
 
             if (grantResult == null)
