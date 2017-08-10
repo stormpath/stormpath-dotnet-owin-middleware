@@ -94,10 +94,17 @@ namespace Stormpath.Owin.NowinHarness
                     Web = new WebConfiguration
                     {
                         ServerUri = "http://localhost:8080",
-                        Register = new WebRegisterRouteConfiguration
-                        {
-                            EmailVerificationRequired = false,
-                        },
+                        //Register = new WebRegisterRouteConfiguration
+                        //{
+                        //    EmailVerificationRequired = false,
+                        //    Form = new WebRegisterRouteFormConfiguration
+                        //    {
+                        //        Fields = new Dictionary<string, WebFieldConfiguration>()
+                        //        {
+                        //            ["stormpathApiKey_1"] = new WebFieldConfiguration {  Enabled = true, Required = false },
+                        //        }
+                        //    }
+                        //},
                         ForgotPassword = new WebForgotPasswordRouteConfiguration
                         {
                             Enabled = true
